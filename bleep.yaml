@@ -1,0 +1,51 @@
+$schema: https://raw.githubusercontent.com/oyvindberg/bleep/master/schema.json
+$version: 0.0.12
+projects:
+  back:
+    dependencies:
+      - com.auth0:java-jwt:4.4.0
+      - com.edgedb:driver:0.3.0
+      - com.softwaremill.sttp.tapir::tapir-core:1.11.10
+      - com.softwaremill.sttp.tapir::tapir-json-zio:1.11.10
+      - com.softwaremill.sttp.tapir::tapir-swagger-ui-bundle:1.11.10
+      - com.softwaremill.sttp.tapir::tapir-zio-http-server:1.11.10
+      - com.softwaremill.sttp.tapir::tapir-zio:1.11.10
+      - dev.zio::zio-http:3.0.1
+      - dev.zio::zio-json:0.7.3
+      - dev.zio::zio:2.1.14
+      - io.scalaland::chimney-java-collections:1.6.0
+      - io.scalaland::chimney:1.6.0
+    extends: template-common
+    platform:
+      jvmRuntimeOptions: -Duser.dir=${BUILD_DIR}
+  back-test:
+    dependencies:
+      - com.github.sbt:junit-interface:0.13.3
+      - dev.zio::zio-test-junit:2.1.14
+      - dev.zio::zio-test-magnolia:2.1.14
+      - dev.zio::zio-test-sbt:2.1.14
+      - dev.zio::zio-test:2.1.14
+      - org.scalameta::munit:1.0.3
+    dependsOn: back
+    extends: template-common
+    isTestProject: true
+    testFrameworks:
+      - hedgehog.sbt.Framework
+      - weaver.framework.CatsEffect
+      - zio.test.sbt.ZTestFramework
+  scripts:
+    dependencies: build.bleep::bleep-core:${BLEEP_VERSION}
+    platform:
+      name: jvm
+    scala:
+      version: 3.6.2
+templates:
+  template-common:
+    platform:
+      name: jvm
+    scala:
+      setup:
+        addLibraryToBootClasspath: false
+        filterLibraryFromClasspath: false
+        manageBootClasspath: false
+      version: 3.6.2
