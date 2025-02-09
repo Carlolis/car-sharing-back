@@ -7,7 +7,7 @@ import scala.io.Source.fromFile
 import scala.jdk.CollectionConverters.*
 
 case class EdgeDbDriverLive(database: String = "main") {
-  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString
+/*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
   val connection    = EdgeDBConnection
     .builder()
     .withDatabase(
@@ -16,7 +16,7 @@ case class EdgeDbDriverLive(database: String = "main") {
     .withHostname("localhost")
     .withPort(10700)
     .withTlsSecurity(TLSSecurityMode.DEFAULT)
-    .withTlsca(tlsCAFromFile)
+/*    .withTlsca(tlsCAFromFile)*/
     .withUser("edgedb")
     .withPassword("S4jPNBEu7Nkueb4Cwad2VA5h")
     .build()

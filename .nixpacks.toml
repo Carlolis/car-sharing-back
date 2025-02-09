@@ -1,0 +1,16 @@
+# nixpacks.toml
+
+[package]
+name = "scala-edgdb-backend"
+version = "0.1.0"
+description = "A Scala application using Bleep"
+
+[build]
+cmd = "bleep dist back "
+
+[start]
+cmd = ".bleep/builds/normal/.bloop/back/dist/bin/back"
+
+[dependencies]
+bleep = "0.0.12"
+scala = "3.6.2"

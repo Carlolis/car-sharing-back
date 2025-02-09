@@ -1,5 +1,7 @@
 $schema: https://raw.githubusercontent.com/oyvindberg/bleep/master/schema.json
 $version: 0.0.12
+jvm:
+  name: temurin:1.17.0.14
 projects:
   back:
     dependencies:
@@ -39,6 +41,10 @@ projects:
       name: jvm
     scala:
       version: 3.6.2
+scripts:
+  publishDocker:
+    main: back.scripts.DockerPublishForBack
+    project: scripts
 templates:
   template-common:
     platform:

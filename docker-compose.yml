@@ -1,0 +1,10 @@
+services:
+  scala-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    command: >
+      sh -c ".bleep/builds/normal/.bloop/back/dist/bin/back"
+
