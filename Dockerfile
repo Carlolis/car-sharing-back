@@ -5,7 +5,7 @@ WORKDIR /myapp
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
 RUN edgedb instance link db -H 192.168.1.108 -P 5656 -b main --tls-security insecure -u edgedb -p password --overwrite --non-interactive
-RUN edgedb migrate -I db
+RUN edgedb migrate -I db || exit 1
 
 # Utiliser une image de base légère
 FROM openjdk:17-jdk AS base
