@@ -13,13 +13,13 @@ case class EdgeDbDriverLive(database: String = "main") {
     .withDatabase(
       database
     )
-    .withHostname("192.168.1.108")
+    .withHostname("edgedb-bss0ok4soss044skswcw4ogw")
     .withPort(5656)
 /*    .withPort(10710)*/
     .withTlsSecurity(TLSSecurityMode.INSECURE)
 /*    .withTlsca(tlsCAFromFile)*/
     .withUser("edgedb")
-    .withPassword("")
+    .withPassword("password")
     //.withPassword("S4jPNBEu7Nkueb4Cwad2VA5h")
     .build()
 
