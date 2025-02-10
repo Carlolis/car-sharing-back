@@ -1,5 +1,12 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
+WORKDIR /myapp
+ENV EDGEDB_CREDENTIALS_FILE=credentials.json
+COPY edgedb.toml /myapp/edgedb.toml
+COPY dbschema /myapp/dbschema
+COPY credentials.json /myapp/credentials.json
+RUN edgedb instance link db --credentials-file --overwrite --non-interactive
+RUN edgedb migrate -I db
 
 
 # Utiliser une image de base légère
@@ -28,12 +35,9 @@ FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
 
 
 # Change ownership of the .config directory
-USER user
 WORKDIR /myapp
 COPY --from=base /myapp/.bleep/builds/normal/.bloop/back/dist /myapp/dist
-COPY --from=edgedb /usr/bin/edgedb /usr/bin/edgedb
-COPY --from=base edgedb.toml /myapp/edgedb.toml
-COPY --from=base /myapp/dbschema /myapp/dbschema
+
 
 
 ENTRYPOINT [""]
