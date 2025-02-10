@@ -6,5 +6,10 @@ services:
     ports:
       - "8080:8080"
     command: >
-      sh -c ".bleep/builds/normal/.bloop/back/dist/bin/back"
+      sh -c "/myapp/dist/bin/back"
+    volumes:
+      - "./dbschema:/dbschema"
+    environment:
+      EDGEDB_SERVER_SECURITY: insecure_dev_mode
+    user: "1000:1000"
 

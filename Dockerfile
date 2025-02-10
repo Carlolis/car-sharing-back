@@ -1,5 +1,16 @@
+# pull in EdgeDB CLI
+FROM edgedb/edgedb AS edgedb
+WORKDIR /myapp
+
+COPY edgedb.toml /myapp/edgedb.toml
+COPY dbschema /myapp/dbschema
+RUN edgedb instance link db -H 192.168.1.108 -P 5656 -b main --tls-security insecure -u edgedb --overwrite --non-interactive
+RUN edgedb migrate -I db
+
 # Utiliser une image de base légère
-FROM openjdk:17-jdk
+FROM openjdk:17-jdk AS base
+WORKDIR /myapp
+ENV EDGEDB_CLIENT_TLS_SECURITY insecure
 
 # Installer Coursier
 RUN curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > cs
@@ -16,5 +27,14 @@ COPY . .
 # Créer executable
 RUN bleep dist back
 
-# Définir le point d'entrée (optionnel)
+
+# Finally, build the production image with minimal footprint
+FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
+
+
+# Change ownership of the .config directory
+WORKDIR /myapp
+COPY --from=base /myapp/.bleep/builds/normal/.bloop/back/dist /myapp/dist
+
+
 ENTRYPOINT [""]

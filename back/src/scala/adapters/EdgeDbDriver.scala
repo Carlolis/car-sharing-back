@@ -13,12 +13,14 @@ case class EdgeDbDriverLive(database: String = "main") {
     .withDatabase(
       database
     )
-    .withHostname("localhost")
-    .withPort(10700)
-    .withTlsSecurity(TLSSecurityMode.DEFAULT)
+    .withHostname("192.168.1.108")
+    .withPort(5656)
+/*    .withPort(10710)*/
+    .withTlsSecurity(TLSSecurityMode.INSECURE)
 /*    .withTlsca(tlsCAFromFile)*/
     .withUser("edgedb")
-    .withPassword("S4jPNBEu7Nkueb4Cwad2VA5h")
+    .withPassword("")
+    //.withPassword("S4jPNBEu7Nkueb4Cwad2VA5h")
     .build()
 
   // Config and passwords can be found here :
