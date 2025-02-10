@@ -1,16 +1,11 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
-WORKDIR /myapp
 
-COPY edgedb.toml /myapp/edgedb.toml
-COPY dbschema /myapp/dbschema
-RUN edgedb instance link db -H 192.168.1.108 -P 5656 -b main --tls-security insecure -u edgedb -p password --overwrite --non-interactive || exit 1
-RUN edgedb migrate -I db || exit 1
 
 # Utiliser une image de base légère
 FROM openjdk:17-jdk AS base
 WORKDIR /myapp
-ENV EDGEDB_CLIENT_TLS_SECURITY insecure
+
 
 # Installer Coursier
 RUN curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > cs
@@ -33,9 +28,12 @@ FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
 
 
 # Change ownership of the .config directory
+USER user
 WORKDIR /myapp
 COPY --from=base /myapp/.bleep/builds/normal/.bloop/back/dist /myapp/dist
-COPY --from=edgedb /myapp/dbschema /myapp/dist
+COPY --from=edgedb /usr/bin/edgedb /usr/bin/edgedb
+COPY --from=base edgedb.toml /myapp/edgedb.toml
+COPY --from=base /myapp/dbschema /myapp/dbschema
 
 
 ENTRYPOINT [""]
