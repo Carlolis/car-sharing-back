@@ -8,12 +8,13 @@ import scala.jdk.CollectionConverters.*
 
 case class EdgeDbDriverLive(database: String = "main") {
 /*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
+  var edgedbHost = sys.env.getOrElse("EDGEDB_HOST", "localhost")
   val connection    = EdgeDBConnection
     .builder()
     .withDatabase(
       database
     )
-    .withHostname("192.168.1.108")
+    .withHostname("edgedb")
     .withPort(5656)
 /*    .withPort(10710)*/
     .withTlsSecurity(TLSSecurityMode.INSECURE)
