@@ -5,7 +5,7 @@ WORKDIR /myapp
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
 COPY credentials.json /myapp/credentials.json
-RUN edgedb instance link db --credentials-file credentials.json --overwrite --non-interactive
+RUN edgedb instance link db --credentials-file credentials.json --overwrite --non-interactive --tls-security insecure
 RUN edgedb migrate -I db
 
 
