@@ -15,7 +15,7 @@ case class EdgeDbDriverLive(database: String = "main") {
     .withDatabase(
       database
     )
-    .withHostname("edgedb")
+    .withHostname(edgedbHost)
     .withPort(5656)
 /*    .withPort(10710)*/
     .withTlsSecurity(TLSSecurityMode.INSECURE)
