@@ -1,11 +1,11 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
-ENV EDGEDB_CREDENTIALS_FILE=credentials.json
+
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
 COPY credentials.json /myapp/credentials.json
-RUN edgedb instance link db --credentials-file --overwrite --non-interactive
+RUN edgedb instance link db --credentials-file credentials.json --overwrite --non-interactive
 RUN edgedb migrate -I db
 
 
