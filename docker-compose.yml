@@ -11,6 +11,6 @@ services:
       - "./dbschema:/dbschema"
     environment:
       EDGEDB_SERVER_SECURITY: insecure_dev_mode
-      EDGEDB_DSN_BUILD: ${EDGEDB_DSN_BUILD}
+      EDGEDB_DSN_BUILD: "toto"
     user: "1000:1000"
 
