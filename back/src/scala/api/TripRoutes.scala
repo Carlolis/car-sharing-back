@@ -89,7 +89,7 @@ class TripRoutes(tripService: TripService, personService: PersonService, authSer
   def docsEndpoints(
     apiEndpoints: List[ZServerEndpoint[Any, Any]]
   ): List[ZServerEndpoint[Any, Any]] = SwaggerInterpreter()
-    .fromServerEndpoints[Task](apiEndpoints, "realworld-tapir-zio", "0.1.0")
+    .fromServerEndpoints[Task](apiEndpoints, "car-sharing", "0.1.0")
 
   val endpoints: List[ZServerEndpoint[Any, Any]] = {
     val all = List(

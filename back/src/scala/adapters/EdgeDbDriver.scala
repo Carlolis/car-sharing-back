@@ -8,10 +8,9 @@ import scala.jdk.CollectionConverters.*
 
 case class EdgeDbDriverLive(database: String = "main") {
 /*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
-  var EDGEDB_DSN = sys.env.getOrElse("EDGEDB_DSN", "edgedb://user:password@host:port/branch")
+  var EDGEDB_DSN = sys.env.getOrElse("EDGEDB_DSN", s"edgedb://edgedb:password@localhost:10700/$database?tls_security=insecure")
 
-  val connection    = EdgeDBConnection
-    .fromDSN(EDGEDB_DSN)
+  val connection    = EdgeDBConnection.fromDSN(EDGEDB_DSN)
    /* .builder()
     .withDatabase(
       database
