@@ -5,7 +5,7 @@ ARG EDGEDB_DSN_BUILD
 RUN echo "DSN is =${EDGEDB_DSN_BUILD}"
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
-RUN edgedb instance link --dsn=${EDGEDB_DSN_BUILD} --non-interactive db
+RUN edgedb instance link --dsn=${EDGEDB_DSN_BUILD} --non-interactive --tls-security insecure db
 RUN edgedb migrate -I db
 
 
