@@ -5,7 +5,7 @@ WORKDIR /myapp
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
 COPY credentials.json /myapp/credentials.json
-RUN edgedb instance link --dsn=$EDGEDB_DSN --non-interactive db --non-interactive
+RUN edgedb instance link --dsn=$EDGEDB_DSN --non-interactive db
 RUN edgedb migrate -I db
 
 
