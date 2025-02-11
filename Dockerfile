@@ -1,11 +1,11 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
-ARG EDGEDB_DSN_BUILD
-RUN echo "DSN is =${EDGEDB_DSN_BUILD}"
+ARG EDGEDB_DSN
+RUN echo "DSN is =${EDGEDB_DSN}"
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
-RUN edgedb instance link --dsn=${EDGEDB_DSN_BUILD} --non-interactive --tls-security insecure db
+RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --tls-security insecure db
 RUN edgedb migrate -I db
 
 

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        EDGEDB_DSN_BUILD: ${EDGEDB_DSN_BUILD}
+        EDGEDB_DSN: ${EDGEDB_DSN}
     ports:
       - "8080:8080"
     command: >
