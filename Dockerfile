@@ -37,6 +37,7 @@ FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
 # Change ownership of the .config directory
 WORKDIR /myapp
 COPY --from=base /myapp/.bleep/builds/normal/.bloop/back/dist /myapp/dist
+COPY --from=edgedb /myapp/edgedb.toml /myapp/dist/edgedb.toml
 
 
 
