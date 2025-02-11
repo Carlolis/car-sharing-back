@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        EDGEDB_DSN_BUILD: ${EDGEDB_DSN_BUILD}
     ports:
       - "8080:8080"
     command: >
@@ -10,7 +12,6 @@ services:
     volumes:
       - "./dbschema:/dbschema"
     environment:
-      - 'EDGEDB_SERVER_SECURITY: insecure_dev_mode'
-      - 'EDGEDB_DSN_BUILD: ${EDGEDB_DSN_BUILD}'
-    user: "1000:1000"
+      EDGEDB_SERVER_SECURITY: insecure_dev_mode
+
 
