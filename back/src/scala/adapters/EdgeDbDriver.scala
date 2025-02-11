@@ -31,7 +31,7 @@ case class EdgeDbDriverLive(database: String = "main") {
   // val configPath    = Paths.get(ConfigUtils.getCredentialsDir, "backend" + ".json")
 
   private val client = new EdgeDBClient(connection)
-
+  
   def querySingle[A](
     cls: Class[A],
     query: String

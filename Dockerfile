@@ -1,10 +1,10 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
-RUN echo "EDGEDB_DSN_BUILD=${EDGEDB_DSN_BUILD}"
+ARG EDGEDB_DSN_BUILD
+RUN echo "DSN is =${EDGEDB_DSN_BUILD}"
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
-COPY credentials.json /myapp/credentials.json
 RUN edgedb instance link --dsn=${EDGEDB_DSN_BUILD} --non-interactive db
 RUN edgedb migrate -I db
 
@@ -37,7 +37,6 @@ FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
 # Change ownership of the .config directory
 WORKDIR /myapp
 COPY --from=base /myapp/.bleep/builds/normal/.bloop/back/dist /myapp/dist
-COPY --from=edgedb /myapp/credentials.json /myapp/dist/credentials.json
 
 
 

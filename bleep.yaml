@@ -42,8 +42,8 @@ projects:
     scala:
       version: 3.6.2
 scripts:
-  publishDocker:
-    main: back.scripts.DockerPublishForBack
+  migrate:
+    main: back.scripts.EdgeDbMigrate
     project: scripts
 templates:
   template-common:
