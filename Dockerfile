@@ -1,11 +1,11 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
-
+ARG EDGEDB_DSN_BUILD
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
 COPY credentials.json /myapp/credentials.json
-RUN edgedb instance link --dsn=$EDGEDB_DSN --non-interactive db
+RUN edgedb instance link --dsn=$EDGEDB_DSN_BUILD --non-interactive db
 RUN edgedb migrate -I db
 
 
