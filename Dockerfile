@@ -1,7 +1,6 @@
 # pull in EdgeDB CLI
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
-ARG EDGEDB_DSN_BUILD
 RUN echo "EDGEDB_DSN_BUILD=$EDGEDB_DSN_BUILD"
 COPY edgedb.toml /myapp/edgedb.toml
 COPY dbschema /myapp/dbschema
