@@ -10,7 +10,7 @@ services:
     volumes:
       - "./dbschema:/dbschema"
     environment:
-      EDGEDB_SERVER_SECURITY: insecure_dev_mode
-      EDGEDB_DSN_BUILD: ${EDGEDB_DSN_BUILD}
+      - 'EDGEDB_SERVER_SECURITY: insecure_dev_mode'
+      - 'EDGEDB_DSN_BUILD: ${EDGEDB_DSN_BUILD}'
     user: "1000:1000"
 
