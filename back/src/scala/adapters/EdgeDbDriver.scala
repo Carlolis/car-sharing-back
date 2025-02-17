@@ -7,13 +7,12 @@ import scala.io.Source.fromFile
 import scala.jdk.CollectionConverters.*
 
 case class EdgeDbDriverLive(database: String = "main") {
-/*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
+  /*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
+  private var EDGEDB_DSN: String =
+    sys.env.getOrElse("EDGEDB_DSN", s"edgedb://edgedb:password@localhost:10700/$database?tls_security=insecure")
 
-
-  private var EDGEDB_DSN: String = sys.env.getOrElse("EDGEDB_DSN", s"edgedb://edgedb:password@localhost:10700/$database?tls_security=insecure")
-
-  private val connection    = EdgeDBConnection.fromDSN(EDGEDB_DSN)
-   /* .builder()
+  private val connection = EdgeDBConnection.fromDSN(EDGEDB_DSN)
+  /* .builder()
     .withDatabase(
       database
     )
@@ -31,7 +30,7 @@ case class EdgeDbDriverLive(database: String = "main") {
   // val configPath    = Paths.get(ConfigUtils.getCredentialsDir, "backend" + ".json")
 
   private val client = new EdgeDBClient(connection)
-  
+
   def querySingle[A](
     cls: Class[A],
     query: String
@@ -58,6 +57,6 @@ case class EdgeDbDriverLive(database: String = "main") {
 }
 
 object EdgeDbDriver {
-  val layer: ULayer[EdgeDbDriverLive] = ZLayer.succeed(EdgeDbDriverLive())
+  val layer: ULayer[EdgeDbDriverLive]     = ZLayer.succeed(EdgeDbDriverLive())
   val testLayer: ULayer[EdgeDbDriverLive] = ZLayer.succeed(EdgeDbDriverLive("test"))
 }

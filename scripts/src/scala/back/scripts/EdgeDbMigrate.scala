@@ -14,7 +14,6 @@ object EdgeDbMigrate extends BleepScript("EdgeDbMigrate") {
   else getEnvOrThrow(devEnv)
 
   override def run(started: Started, commands: Commands, args: List[String]): Unit =
-
     started.logger.info("This script is here to run EdgeDb migrations.")
 
   cli(
