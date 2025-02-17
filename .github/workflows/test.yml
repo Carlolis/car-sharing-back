@@ -1,0 +1,28 @@
+name: Test
+on:
+  push:
+    branches: [ 'master' ]
+
+jobs:
+  test:
+    timeout-minutes: 15
+    # need to be newer than `ubuntu-20.04` because of scalafmt native binary
+    runs-on: ubuntu-latest
+    env:
+      EDGEDB_DSN: edgedb://localhost:5656
+      EDGEDB_SERVER_SECURITY: insecure_dev_mode
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: bleep-build/bleep-setup-action@0.0.2
+      - uses: coursier/cache-action@v6
+        with:
+          extraFiles: bleep.yaml
+      - uses: edgedb/setup-edgedb@v1
+        with:
+          server-dsn: edgedb://localhost:5656
+      - name: Bleep test
+        run: edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --tls-security insecure db
+             edgedb migrate -I db
+             bleep test
