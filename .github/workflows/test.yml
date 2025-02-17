@@ -18,6 +18,5 @@ jobs:
       - uses: coursier/cache-action@v6
       - name: Bleep test
         run: |
-             edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --tls-security insecure db
-             edgedb migrate -I db
+             edgedb migrate 
              bleep test
