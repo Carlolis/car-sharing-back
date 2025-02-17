@@ -8,12 +8,12 @@ jobs:
     timeout-minutes: 15
     # need to be newer than `ubuntu-20.04` because of scalafmt native binary
     runs-on: ubuntu-latest
-    env:
-      EDGEDB_DSN: edgedb://localhost:5656
     steps:
       - uses: actions/checkout@v4
       - uses: bleep-build/bleep-setup-action@0.0.2
       - uses: edgedb/setup-edgedb@v1
+        with:
+          server-dsn: edgedb://localhost:5656
       - uses: coursier/cache-action@v6
       - name: Bleep test
         run: |
