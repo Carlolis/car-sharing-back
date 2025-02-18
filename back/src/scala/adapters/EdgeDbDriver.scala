@@ -29,7 +29,7 @@ case class EdgeDbDriverLive(database: String = "main") {
   // Config and passwords can be found here :
   // val configPath    = Paths.get(ConfigUtils.getCredentialsDir, "backend" + ".json")
 
-  private val client = new EdgeDBClient(connection)
+  private val client = new EdgeDBClient()
 
   def querySingle[A](
     cls: Class[A],
