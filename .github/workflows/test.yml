@@ -9,7 +9,7 @@ jobs:
     # need to be newer than `ubuntu-20.04` because of scalafmt native binary
     runs-on: ubuntu-latest
     env:
-      EDGEDB_DSN: edgedb://edgedb@localhost:10700/main?tls_security=insecure
+      CI: true
     steps:
       - uses: actions/checkout@v4
       - uses: bleep-build/bleep-setup-action@0.0.2
