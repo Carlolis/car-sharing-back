@@ -3,7 +3,8 @@ package domain.services.ia.edgedb
 import adapters.EdgeDbDriverLive
 import domain.models.ia.*
 import domain.services.ia.IAService
-import domain.services.ia.edgedb.models.WriterEdge
+import domain.services.ia.edgedb.models.*
+
 import zio.*
 
 import java.util.UUID
@@ -53,6 +54,21 @@ case class IAServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends IAService {
           |"""
     ).tap(writer => ZIO.logInfo(s"Got writer with name: $name"))
     .map(Writer.fromWriterEdge)
+
+  override def createChatSession(writerId: UUID,name:String): Task[UUID] = edgeDb
+    .querySingle(
+      classOf[UUID],
+      s"WITH new_chat := ( INSERT ChatSessionEdge { title := '$name' }), update_writer := ( UPDATE WriterEdge FILTER .id = <uuid>'$writerId' SET { chats += new_chat }) SELECT new_chat.id;"
+    ).tapBoth(error => ZIO.logError(s"Error creating chat session with : $error"), UUID => ZIO.logInfo(s"Created chat session with id: $UUID"))
+
+  override def getChatById(chatId: UUID): Task[ChatSession] = edgeDb
+    .querySingle(
+      classOf[ChatSessionEdge],
+      s"""
+          | select ChatSessionEdge { id, title } filter .id = <uuid>'$chatId';
+          |"""
+    ).tap(chat => ZIO.logInfo(s"Got chat session with id: $chatId"))
+    .map(ChatSession.fromChatSessionEdge)
 }
 
 object IAServiceEdgeDb:

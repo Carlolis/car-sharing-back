@@ -12,6 +12,8 @@ trait IAService {
   def getAll: Task[Set[Writer]]
   def getWriter(id: UUID): Task[Writer]
   def getWriterByName(name: String): Task[Writer]
+  def createChatSession(writerId :UUID,name:String): Task[UUID]
+  def getChatById(chatId: UUID): Task[ChatSession]
 }
 
 object IAService:
@@ -25,3 +27,7 @@ object IAService:
     ZIO.serviceWithZIO[IAService](_.getWriter(id))
   def getWriterByName(name: String): RIO[IAService, Writer]          =
     ZIO.serviceWithZIO[IAService](_.getWriterByName(name))
+  def createChatSession(writerId: UUID,name:String): RIO[IAService, UUID]        =
+    ZIO.serviceWithZIO[IAService](_.createChatSession(writerId,name:String))
+  def getChatById(chatId: UUID): RIO[IAService, ChatSession]         =
+    ZIO.serviceWithZIO[IAService](_.getChatById(chatId))

@@ -13,14 +13,13 @@ module default {
 
   type WriterEdge {
     required name: str;
-    multi chats : ChatEdge{
+    multi chats : ChatSessionEdge{
              constraint exclusive;
     }
   }
 
-  type ChatEdge {
+  type ChatSessionEdge {
       required title: str;
-      required date: cal::local_datetime;
       multi messages: MessageEdge{
                constraint exclusive;
       }

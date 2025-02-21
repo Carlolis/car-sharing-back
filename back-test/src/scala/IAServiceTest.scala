@@ -23,7 +23,7 @@ object IAServiceTest extends ZIOSpecDefault {
         } yield assertTrue(UUID != null, person.name == personName)
       }
 
-      test("Delete Maé person") {
+      test("Delete Maé writer") {
 
         for {
 
@@ -33,7 +33,7 @@ object IAServiceTest extends ZIOSpecDefault {
 
         } yield assertTrue(notFound.isLeft)
       }
-      test("Get all persons") {
+      test("Get all writers") {
         val personName            = "charles"
         val charles: WriterCreate = WriterCreate(personName)
         for {
@@ -42,6 +42,17 @@ object IAServiceTest extends ZIOSpecDefault {
           allWriters <- IAService.getAll
 
         } yield assertTrue(allWriters.nonEmpty)
+      }
+
+      test("Create a chat session") {
+        val personName = "charles"
+        val charles: WriterCreate = WriterCreate(personName)
+        for {
+          maéUUID <- IAService.createWriter(maé)
+          chatUUID <- IAService.createChatSession(maéUUID,"chat name")
+          chatSession <- IAService.getChatById(chatUUID)
+          _<- ZIO.logInfo("Chat Session "+chatSession)
+        } yield assertTrue(chatSession.id == chatUUID)
       }
     }
       @@ TestAspect

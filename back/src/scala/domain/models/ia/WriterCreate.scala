@@ -5,12 +5,15 @@ import zio.json.*
 
 case class WriterCreate(
   name: String
-) {
-  def toPersonEdge: WriterCreateEdge =
-    WriterCreateEdge(name)
-}
+) 
 
-object PersonCreate {
+object WriterCreate {
   implicit val encoder: JsonEncoder[WriterCreate] = DeriveJsonEncoder.gen[WriterCreate]
   implicit val decoder: JsonDecoder[WriterCreate] = DeriveJsonDecoder.gen[WriterCreate]
+
+  def toWriterEdge(writer: WriterCreate): WriterCreateEdge = {
+    WriterCreateEdge(
+      name = writer.name
+    )
+  }
 }
