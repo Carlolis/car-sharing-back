@@ -41,10 +41,6 @@ projects:
       name: jvm
     scala:
       version: 3.6.2
-scripts:
-  migrate:
-    main: back.scripts.EdgeDbMigrate
-    project: scripts
 templates:
   template-common:
     platform:
