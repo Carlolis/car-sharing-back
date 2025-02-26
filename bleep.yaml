@@ -6,7 +6,7 @@ projects:
   back:
     dependencies:
       - com.auth0:java-jwt:4.4.0
-      - com.edgedb:driver:0.3.0
+      - com.geldata:driver:0.4.0
       - com.softwaremill.sttp.tapir::tapir-core:1.11.10
       - com.softwaremill.sttp.tapir::tapir-json-zio:1.11.10
       - com.softwaremill.sttp.tapir::tapir-swagger-ui-bundle:1.11.10

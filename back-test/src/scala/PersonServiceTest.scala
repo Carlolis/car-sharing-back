@@ -1,7 +1,7 @@
-import adapters.EdgeDbDriver
+import adapters.GelDriver
 import domain.models.PersonCreate
 import domain.services.person.PersonService
-import domain.services.person.edgedb.PersonServiceEdgeDb
+import domain.services.person.gel.PersonServiceGel
 import zio.ZIO
 import zio.test.*
 
@@ -10,7 +10,7 @@ object PersonServiceTest extends ZIOSpecDefault {
   val maé: PersonCreate = PersonCreate(personName)
 
   def spec =
-    (suiteAll("TripServiceTest in EdgeDb") {
+    (suiteAll("TripServiceTest in Gel") {
 
       test("Create Maé person") {
 
@@ -55,7 +55,7 @@ object PersonServiceTest extends ZIOSpecDefault {
 
         }
       @@ TestAspect.sequential).provideShared(
-      PersonServiceEdgeDb.layer,
-      EdgeDbDriver.testLayer
+      PersonServiceGel.layer,
+      GelDriver.testLayer
     )
 }

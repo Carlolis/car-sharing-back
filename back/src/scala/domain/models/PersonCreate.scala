@@ -1,13 +1,13 @@
 package domain.models
 
-import domain.services.person.edgedb.models.PersonCreateEdge
+import domain.services.person.gel.models.PersonCreateGel
 import zio.json.*
 
 case class PersonCreate(
   name: String
 ) {
-  def toPersonEdge: PersonCreateEdge =
-    PersonCreateEdge(name)
+  def toPersonGel: PersonCreateGel =
+    PersonCreateGel(name)
 }
 
 object PersonCreate {

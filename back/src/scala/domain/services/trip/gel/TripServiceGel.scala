@@ -1,14 +1,14 @@
-package domain.services.trip.edgedb
+package domain.services.trip.gel
 
-import adapters.EdgeDbDriverLive
+import adapters.GelDriverLive
 import domain.models.*
 import domain.services.trip.TripService
-import domain.services.trip.edgedb.models.TripEdge
+import domain.services.trip.gel.models.TripGel
 import zio.*
 
 import java.util.UUID
 
-case class TripServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends TripService {
+case class TripServiceGel(edgeDb: GelDriverLive) extends TripService {
   // TODO: Implement actual database storage
   private val trips: List[Trip] = List.empty
   private val knownPersons      =
@@ -21,10 +21,10 @@ case class TripServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends TripService {
       .querySingle(
         classOf[UUID],
         s"""
-          |  with new_trip := (insert TripEdge { name := '${tripCreate.name}', distance := ${tripCreate.distance}, date := cal::to_local_date(${tripCreate
+          |  with new_trip := (insert TripGel { name := '${tripCreate.name}', distance := ${tripCreate.distance}, date := cal::to_local_date(${tripCreate
             .date.getYear}, ${tripCreate
             .date.getMonthValue}, ${tripCreate
-            .date.getDayOfMonth}), edgeDrivers := (select detached default::PersonEdge filter .name in ${tripCreate
+            .date.getDayOfMonth}), edgeDrivers := (select detached default::PersonGel filter .name in ${tripCreate
             .drivers.mkString("{'", "','", "'}")}) }) select new_trip.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID"))
@@ -32,14 +32,14 @@ case class TripServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends TripService {
   override def getUserTrips(personName: String): Task[TripStats] =
     edgeDb
       .query(
-        classOf[TripEdge],
+        classOf[TripGel],
         s"""
-          | select TripEdge { id, distance, date, name, edgeDrivers: { name } } filter .edgeDrivers.name = <str>'$personName'  ;
+          | select TripGel { id, distance, date, name, edgeDrivers: { name } } filter .edgeDrivers.name = <str>'$personName'  ;
           |"""
       )
-      .map { tripEdge =>
+      .map { tripGel =>
 
-        val trips   = tripEdge.map(Trip.fromTripEdge)
+        val trips   = tripGel.map(Trip.fromTripGel)
         val totalKm = trips.map(_.distance).sum
 
         TripStats(trips, totalKm)
@@ -52,7 +52,7 @@ case class TripServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends TripService {
       .querySingle(
         classOf[String],
         s"""
-           | delete TripEdge filter .id = <uuid>'$id';
+           | delete TripGel filter .id = <uuid>'$id';
            | select '$id';
            |"""
       )
@@ -61,6 +61,6 @@ case class TripServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends TripService {
   override def updateTrip(tripUpdate: Trip): Task[UUID] = ???
 }
 
-object TripServiceEdgeDb:
-  val layer: ZLayer[EdgeDbDriverLive, Nothing, TripService] =
-    ZLayer.fromFunction(TripServiceEdgeDb(_))
+object TripServiceGel:
+  val layer: ZLayer[GelDriverLive, Nothing, TripService] =
+    ZLayer.fromFunction(TripServiceGel(_))

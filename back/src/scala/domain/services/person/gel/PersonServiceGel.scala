@@ -1,19 +1,19 @@
-package domain.services.person.edgedb
+package domain.services.person.gel
 
-import adapters.EdgeDbDriverLive
+import adapters.GelDriverLive
 import domain.models.*
 import domain.services.person.PersonService
-import domain.services.person.edgedb.models.PersonEdge
+import domain.services.person.gel.models.PersonGel
 import zio.*
 
 import java.util.UUID
 
-case class PersonServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends PersonService {
+case class PersonServiceGel(edgeDb: GelDriverLive) extends PersonService {
   override def createPerson(personCreate: PersonCreate): Task[UUID] = edgeDb
     .querySingle(
       classOf[UUID],
       s"""
-          |  with new_person := (insert PersonEdge { name := '${personCreate.name}' }) select new_person.id;
+          |  with new_person := (insert PersonGel { name := '${personCreate.name}' }) select new_person.id;
           |"""
     ).tapBoth(error => ZIO.logError(s"Created person with id: $error"), UUID => ZIO.logInfo(s"Created person with id: $UUID"))
 
@@ -21,7 +21,7 @@ case class PersonServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends PersonService {
     .querySingle(
       classOf[String],
       s"""
-          | delete PersonEdge filter .id = <uuid>'$id';
+          | delete PersonGel filter .id = <uuid>'$id';
           | select '$id';
           |"""
     )
@@ -29,32 +29,32 @@ case class PersonServiceEdgeDb(edgeDb: EdgeDbDriverLive) extends PersonService {
 
   override def getAll: Task[Set[Person]] = edgeDb
     .query(
-      classOf[PersonEdge],
+      classOf[PersonGel],
       s"""
-          | select PersonEdge { id, name };
+          | select PersonGel { id, name };
           |"""
     )
-    .map(_.toSet).map(persons => persons.map(Person.fromPersonEdge))
+    .map(_.toSet).map(persons => persons.map(Person.fromPersonGel))
 
   override def getPerson(id: UUID): Task[Person] = edgeDb
     .querySingle(
-      classOf[PersonEdge],
+      classOf[PersonGel],
       s"""
-          | select PersonEdge { id, name } filter .id = <uuid>'$id';
+          | select PersonGel { id, name } filter .id = <uuid>'$id';
           |"""
     ).tap(person => ZIO.logInfo(s"Got person with id: $id"))
-    .map(Person.fromPersonEdge)
+    .map(Person.fromPersonGel)
 
   override def getPersonByName(name: String): Task[Person] = edgeDb
     .querySingle(
-      classOf[PersonEdge],
+      classOf[PersonGel],
       s"""
-          | select PersonEdge { id, name } filter .name = '$name';
+          | select PersonGel { id, name } filter .name = '$name';
           |"""
     ).tap(person => ZIO.logInfo(s"Got person with name: $name"))
-    .map(Person.fromPersonEdge)
+    .map(Person.fromPersonGel)
 }
 
-object PersonServiceEdgeDb:
-  val layer: ZLayer[EdgeDbDriverLive, Nothing, PersonService] =
-    ZLayer.fromFunction(PersonServiceEdgeDb(_))
+object PersonServiceGel:
+  val layer: ZLayer[GelDriverLive, Nothing, PersonService] =
+    ZLayer.fromFunction(PersonServiceGel(_))

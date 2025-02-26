@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: bleep-build/bleep-setup-action@0.0.2
-      - uses: edgedb/setup-edgedb@v1
+      - uses: geldata/setup-geldata@v1
       - uses: coursier/cache-action@v6
       - name: Bleep test
         run: |
-             edgedb migrate 
+             gel migrate 
              bleep test

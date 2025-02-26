@@ -1,6 +1,6 @@
 package domain.models.ia
 
-import domain.services.ia.edgedb.models.WriterEdge
+import domain.services.ia.gel.models.WriterGel
 import zio.json.*
 
 import java.util.UUID
@@ -14,9 +14,9 @@ object Writer {
   implicit val encoder: JsonEncoder[Writer] = DeriveJsonEncoder.gen[Writer]
   implicit val decoder: JsonDecoder[Writer] = DeriveJsonDecoder.gen[Writer]
 
-  def toWriterEdge(person: Writer): WriterEdge =
-    WriterEdge(person.name, person.id)
+  def toWriterGel(person: Writer): WriterGel =
+    WriterGel(person.name, person.id)
 
-  def fromWriterEdge(personEdge: WriterEdge): Writer =
-    Writer(personEdge.name, personEdge.id)
+  def fromWriterGel(personGel: WriterGel): Writer =
+    Writer(personGel.name, personGel.id)
 }

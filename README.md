@@ -1,18 +1,18 @@
 ## Project Name
 
-This project is a Scala 3 application using EdgeDB for database management and Bleep for build automation.
+This project is a Scala 3 application using GelDB for database management and Bleep for build automation.
 
 ### Prerequisites
 
 - Scala 3
-- EdgeDB
+- GelDB
 - Bleep
 
 ### Setup
 
-#### Install EdgeDB
+#### Install GelDB
 
-Follow the [EdgeDB installation guide](https://www.edgedb.com/docs/guides/deployment/installation) to install EdgeDB on your system.
+Follow the [GelDB installation guide](https://wwwgeldatacom/docs/guides/deployment/installation) to install GelDB on your system.
 
 #### Install Bleep
 
@@ -20,15 +20,15 @@ Follow the [Bleep installation guide](https://bleep.build/docs/install) to insta
 
 ### Configuration
 
-1. **EdgeDB Configuration:**
+1. **GelDB Configuration:**
 
-   Ensure that EdgeDB is running and properly configured. You can start EdgeDB with:
+   Ensure that GelDB is running and properly configured. You can start GelDB with:
 
    ```sh
    edgedb server start
    ```
 
-   Create a new EdgeDB project:
+   Create a new GelDB project:
 
    ```sh
    edgedb project init
@@ -74,14 +74,14 @@ bleep test
 - `src/test/scala`: Test source code
 - `bleep.yaml`: Bleep build configuration file
 
-### EdgeDB Integration
+### GelDB Integration
 
-This project uses EdgeDB for database operations. The `TripServiceEdgeDb` class in `TripServiceEdgeDb.scala` handles database interactions.
+This project uses GelDB for database operations. The `TripServiceGel` class in `TripServiceGel.scala` handles database interactions.
 
 ### Additional Resources
 
 - [Scala 3 Documentation](https://docs.scala-lang.org/scala3/)
-- [EdgeDB Documentation](https://www.edgedb.com/docs)
+- [GelDB Documentation](https://wwwgeldatacom/docs)
 - [Bleep Documentation](https://bleep.build/docs/)
 
 ### License

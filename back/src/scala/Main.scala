@@ -1,9 +1,9 @@
-import adapters.EdgeDbDriver
+import adapters.GelDriver
 import api.TripRoutes
-import domain.services.person.edgedb.PersonServiceEdgeDb
+import domain.services.person.gel.PersonServiceGel
 import domain.services.services.AuthServiceLive
 import domain.services.trip.TripService
-import domain.services.trip.edgedb.TripServiceEdgeDb
+import domain.services.trip.gel.TripServiceGel
 import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin
 import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
@@ -45,8 +45,8 @@ object Main extends ZIOAppDefault:
       Server.defaultWithPort(port),
       // AuthService.layer,
       TripRoutes.live,
-      TripServiceEdgeDb.layer,
-      PersonServiceEdgeDb.layer,
-      EdgeDbDriver.layer,
+      TripServiceGel.layer,
+      PersonServiceGel.layer,
+      GelDriver.layer,
       AuthServiceLive.layer
     )

@@ -1,17 +1,17 @@
 package adapters
 
-import com.edgedb.driver.{EdgeDBClient, EdgeDBConnection, TLSSecurityMode}
+import com.geldata.driver.{GelClientPool,  TLSSecurityMode,GelConnection}
 import zio.*
 
 import scala.io.Source.fromFile
 import scala.jdk.CollectionConverters.*
 
-case class EdgeDbDriverLive(database: String = "main") {
+case class GelDriverLive(database: String = "main") {
   /*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
   private var EDGEDB_DSN: String =
     sys.env.getOrElse("EDGEDB_DSN", s"edgedb://edgedb:password@localhost:10700/$database?tls_security=insecure")
 
-  private val connection = EdgeDBConnection.fromDSN(EDGEDB_DSN)
+  private val connection = GelConnection.builder().withDsn(EDGEDB_DSN).build()
   /* .builder()
     .withDatabase(
       database
@@ -30,9 +30,9 @@ case class EdgeDbDriverLive(database: String = "main") {
   // val configPath    = Paths.get(ConfigUtils.getCredentialsDir, "backend" + ".json")
   private var CI: String =
     sys.env.getOrElse("CI", "false")
-  private var client = new EdgeDBClient(connection)
+  private var client = new GelClientPool(connection)
   if (CI == "true") {
-    client = new EdgeDBClient()
+    client = new GelClientPool()
     }
 
 
@@ -61,7 +61,7 @@ case class EdgeDbDriverLive(database: String = "main") {
       )
 }
 
-object EdgeDbDriver {
-  val layer: ULayer[EdgeDbDriverLive]     = ZLayer.succeed(EdgeDbDriverLive())
-  val testLayer: ULayer[EdgeDbDriverLive] = ZLayer.succeed(EdgeDbDriverLive("test"))
+object GelDriver {
+  val layer: ULayer[GelDriverLive]     = ZLayer.succeed(GelDriverLive())
+  val testLayer: ULayer[GelDriverLive] = ZLayer.succeed(GelDriverLive("test"))
 }

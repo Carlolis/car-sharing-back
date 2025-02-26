@@ -1,6 +1,6 @@
 package domain.models
 
-import domain.services.trip.edgedb.models.TripEdge
+import domain.services.trip.gel.models.TripGel
 import zio.json.*
 
 import java.time.LocalDate
@@ -18,13 +18,13 @@ case class Trip(
 object Trip {
   implicit val encoder: JsonEncoder[Trip]    = DeriveJsonEncoder.gen[Trip]
   implicit val decoder: JsonDecoder[Trip]    = DeriveJsonDecoder.gen[Trip]
-  def fromTripEdge(tripEdge: TripEdge): Trip =
+  def fromTripGel(tripGel: TripGel): Trip =
     Trip(
-      tripEdge.getId,
-      tripEdge.getDistance,
-      tripEdge.getDate,
-      tripEdge.getName,
-      tripEdge.getDrivers.asScala.map(p => PersonCreate(p.name)).toSet
+      tripGel.getId,
+      tripGel.getDistance,
+      tripGel.getDate,
+      tripGel.getName,
+      tripGel.getDrivers.asScala.map(p => PersonCreate(p.name)).toSet
     )
 }
 

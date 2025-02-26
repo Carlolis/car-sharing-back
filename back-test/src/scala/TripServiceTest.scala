@@ -1,9 +1,9 @@
-import adapters.EdgeDbDriver
+import adapters.GelDriver
 import domain.models.{PersonCreate, TripCreate}
 import domain.services.person.PersonService
-import domain.services.person.edgedb.PersonServiceEdgeDb
+import domain.services.person.gel.PersonServiceGel
 import domain.services.trip.TripService
-import domain.services.trip.edgedb.TripServiceEdgeDb
+import domain.services.trip.gel.TripServiceGel
 import zio.test.*
 import zio.test.Assertion.*
 import zio.{ZIO, ZLayer}
@@ -17,7 +17,7 @@ object TripServiceTest extends ZIOSpecDefault {
     TripCreate(100, LocalDate.now(), "Business", Set(personName))
 
   def spec =
-    (suiteAll("TripServiceTest in EdgeDb") {
+    (suiteAll("TripServiceTest in Gel") {
 
       test("Maé createTrip should create a trip successfully with Maé") {
 
@@ -68,8 +68,8 @@ object TripServiceTest extends ZIOSpecDefault {
 
         }
       @@ TestAspect.sequential).provideShared(
-      TripServiceEdgeDb.layer,
-      PersonServiceEdgeDb.layer,
-      EdgeDbDriver.testLayer
+      TripServiceGel.layer,
+      PersonServiceGel.layer,
+      GelDriver.testLayer
     )
 }

@@ -1,4 +1,4 @@
-# pull in EdgeDB CLI
+# pull in GelDB CLI
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
 ARG EDGEDB_DSN

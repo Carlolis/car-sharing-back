@@ -1,31 +1,31 @@
 module default {
-  type TripEdge {
+  type TripGel {
     required name: str;
     required date: cal::local_date;
     required distance: int16;
-    required multi edgeDrivers: PersonEdge;
+    required multi gelDrivers: PersonGel;
   }
 
-  type PersonEdge {
+  type PersonGel {
     required name: str;
-    multi drive_in := .<edgeDrivers[is TripEdge];
+    multi drive_in := .<gelDrivers[is TripGel];
   }
 
-  type WriterEdge {
+  type WriterGel {
     required name: str;
-    multi chats : ChatSessionEdge{
+    multi chats : ChatSessionGel{
              constraint exclusive;
     }
   }
 
-  type ChatSessionEdge {
+  type ChatSessionGel {
       required title: str;
-      multi messages: MessageEdge{
+      multi messages: MessageGel{
                constraint exclusive;
       }
   }
 
-  type MessageEdge {
+  type MessageGel {
         required question: str;
         required answer: str;
   }

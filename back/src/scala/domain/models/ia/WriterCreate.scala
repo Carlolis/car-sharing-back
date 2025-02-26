@@ -1,6 +1,6 @@
 package domain.models.ia
 
-import domain.services.ia.edgedb.models.WriterCreateEdge
+import domain.services.ia.gel.models.WriterCreateGel
 import zio.json.*
 
 case class WriterCreate(
@@ -11,8 +11,8 @@ object WriterCreate {
   implicit val encoder: JsonEncoder[WriterCreate] = DeriveJsonEncoder.gen[WriterCreate]
   implicit val decoder: JsonDecoder[WriterCreate] = DeriveJsonDecoder.gen[WriterCreate]
 
-  def toWriterEdge(writer: WriterCreate): WriterCreateEdge = {
-    WriterCreateEdge(
+  def toWriterGel(writer: WriterCreate): WriterCreateGel = {
+    WriterCreateGel(
       name = writer.name
     )
   }

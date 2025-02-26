@@ -1,8 +1,8 @@
-import adapters.EdgeDbDriver
+import adapters.GelDriver
 import domain.models.ia.*
 
 import domain.services.ia.IAService
-import domain.services.ia.edgedb.IAServiceEdgeDb
+import domain.services.ia.gel.IAServiceGel
 import zio.ZIO
 import zio.test.*
 
@@ -11,7 +11,7 @@ object IAServiceTest extends ZIOSpecDefault {
   val maé: WriterCreate = WriterCreate(personName)
 
   def spec =
-    (suiteAll("IAServiceTest in EdgeDb") {
+    (suiteAll("IAServiceTest in Gel") {
 
       test("Create Maé writer") {
 
@@ -67,7 +67,7 @@ object IAServiceTest extends ZIOSpecDefault {
 
         }
       @@ TestAspect.sequential).provideShared(
-      IAServiceEdgeDb.layer,
-      EdgeDbDriver.testLayer
+      IAServiceGel.layer,
+      GelDriver.testLayer
     )
 }

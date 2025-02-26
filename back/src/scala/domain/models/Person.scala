@@ -1,6 +1,6 @@
 package domain.models
 
-import domain.services.person.edgedb.models.PersonEdge
+import domain.services.person.gel.models.PersonGel
 import zio.json.*
 
 import java.util.UUID
@@ -14,9 +14,9 @@ object Person {
   implicit val encoder: JsonEncoder[Person] = DeriveJsonEncoder.gen[Person]
   implicit val decoder: JsonDecoder[Person] = DeriveJsonDecoder.gen[Person]
 
-  def toPersonEdge(person: Person): PersonEdge =
-    PersonEdge(person.name, person.id)
+  def toPersonGel(person: Person): PersonGel =
+    PersonGel(person.name, person.id)
 
-  def fromPersonEdge(personEdge: PersonEdge): Person =
-    Person(personEdge.name, personEdge.id)
+  def fromPersonGel(personGel: PersonGel): Person =
+    Person(personGel.name, personGel.id)
 }
