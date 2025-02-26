@@ -17,6 +17,5 @@ jobs:
       - uses: coursier/cache-action@v6
       - name: Bleep test
         run: |
-             edgedb query "SELECT 'Hello from GitHub Actions'"
-             edgedb migrate 
-             bleep test
+          edgedb migrate 
+          bleep test
