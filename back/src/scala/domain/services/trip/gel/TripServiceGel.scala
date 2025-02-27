@@ -8,7 +8,7 @@ import zio.*
 
 import java.util.UUID
 
-case class TripServiceGel(edgeDb: GelDriverLive) extends TripService {
+case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
   // TODO: Implement actual database storage
   private val trips: List[Trip] = List.empty
   private val knownPersons      =
@@ -17,24 +17,24 @@ case class TripServiceGel(edgeDb: GelDriverLive) extends TripService {
   override def createTrip(
     tripCreate: TripCreate
   ): Task[UUID] =
-    edgeDb
+    gelDb
       .querySingle(
         classOf[UUID],
         s"""
           |  with new_trip := (insert TripGel { name := '${tripCreate.name}', distance := ${tripCreate.distance}, date := cal::to_local_date(${tripCreate
             .date.getYear}, ${tripCreate
             .date.getMonthValue}, ${tripCreate
-            .date.getDayOfMonth}), edgeDrivers := (select detached default::PersonGel filter .name in ${tripCreate
+            .date.getDayOfMonth}), gelDrivers := (select detached default::PersonGel filter .name in ${tripCreate
             .drivers.mkString("{'", "','", "'}")}) }) select new_trip.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID"))
 
   override def getUserTrips(personName: String): Task[TripStats] =
-    edgeDb
+    gelDb
       .query(
         classOf[TripGel],
         s"""
-          | select TripGel { id, distance, date, name, edgeDrivers: { name } } filter .edgeDrivers.name = <str>'$personName'  ;
+          | select TripGel { id, distance, date, name, gelDrivers: { name } } filter .gelDrivers.name = <str>'$personName'  ;
           |"""
       )
       .map { tripGel =>
@@ -48,7 +48,7 @@ case class TripServiceGel(edgeDb: GelDriverLive) extends TripService {
   override def getTotalStats: Task[TripStats] = ZIO.succeed(TripStats(List.empty, 0))
 
   override def deleteTrip(id: UUID): Task[UUID] =
-    edgeDb
+    gelDb
       .querySingle(
         classOf[String],
         s"""

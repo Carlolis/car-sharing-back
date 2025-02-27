@@ -16,13 +16,13 @@ class TripGel @GelDeserializer() (
   date: LocalDate,
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
-  edgeDrivers: util.Collection[PersonCreateGel]
+  gelDrivers: util.Collection[PersonCreateGel]
 ) {
   def getId: UUID                                   = id
   def getDistance: Int                              = distance
   def getDate: LocalDate                            = date
   def getName: String                               = name
-  def getDrivers: util.Collection[PersonCreateGel] = edgeDrivers
+  def getDrivers: util.Collection[PersonCreateGel] = gelDrivers
 }
 
 case class TripGelCreate(
