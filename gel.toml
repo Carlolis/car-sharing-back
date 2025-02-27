@@ -1,5 +1,2 @@
-[gel]
+[edgedb]
 server-version = "6.1"
-
-[project]
-schema-dir = "dbschema"
