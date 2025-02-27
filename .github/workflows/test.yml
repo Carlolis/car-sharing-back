@@ -17,5 +17,5 @@ jobs:
       - uses: coursier/cache-action@v6
       - name: Bleep test
         run: |
-          edgedb migrate 
+          gel migrate 
           bleep test
