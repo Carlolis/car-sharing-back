@@ -17,7 +17,7 @@ jobs:
       - uses: coursier/cache-action@v6
       - name: Bleep test
         run: |
-          edgedb project init
+          edgedb project init --non-interactive
           edgedb self-upgrade
           edgedb migrate 
           bleep test
