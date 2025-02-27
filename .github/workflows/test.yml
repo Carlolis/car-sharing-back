@@ -18,6 +18,4 @@ jobs:
       - name: Bleep test
         run: |
           edgedb project init --non-interactive
-          edgedb self-upgrade
-          edgedb migrate 
           bleep test
