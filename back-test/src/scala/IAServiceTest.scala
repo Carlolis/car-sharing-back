@@ -12,7 +12,7 @@ object IAServiceTest extends ZIOSpecDefault {
 
   def spec =
     (suiteAll("IAServiceTest in Gel") {
-
+      val personNameCharles = "charles"
       test("Create Maé writer") {
 
         for {
@@ -34,19 +34,19 @@ object IAServiceTest extends ZIOSpecDefault {
         } yield assertTrue(notFound.isLeft)
       }
       test("Get all writers") {
-        val personName            = "charles"
-        val charles: WriterCreate = WriterCreate(personName)
+
+        val charles: WriterCreate = WriterCreate(personNameCharles)
         for {
           _          <- IAService.createWriter(maé)
           _          <- IAService.createWriter(charles)
-          allWriters <- IAService.getAll
+          allWriters <- IAService.getAllWriters
 
         } yield assertTrue(allWriters.nonEmpty)
       }
 
       test("Create a chat session") {
-        val personName = "charles"
-        val charles: WriterCreate = WriterCreate(personName)
+
+        val charles: WriterCreate = WriterCreate(personNameCharles)
         for {
           maéUUID <- IAService.createWriter(maé)
           chatUUID <- IAService.createChatSession(maéUUID,"chat name")
@@ -54,14 +54,28 @@ object IAServiceTest extends ZIOSpecDefault {
           _<- ZIO.logInfo("Chat Session "+chatSession)
         } yield assertTrue(chatSession.id == chatUUID)
       }
+
+      test("Delete a chat session") {
+
+        val charles: WriterCreate = WriterCreate(personNameCharles)
+        for {
+          maéUUID <- IAService.createWriter(maé)
+          chatUUID <- IAService.createChatSession(maéUUID, "chat name")
+          chatSession <- IAService.deleteChatById(chatUUID)
+          notFound <- IAService.getChatById(chatUUID).either
+          _ <- ZIO.logInfo("Chat Session " + chatSession)
+        } yield assertTrue(notFound.isLeft)
+      }
     }
       @@ TestAspect
         .after {
 
           (for {
 
-            allWriters <- IAService.getAll
+            allWriters <- IAService.getAllWriters
             _          <- ZIO.foreachDiscard(allWriters)(person => IAService.deleteWriter(person.id))
+            allChat <- IAService.getAllChats
+            _          <- ZIO.foreachDiscard(allChat)(chat => IAService.deleteChatById(chat.id))
 
           } yield ()).catchAll(e => ZIO.logError(e.getMessage))
 

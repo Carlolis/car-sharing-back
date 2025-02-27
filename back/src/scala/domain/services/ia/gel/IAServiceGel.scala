@@ -8,8 +8,8 @@ import zio.*
 
 import java.util.UUID
 
-case class IAServiceGel(edgeDb: GelDriverLive) extends IAService {
-  override def createWriter(writerCreate: WriterCreate): Task[UUID] = edgeDb
+case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
+  override def createWriter(writerCreate: WriterCreate): Task[UUID] = gelDriverLive
     .querySingle(
       classOf[UUID],
       s"""
@@ -17,17 +17,9 @@ case class IAServiceGel(edgeDb: GelDriverLive) extends IAService {
          |"""
     ).tapBoth(error => ZIO.logError(s"Error creating writer with : $error"), UUID => ZIO.logInfo(s"Created writer with id: $UUID"))
 
-  override def deleteWriter(id: UUID): Task[UUID] = edgeDb
-    .querySingle(
-      classOf[String],
-      s"""
-          | delete WriterGel filter .id = <uuid>'$id';
-          | select '$id';
-          |"""
-    )
-    .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted writer with id: $id"))
 
-  override def getAll: Task[Set[Writer]] = edgeDb
+
+  override def getAllWriters: Task[Set[Writer]] = gelDriverLive
     .query(
       classOf[WriterGel],
       s"""
@@ -36,7 +28,7 @@ case class IAServiceGel(edgeDb: GelDriverLive) extends IAService {
     )
     .map(_.toSet).map(writers => writers.map(Writer.fromWriterGel))
 
-  override def getWriter(id: UUID): Task[Writer] = edgeDb
+  override def getWriter(id: UUID): Task[Writer] = gelDriverLive
     .querySingle(
       classOf[WriterGel],
       s"""
@@ -45,7 +37,7 @@ case class IAServiceGel(edgeDb: GelDriverLive) extends IAService {
     ).tap(writer => ZIO.logInfo(s"Got writer with id: $id"))
     .map(Writer.fromWriterGel)
 
-  override def getWriterByName(name: String): Task[Writer] = edgeDb
+  override def getWriterByName(name: String): Task[Writer] = gelDriverLive
     .querySingle(
       classOf[WriterGel],
       s"""
@@ -54,13 +46,13 @@ case class IAServiceGel(edgeDb: GelDriverLive) extends IAService {
     ).tap(writer => ZIO.logInfo(s"Got writer with name: $name"))
     .map(Writer.fromWriterGel)
 
-  override def createChatSession(writerId: UUID,name:String): Task[UUID] = edgeDb
+  override def createChatSession(writerId: UUID,name:String): Task[UUID] = gelDriverLive
     .querySingle(
       classOf[UUID],
       s"WITH new_chat := ( INSERT ChatSessionGel { title := '$name' }), update_writer := ( UPDATE WriterGel FILTER .id = <uuid>'$writerId' SET { chats += new_chat }) SELECT new_chat.id;"
     ).tapBoth(error => ZIO.logError(s"Error creating chat session with : $error"), UUID => ZIO.logInfo(s"Created chat session with id: $UUID"))
 
-  override def getChatById(chatId: UUID): Task[ChatSession] = edgeDb
+  override def getChatById(chatId: UUID): Task[ChatSession] = gelDriverLive
     .querySingle(
       classOf[ChatSessionGel],
       s"""
@@ -68,6 +60,34 @@ case class IAServiceGel(edgeDb: GelDriverLive) extends IAService {
           |"""
     ).tap(chat => ZIO.logInfo(s"Got chat session with id: $chatId"))
     .map(ChatSession.fromChatSessionGel)
+  
+    override def deleteChatById(chatId: UUID): Task[UUID] = gelDriverLive
+    .querySingle(
+      classOf[String],
+      s"""
+          | delete ChatSessionGel filter .id = <uuid>'$chatId';
+          | select '$chatId';
+          |"""
+    ).map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted Chat with id: $chatId"))
+
+  override def deleteWriter(id: UUID): Task[UUID] = gelDriverLive
+    .querySingle(
+      classOf[String],
+      s"""
+         | delete WriterGel filter .id = <uuid>'$id';
+         | select '$id';
+         |"""
+    )
+    .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted writer with id: $id"))
+  
+  override def getAllChats : Task[Set[ChatSession]] = gelDriverLive
+    .query(
+      classOf[ChatSessionGel],
+      s"""
+          | select ChatSessionGel { id, title };
+          |"""
+    )
+    .map(_.toSet).map(chats => chats.map(ChatSession.fromChatSessionGel))
 }
 
 object IAServiceGel:

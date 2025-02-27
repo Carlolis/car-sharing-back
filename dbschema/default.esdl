@@ -15,6 +15,7 @@ module default {
     required name: str;
     multi chats : ChatSessionGel{
              constraint exclusive;
+             on target delete allow;
     }
   }
 
