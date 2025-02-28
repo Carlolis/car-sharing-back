@@ -17,8 +17,6 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
          |"""
     ).tapBoth(error => ZIO.logError(s"Error creating writer with : $error"), UUID => ZIO.logInfo(s"Created writer with id: $UUID"))
 
-
-
   override def getAllWriters: Task[Set[Writer]] = gelDriverLive
     .query(
       classOf[WriterGel],
@@ -46,11 +44,13 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
     ).tap(writer => ZIO.logInfo(s"Got writer with name: $name"))
     .map(Writer.fromWriterGel)
 
-  override def createChatSession(writerId: UUID,name:String): Task[UUID] = gelDriverLive
+  override def createChatSession(writerId: UUID, name: String): Task[UUID] = gelDriverLive
     .querySingle(
       classOf[UUID],
       s"WITH new_chat := ( INSERT ChatSessionGel { title := '$name' }), update_writer := ( UPDATE WriterGel FILTER .id = <uuid>'$writerId' SET { chats += new_chat }) SELECT new_chat.id;"
-    ).tapBoth(error => ZIO.logError(s"Error creating chat session with : $error"), UUID => ZIO.logInfo(s"Created chat session with id: $UUID"))
+    ).tapBoth(
+      error => ZIO.logError(s"Error creating chat session with : $error"),
+      UUID => ZIO.logInfo(s"Created chat session with id: $UUID"))
 
   override def getChatById(chatId: UUID): Task[ChatSession] = gelDriverLive
     .querySingle(
@@ -60,8 +60,8 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           |"""
     ).tap(chat => ZIO.logInfo(s"Got chat session with id: $chatId"))
     .map(ChatSession.fromChatSessionGel)
-  
-    override def deleteChatById(chatId: UUID): Task[UUID] = gelDriverLive
+
+  override def deleteChatById(chatId: UUID): Task[UUID] = gelDriverLive
     .querySingle(
       classOf[String],
       s"""
@@ -79,8 +79,8 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
          |"""
     )
     .as(id).zipLeft(ZIO.logInfo(s"Deleted writer with id: $id"))
-  
-  override def getAllChats : Task[Set[ChatSession]] = gelDriverLive
+
+  override def getAllChats: Task[Set[ChatSession]] = gelDriverLive
     .query(
       classOf[ChatSessionGel],
       s"""
@@ -88,7 +88,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           |"""
     )
     .map(_.toSet).map(chats => chats.map(ChatSession.fromChatSessionGel))
-  
+
   override def addMessageToChat(chatId: UUID, message: Message): Task[UUID] = gelDriverLive
     .querySingle(
       classOf[String],

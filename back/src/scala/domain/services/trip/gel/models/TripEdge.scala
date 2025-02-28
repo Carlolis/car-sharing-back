@@ -3,7 +3,6 @@ package domain.services.trip.gel.models
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
 import domain.models.{PersonCreate, Trip}
 import domain.services.person.gel.models.PersonCreateGel
-import zio.json.*
 
 import java.time.LocalDate
 import java.util
@@ -18,10 +17,10 @@ class TripGel @GelDeserializer() (
   @GelLinkType(classOf[PersonCreateGel])
   gelDrivers: util.Collection[PersonCreateGel]
 ) {
-  def getId: UUID                                   = id
-  def getDistance: Int                              = distance
-  def getDate: LocalDate                            = date
-  def getName: String                               = name
+  def getId: UUID                                  = id
+  def getDistance: Int                             = distance
+  def getDate: LocalDate                           = date
+  def getName: String                              = name
   def getDrivers: util.Collection[PersonCreateGel] = gelDrivers
 }
 

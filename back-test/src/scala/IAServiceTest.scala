@@ -1,6 +1,5 @@
 import adapters.GelDriver
 import domain.models.ia.*
-
 import domain.services.ia.IAService
 import domain.services.ia.gel.IAServiceGel
 import zio.ZIO
@@ -48,38 +47,35 @@ object IAServiceTest extends ZIOSpecDefault {
 
         val charles: WriterCreate = WriterCreate(personNameCharles)
         for {
-          maéUUID <- IAService.createWriter(maé)
-          chatUUID <- IAService.createChatSession(maéUUID,"chat name")
+          maéUUID     <- IAService.createWriter(maé)
+          chatUUID    <- IAService.createChatSession(maéUUID, "chat name")
           chatSession <- IAService.getChatById(chatUUID)
-          _<- ZIO.logInfo("Chat Session "+chatSession)
+          _           <- ZIO.logInfo("Chat Session " + chatSession)
         } yield assertTrue(chatSession.id == chatUUID)
       }
 
       test("Delete a chat session") {
 
-        val charles: WriterCreate = WriterCreate(personNameCharles)
         for {
-          maéUUID <- IAService.createWriter(maé)
-          chatUUID <- IAService.createChatSession(maéUUID, "chat name")
+          maéUUID     <- IAService.createWriter(maé)
+          chatUUID    <- IAService.createChatSession(maéUUID, "chat name")
           chatSession <- IAService.deleteChatById(chatUUID)
-          notFound <- IAService.getChatById(chatUUID).either
-          _ <- ZIO.logInfo("Chat Session " + chatSession)
+          notFound    <- IAService.getChatById(chatUUID).either
+          _           <- ZIO.logInfo("Chat Session " + chatSession)
         } yield assertTrue(notFound.isLeft)
       }
 
       test("Add message to chat session") {
 
-
-        val charles: WriterCreate = WriterCreate(personNameCharles)
-        val message:Message = Message("Why the Sky Is blue?","Because it is")
-        println("MESSSAGEEEEE" +message.question)
+        val message: Message = Message("Why the Sky Is blue?", "Because it is")
         for {
-          maéUUID <- IAService.createWriter(maé)
-          chatUUID <- IAService.createChatSession(maéUUID, "chat name")
-          _ <- IAService.addMessageToChat(chatUUID, message)
+          maéUUID     <- IAService.createWriter(maé)
+          chatUUID    <- IAService.createChatSession(maéUUID, "chat name")
+          _           <- IAService.addMessageToChat(chatUUID, message)
           chatSession <- IAService.getChatById(chatUUID)
-      } yield assertTrue(chatSession.messages.head == message)
-    }}
+        } yield assertTrue(chatSession.messages.head == message)
+      }
+    }
       @@ TestAspect
         .after {
 
@@ -87,7 +83,7 @@ object IAServiceTest extends ZIOSpecDefault {
 
             allWriters <- IAService.getAllWriters
             _          <- ZIO.foreachDiscard(allWriters)(person => IAService.deleteWriter(person.id))
-            allChat <- IAService.getAllChats
+            allChat    <- IAService.getAllChats
             _          <- ZIO.foreachDiscard(allChat)(chat => IAService.deleteChatById(chat.id))
 
           } yield ()).catchAll(e => ZIO.logError(e.getMessage))
