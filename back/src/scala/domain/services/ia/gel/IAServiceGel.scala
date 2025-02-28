@@ -56,7 +56,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
     .querySingle(
       classOf[ChatSessionGel],
       s"""
-          | select ChatSessionGel { id, title } filter .id = <uuid>'$chatId';
+          | select ChatSessionGel { id, title,messages : {answer, question } } filter .id = <uuid>'$chatId';
           |"""
     ).tap(chat => ZIO.logInfo(s"Got chat session with id: $chatId"))
     .map(ChatSession.fromChatSessionGel)
@@ -84,7 +84,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
     .query(
       classOf[ChatSessionGel],
       s"""
-          | select ChatSessionGel { id, title };
+          | select ChatSessionGel { id, title, messages };
           |"""
     )
     .map(_.toSet).map(chats => chats.map(ChatSession.fromChatSessionGel))

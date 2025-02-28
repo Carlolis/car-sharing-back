@@ -72,11 +72,13 @@ object IAServiceTest extends ZIOSpecDefault {
 
         val charles: WriterCreate = WriterCreate(personNameCharles)
         val message:Message = Message("Why the Sky Is blue?","Because it is")
+        println("MESSSAGEEEEE" +message.question)
         for {
           maéUUID <- IAService.createWriter(maé)
           chatUUID <- IAService.createChatSession(maéUUID, "chat name")
-          messageUUID <- IAService.addMessageToChat(chatUUID, message)
-      } yield assertTrue(true)
+          _ <- IAService.addMessageToChat(chatUUID, message)
+          chatSession <- IAService.getChatById(chatUUID)
+      } yield assertTrue(chatSession.messages.head == message)
     }}
       @@ TestAspect
         .after {

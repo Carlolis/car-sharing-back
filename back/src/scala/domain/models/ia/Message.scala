@@ -14,6 +14,6 @@ object Message {
   implicit val decoder: JsonDecoder[Message] = DeriveJsonDecoder.gen[Message]
 
   def fromMessageGel(chatSessionGel: MessageGel): Message = {
-    Message(chatSessionGel.answer, chatSessionGel.question)
+    Message(chatSessionGel.question, chatSessionGel.answer)
   }
 }
