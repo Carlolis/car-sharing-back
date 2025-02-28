@@ -75,10 +75,10 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
       classOf[String],
       s"""
          | delete WriterGel filter .id = <uuid>'$id';
-         | select '$id';
+         | select 'done';
          |"""
     )
-    .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted writer with id: $id"))
+    .as(id).zipLeft(ZIO.logInfo(s"Deleted writer with id: $id"))
   
   override def getAllChats : Task[Set[ChatSession]] = gelDriverLive
     .query(
@@ -88,6 +88,19 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           |"""
     )
     .map(_.toSet).map(chats => chats.map(ChatSession.fromChatSessionGel))
+  
+  override def addMessageToChat(chatId: UUID, message: Message): Task[UUID] = gelDriverLive
+    .querySingle(
+      classOf[String],
+      s"""
+         |update default::ChatSessionGel
+         |filter .id =  <uuid>'$chatId'
+         |set { messages += (insert default::MessageGel
+         |{ question := '${message.question}', answer := '${message.answer}' }
+         |)};
+         | select '$chatId';
+         | """.stripMargin
+    ).as(chatId).zipLeft(ZIO.logInfo(s"Added message to chat with id: $chatId"))
 }
 
 object IAServiceGel:

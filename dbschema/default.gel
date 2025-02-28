@@ -22,6 +22,7 @@ module default {
   type ChatSessionGel {
       required title: str;
       multi messages: MessageGel{
+               on source delete delete target;
                constraint exclusive;
       }
   }

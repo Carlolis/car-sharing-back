@@ -66,7 +66,18 @@ object IAServiceTest extends ZIOSpecDefault {
           _ <- ZIO.logInfo("Chat Session " + chatSession)
         } yield assertTrue(notFound.isLeft)
       }
-    }
+
+      test("Add message to chat session") {
+
+
+        val charles: WriterCreate = WriterCreate(personNameCharles)
+        val message:Message = Message("Why the Sky Is blue?","Because it is")
+        for {
+          maéUUID <- IAService.createWriter(maé)
+          chatUUID <- IAService.createChatSession(maéUUID, "chat name")
+          messageUUID <- IAService.addMessageToChat(chatUUID, message)
+      } yield assertTrue(true)
+    }}
       @@ TestAspect
         .after {
 

@@ -16,6 +16,7 @@ trait IAService {
   def getChatById(chatId: UUID): Task[ChatSession]
   def deleteChatById(chatId: UUID): Task[UUID]
   def getAllChats: Task[Set[ChatSession]]
+  def addMessageToChat(chatId: UUID, message: Message): Task[UUID]
 }
 
 object IAService:
@@ -37,3 +38,5 @@ object IAService:
     ZIO.serviceWithZIO[IAService](_.deleteChatById(chatId))
   def getAllChats: RIO[IAService, Set[ChatSession]]                            =
     ZIO.serviceWithZIO[IAService](_.getAllChats)
+  def addMessageToChat(chatId: UUID, message: Message): RIO[IAService, UUID] =
+    ZIO.serviceWithZIO[IAService](_.addMessageToChat(chatId, message))
