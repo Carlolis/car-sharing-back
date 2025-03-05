@@ -29,7 +29,7 @@ object Main extends ZIOAppDefault:
       .options
 
   override def run =
-    val port = 8080
+    val port = 8081
     (for
 
       endpoints <- ZIO.service[TripRoutes]
