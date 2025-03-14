@@ -13,4 +13,4 @@ cmd = ".bleep/builds/normal/.bloop/back/dist/bin/back"
 
 [dependencies]
 bleep = "0.0.12"
-scala = "3.6.2"
+scala = "3.6.4"
