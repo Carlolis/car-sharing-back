@@ -62,3 +62,8 @@ class AuthServiceLive(personService: PersonService) extends AuthService:
 object AuthServiceLive:
   val layer: ZLayer[PersonService, Nothing, AuthServiceLive] =
     ZLayer.fromFunction(AuthServiceLive(_))
+object AuthService:
+  def login(login: String): RIO[AuthService, Token]         =
+    ZIO.serviceWithZIO[AuthService](_.login(login))
+  def authenticate(token: String): RIO[AuthService, Person] =
+    ZIO.serviceWithZIO[AuthService](_.authenticate(token))

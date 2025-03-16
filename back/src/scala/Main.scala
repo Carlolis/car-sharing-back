@@ -1,5 +1,6 @@
 import adapters.GelDriver
-import api.TripRoutes
+import api.TripRoutes.tripEndpoints
+import api.{TripRoutes, swagger}
 import domain.services.person.gel.PersonServiceGel
 import domain.services.services.AuthServiceLive
 import domain.services.trip.TripService
@@ -32,19 +33,20 @@ object Main extends ZIOAppDefault:
     val port = 8081
     (for
 
-      endpoints <- ZIO.service[TripRoutes]
-      _         <- ZIO.log(s"Swagger UI available at http://localhost:$port/docs")
-      _         <- ZIO.log(s"Server starting on http://localhost:$port")
-      httpApp    = ZioHttpInterpreter(options).toHttp(
-                     endpoints.endpoints
-                   )
-      _         <- Server
-                     .install(httpApp)
-      _         <- ZIO.never
+      _      <- ZIO.log(s"Swagger UI available at http://localhost:$port/docs")
+      _      <- ZIO.log(s"Server starting on http://localhost:$port")
+      httpApp = ZioHttpInterpreter(options).toHttp(
+                  tripEndpoints
+                ) ++ ZioHttpInterpreter(options).toHttp(
+                  swagger
+                )
+      _      <- Server
+                  .install(httpApp)
+      _      <- ZIO.never
     yield ()).provide(
       Server.defaultWithPort(port),
       // AuthService.layer,
-      TripRoutes.live,
+      /*IaRoutes.live,*/
       TripServiceGel.layer,
       PersonServiceGel.layer,
       GelDriver.layer,

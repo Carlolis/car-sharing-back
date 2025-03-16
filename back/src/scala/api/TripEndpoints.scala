@@ -1,24 +1,36 @@
 package api
 
+import adapters.GelDriver
+import api.TripRoutes
+import api.ia.IaRoutes
 import domain.models.{PersonCreate, TripCreate, TripStats}
+import domain.services.person.gel.PersonServiceGel
+import domain.services.services.AuthServiceLive
+import domain.services.trip.TripService
+import domain.services.trip.gel.TripServiceGel
 import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
-import sttp.tapir.ztapir.*
+import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin
+import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin as allowedOrigin
+import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
+import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
+import sttp.tapir.swagger.bundle.SwaggerInterpreter
+import sttp.tapir.ztapir.{RIOMonadError, *}
 import zio.json.*
 
 import java.util.UUID
 
+case class ErrorResponse(message: String) derives JsonEncoder, JsonDecoder
+
 object TripEndpoints:
-  case class ErrorResponse(message: String) derives JsonEncoder, JsonDecoder
 
   // val registerEndpoint = endpoint.post
   //   .in("api" / "register")
   //   .in(jsonBody[UserCreate])
   //   .out(jsonBody[Person])
   //   .errorOut(statusCode and jsonBody[ErrorResponse])
-
   val loginEndpoint: Endpoint[Unit, PersonCreate, (StatusCode, ErrorResponse), Token, Any] = endpoint
     .post
     .in("api" / "login")
@@ -54,3 +66,13 @@ object TripEndpoints:
     .in(jsonBody[PersonCreate])
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
+
+
+
+  val tripEndPoints = List(
+    loginEndpoint,
+    createTripEndpoint,
+    getUserTripsEndpoint,
+    getTotalStatsEndpoint,
+    createPersonEndpoint
+  )
