@@ -5,7 +5,7 @@ ARG EDGEDB_DSN
 RUN echo "DSN is =${EDGEDB_DSN}"
 COPY gel.toml /myapp/gel.toml
 COPY dbschema /myapp/dbschema
-RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --tls-security insecure db
+RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --tls-security=insecure db
 RUN edgedb migrate -I db
 
 
