@@ -61,7 +61,7 @@ object TripRoutes:
         .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
-  val getTotalStats: ZServerEndpoint[PersonService & AuthService & TripService, Any]          =
+  val getTotalStats: ZServerEndpoint[PersonService & AuthService & TripService, Any]        =
     TripEndpoints.getTotalStatsEndpoint.serverLogic { _ =>
       TripService
         .getTotalStats
@@ -81,19 +81,16 @@ object TripRoutes:
           .map(Right(_))
           .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
-  val loginEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any]          = TripEndpoints.loginEndpoint.serverLogic { credentials =>
-    AuthService
-      .login(credentials.name)
-      .tap(token => ZIO.logInfo(s"Login success ! $token"))
-      .map(Right(_))
-      .catchAll(err => ZIO.left(StatusCode.Unauthorized, ErrorResponse(err.getMessage)))
-  }
+  val loginEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any]        =
+    TripEndpoints.loginEndpoint.serverLogic { credentials =>
+      AuthService
+        .login(credentials.name)
+        .tap(token => ZIO.logInfo(s"Login success ! $token"))
+        .map(Right(_))
+        .catchAll(err => ZIO.left(StatusCode.Unauthorized, ErrorResponse(err.getMessage)))
+    }
 
   val tripEndpoints: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
     List(getTotalStats, getUserTrips, createTrip, loginEndpoint)
   // login,
   // register
-
- 
-
-

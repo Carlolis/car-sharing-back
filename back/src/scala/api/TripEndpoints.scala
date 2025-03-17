@@ -67,8 +67,6 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-
-
   val tripEndPoints = List(
     loginEndpoint,
     createTripEndpoint,
