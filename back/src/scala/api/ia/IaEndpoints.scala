@@ -24,6 +24,7 @@ object IaEndpoints:
 
   val createChat = endpoint
     .post
+    .in("api" / "createChat")
     .in(jsonBody[CreateCHatSession])
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
