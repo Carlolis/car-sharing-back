@@ -1,13 +1,8 @@
 package api.ia
 
-import api.TripEndpoints.*
 import api.ia.IaEndpoints.ErrorResponse
 import domain.services.ia.IAService
-import domain.services.person.PersonService
-import domain.services.services.AuthService
-import domain.services.trip.TripService
 import sttp.model.StatusCode
-import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.*
 import zio.*
 

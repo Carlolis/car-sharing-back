@@ -30,8 +30,6 @@ object Main extends ZIOAppDefault:
       _      <- ZIO.never
     yield ()).provide(
       Server.defaultWithPort(port),
-      // AuthService.layer,
-      /*IaRoutes.live,*/
       IAServiceGel.layer,
       TripServiceGel.layer,
       PersonServiceGel.layer,
