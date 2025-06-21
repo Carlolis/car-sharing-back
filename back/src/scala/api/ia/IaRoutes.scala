@@ -7,9 +7,20 @@ import sttp.tapir.ztapir.*
 import zio.*
 
 val createChat: ZServerEndpoint[IAService, Any] =
-  IaEndpoints.createChat.serverLogic { token =>
+  IaEndpoints.createChat.serverLogic { createChatSession =>
     (for {
-      uuid <- IAService.createChatSession(token.writerId, token.name)
+      uuid <- IAService.createChatSession(createChatSession.writerId, createChatSession.name)
+
+    } yield uuid)
+      .map(Right(_))
+      .tapError(error => ZIO.logError(s"Error: $error"))
+      .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+  }
+
+val addMessageToChat: ZServerEndpoint[IAService, Any] =
+  IaEndpoints.addMessageToChat.serverLogic { addMessageToChat =>
+    (for {
+      uuid <- IAService.addMessageToChat(addMessageToChat.chatUuid, addMessageToChat.message)
 
     } yield uuid)
       .map(Right(_))
@@ -19,4 +30,4 @@ val createChat: ZServerEndpoint[IAService, Any] =
 
 object IaRoutes:
   val iaEndpoints: List[ZServerEndpoint[IAService, Any]] =
-    List(createChat)
+    List(createChat, addMessageToChat)

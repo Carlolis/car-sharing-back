@@ -1,7 +1,7 @@
 import adapters.GelDriver
-import api.TripRoutes.tripEndpoints
+import api.TripEndpointsLive.tripEndpoints
 import api.ia.IaRoutes.iaEndpoints
-import api.{TripRoutes, swagger}
+import api.{TripEndpointsLive, swagger}
 import domain.services.ia.gel.IAServiceGel
 import domain.services.person.gel.PersonServiceGel
 import domain.services.services.AuthServiceLive

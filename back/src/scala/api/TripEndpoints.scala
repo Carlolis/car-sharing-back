@@ -1,7 +1,7 @@
 package api
 
 import adapters.GelDriver
-import api.TripRoutes
+import api.TripEndpointsLive
 import api.ia.IaRoutes
 import domain.models.{PersonCreate, TripCreate, TripStats}
 import domain.services.person.gel.PersonServiceGel
@@ -17,7 +17,7 @@ import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin as allowedOri
 import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
-import sttp.tapir.ztapir.{RIOMonadError, *}
+import sttp.tapir.ztapir.*
 import zio.json.*
 
 import java.util.UUID
@@ -46,9 +46,9 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getUserTripsEndpoint: Endpoint[Unit, String, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
+  val getAllTripsEndpoint: Endpoint[Unit, String, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
     .get
-    .in("api" / "trips" / "user")
+    .in("api" / "trips")
     .in(auth.bearer[String]())
     .out(jsonBody[TripStats])
     .errorOut(statusCode and jsonBody[ErrorResponse])
@@ -70,7 +70,7 @@ object TripEndpoints:
   val tripEndPoints = List(
     loginEndpoint,
     createTripEndpoint,
-    getUserTripsEndpoint,
+    getAllTripsEndpoint,
     getTotalStatsEndpoint,
     createPersonEndpoint
   )

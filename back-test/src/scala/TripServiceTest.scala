@@ -24,7 +24,7 @@ object TripServiceTest extends ZIOSpecDefault {
         for {
 
           UUID       <- TripService.createTrip(tripCreate)
-          tripByUser <- TripService.getUserTrips(personName)
+          tripByUser <- TripService.getAllTrips
 
         } yield assertTrue(UUID != null, tripByUser.trips.length == 1)
       }
@@ -34,7 +34,7 @@ object TripServiceTest extends ZIOSpecDefault {
         for {
 
           UUID       <- TripService.createTrip(tripCreate.copy(drivers = Set(personName)))
-          tripByUser <- TripService.getUserTrips(personName)
+          tripByUser <- TripService.getAllTrips
 
         } yield assertTrue(UUID != null, tripByUser.trips.length == 1)
       }
@@ -44,17 +44,17 @@ object TripServiceTest extends ZIOSpecDefault {
 
           UUID       <- TripService.createTrip(tripCreate)
           _          <- TripService.deleteTrip(UUID)
-          tripByUser <- TripService.getUserTrips(personName)
+          tripByUser <- TripService.getAllTrips
 
         } yield assertTrue(UUID != null, tripByUser.trips.isEmpty)
       }
     }
       @@ TestAspect
         .after {
-          val allPersons = Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
+
           (for {
 
-            allTrips <- ZIO.foreachPar(allPersons)(person => TripService.getUserTrips(person.name).map(_.trips)).map(_.flatten)
+            allTrips <- TripService.getAllTrips.map(_.trips)
             _        <- ZIO
                           .foreachDiscard(allTrips)(trip => TripService.deleteTrip(trip.id))
 

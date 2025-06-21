@@ -29,12 +29,12 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
           |"""
       ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID"))
 
-  override def getUserTrips(personName: String): Task[TripStats] =
+  override def getAllTrips: Task[TripStats] =
     gelDb
       .query(
         classOf[TripGel],
         s"""
-          | select TripGel { id, distance, date, name, gelDrivers: { name } } filter .gelDrivers.name = <str>'$personName'  ;
+          | select TripGel { id, distance, date, name, gelDrivers: { name } }  ;
           |"""
       )
       .map { tripGel =>

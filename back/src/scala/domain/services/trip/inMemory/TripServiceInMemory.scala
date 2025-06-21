@@ -32,7 +32,7 @@ case class TripServiceInMemory() extends TripService {
           newTrip
         }.as(UUID.randomUUID())
 
-  override def getUserTrips(name: String): Task[TripStats] =
+  override def getAllTrips: Task[TripStats] =
     ZIO.succeed {
       val userTrips =
         trips.filter(trip => true
