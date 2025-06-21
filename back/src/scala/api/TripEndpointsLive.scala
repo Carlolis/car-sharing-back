@@ -50,7 +50,13 @@ object TripEndpointsLive:
         // user <- ZIO
         //   .fromOption(userOpt)
         //   .orElseFail(new Exception("Unauthorized"))
+        _      <- ZIO.logInfo(
+                    "Getting trips "
+                  )
         result <- TripService.getAllTrips
+        _      <- ZIO.logInfo(
+                    "Trips found " + result.toString
+                  )
       } yield result)
         .map(Right(_))
         .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))

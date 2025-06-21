@@ -26,7 +26,7 @@ case class TripServiceInMemory() extends TripService {
             distance = tripCreate.distance,
             date = tripCreate.date,
             name = tripCreate.name,
-            drivers = tripCreate.drivers.map(PersonCreate(_))
+            drivers = tripCreate.drivers
           )
           trips = trips :+ newTrip
           newTrip
