@@ -1,22 +1,10 @@
 package api
 
-import adapters.GelDriver
-import api.TripEndpointsLive
-import api.ia.IaRoutes
-import domain.models.{PersonCreate, TripCreate, TripStats}
-import domain.services.person.gel.PersonServiceGel
-import domain.services.services.AuthServiceLive
-import domain.services.trip.TripService
-import domain.services.trip.gel.TripServiceGel
+import domain.models.*
 import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
-import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin
-import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin as allowedOrigin
-import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
-import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
-import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import sttp.tapir.ztapir.*
 import zio.json.*
 
@@ -46,6 +34,14 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
+  val updateTripEndpoint: Endpoint[Unit, (String, Trip), (StatusCode, ErrorResponse), UUID, Any] = endpoint
+    .put
+    .in("api" / "trips")
+    .in(auth.bearer[String]())
+    .in(jsonBody[Trip])
+    .out(jsonBody[UUID])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+
   val getAllTripsEndpoint: Endpoint[Unit, String, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
     .get
     .in("api" / "trips")
@@ -72,5 +68,6 @@ object TripEndpoints:
     createTripEndpoint,
     getAllTripsEndpoint,
     getTotalStatsEndpoint,
-    createPersonEndpoint
+    createPersonEndpoint,
+    updateTripEndpoint
   )
