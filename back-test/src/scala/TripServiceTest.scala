@@ -1,5 +1,5 @@
 import adapters.GelDriver
-import domain.models.{PersonCreate, TripCreate}
+import domain.models.{PersonCreate, Trip, TripCreate}
 import domain.services.person.PersonService
 import domain.services.person.gel.PersonServiceGel
 import domain.services.trip.TripService
@@ -47,6 +47,20 @@ object TripServiceTest extends ZIOSpecDefault {
           tripByUser <- TripService.getAllTrips
 
         } yield assertTrue(UUID != null, tripByUser.trips.isEmpty)
+      }
+
+      test("updateTrip should update a trip successfully with Maé") {
+        val updatedTripName = "Updated Business Trip"
+        val updatedDistance = 200
+
+        for {
+          uuid       <- TripService.createTrip(tripCreate)
+          updatedTrip = Trip(uuid, updatedDistance, LocalDate.now(), updatedTripName, Set(personName))
+          _          <- TripService.updateTrip(updatedTrip)
+          tripByUser <- TripService.getAllTrips
+        } yield assertTrue(
+          tripByUser.trips.exists(trip => trip.id == uuid && trip.name == updatedTripName && trip.distance == updatedDistance),
+          tripByUser.trips.length == 1)
       }
     }
       @@ TestAspect

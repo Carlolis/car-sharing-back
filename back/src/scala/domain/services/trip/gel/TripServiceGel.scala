@@ -58,7 +58,28 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
       )
       .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted trip with id: $id"))
 
-  override def updateTrip(tripUpdate: Trip): Task[UUID] = ???
+  override def updateTrip(tripUpdate: Trip): Task[UUID] =
+    gelDb
+      .querySingle(
+        classOf[UUID],
+        s"""
+           | with updated_trip := (
+           |    update TripGel
+           |    filter .id = <uuid>'${tripUpdate.id}'
+           |    set {
+           |        name := '${tripUpdate.name}',
+           |        distance := ${tripUpdate.distance},
+           |        date := cal::to_local_date(${tripUpdate
+            .date.getYear}, ${tripUpdate.date.getMonthValue}, ${tripUpdate.date.getDayOfMonth}),
+           |        gelDrivers := (select detached default::PersonGel filter .name in ${tripUpdate.drivers.mkString("{'", "','", "'}")})
+           |    }
+           |)
+           |select updated_trip.id;
+           |"""
+      ).tapBoth(
+        error => ZIO.logError(s"Failed to update trip with id: ${tripUpdate.id}, error: $error"),
+        uuid => ZIO.logInfo(s"Updated trip with id: $uuid")
+      )
 }
 
 object TripServiceGel:
