@@ -48,7 +48,9 @@ object TripEndpointsLive:
       case (token, trip) =>
         (for {
           _    <- AuthService.authenticate(token)
+          _    <- ZIO.logInfo("Updating trip " + trip.toString)
           uuid <- TripService.updateTrip(trip)
+          _    <- ZIO.logInfo("Trip updated " + uuid.toString)
         } yield uuid)
           .map(Right(_))
           .tapError(error => ZIO.logError(s"Error: $error"))
@@ -104,6 +106,6 @@ object TripEndpointsLive:
     }
 
   val tripEndpoints: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
-    List(getTotalStats, getAllTrips, createTrip, loginEndpoint, updateTrip)
+    List(getTotalStats, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint)
   // login,
   // register

@@ -1,10 +1,19 @@
 import sttp.tapir.server.interceptor.cors.CORSConfig.AllowedOrigin
 import sttp.tapir.server.interceptor.cors.{CORSConfig, CORSInterceptor}
+import sttp.tapir.server.interceptor.log.DefaultServerLog
 import sttp.tapir.server.ziohttp.ZioHttpServerOptions
 import sttp.tapir.ztapir.RIOMonadError
+import zio.*
 
-given RIOMonadError[Any]               = new RIOMonadError[Any]
-val options: ZioHttpServerOptions[Any] =
+given RIOMonadError[Any] = new RIOMonadError[Any]
+
+type F[A] = ZIO[Any, Throwable, A]
+
+var serverLog: DefaultServerLog[F] = ZioHttpServerOptions
+  .defaultServerLog
+  .logWhenReceived(true).logAllDecodeFailures(true).logWhenHandled(true).logLogicExceptions(true)
+
+/*val options =
   ZioHttpServerOptions
     .customiseInterceptors
     .exceptionHandler(new DefectHandler())
@@ -16,5 +25,15 @@ val options: ZioHttpServerOptions[Any] =
           )
       )
     )
-    .decodeFailureHandler(CustomDecodeFailureHandler.create())
-    .options
+    .decodeFailureHandler(CustomDecodeFailureHandler.create())*/
+
+val options: ZioHttpServerOptions[Any] =
+  ZioHttpServerOptions
+    .customiseInterceptors.corsInterceptor(
+      CORSInterceptor.customOrThrow(
+        CORSConfig
+          .default.copy(
+            allowedOrigin = AllowedOrigin.All
+          )
+      )
+    ).serverLog(serverLog).options
