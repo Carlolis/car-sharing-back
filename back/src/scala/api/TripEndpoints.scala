@@ -42,10 +42,10 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getAllTripsEndpoint: Endpoint[Unit, String, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
+  val getAllTripsEndpoint = endpoint
     .get
     .in("api" / "trips")
-    .in(auth.bearer[String]())
+    /* .in(auth.bearer[String]())*/
     .out(jsonBody[TripStats])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 

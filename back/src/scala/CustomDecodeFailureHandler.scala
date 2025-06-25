@@ -38,10 +38,10 @@ class CustomDecodeFailureHandler[F[_]](
       case None          => None
     output.unit
   }
-/*object CustomDecodeFailureHandler:
+object CustomDecodeFailureHandler:
   def create[F[_]: MonadError](): DecodeFailureHandler[F] =
     new CustomDecodeFailureHandler[F](
       DefaultDecodeFailureHandler[F],
       FailureMessages.failureMessage,
       DefaultDecodeFailureHandler.respond
-    )*/
+    )

@@ -12,7 +12,8 @@ This project is a Scala 3 application using GelDB for database management and Bl
 
 #### Install GelDB
 
-Follow the [GelDB installation guide](https://wwwgeldatacom/docs/guides/deployment/installation) to install GelDB on your system.
+Follow the [GelDB installation guide](https://wwwgeldatacom/docs/guides/deployment/installation) to install GelDB on
+your system.
 
 #### Install Bleep
 
@@ -76,7 +77,8 @@ bleep test
 
 ### GelDB Integration
 
-This project uses GelDB for database operations. The `TripServiceGel` class in `TripServiceGel.scala` handles database interactions.
+This project uses GelDB for database operations. The `TripServiceGel` class in `TripServiceGel.scala` handles database
+interactions.
 
 ### Additional Resources
 
@@ -87,3 +89,61 @@ This project uses GelDB for database operations. The `TripServiceGel` class in `
 ### License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+### Gel database cheat sheet
+
+List all the gel databases:
+
+```sh
+gel instance list
+```
+
+Production REPL:
+
+```sh
+gel -I prod
+```
+
+If the production link is broken or you want to use a different database, you can specify the database URL:
+
+```sh
+gel instance link prod
+```
+
+To upgrade the gel database, you can use the following command:
+
+```sh
+gel project upgrade --to-version=xxxx --project-dir '/home/carlos/Code/Perso/car-sharing-app/backend'
+```
+
+If you want to change the database schema and create a migration script, you can use the following command:
+
+```sh
+gel migration create
+```
+
+#### Gel Watch
+
+Another option when quickly iterating over schema changes is `gel watch --migrate`. This will create a long-running
+process that keeps track of every time you save a .gel file inside your /migrations folder, letting you know if your
+changes have successfully compiled or not.
+
+Once you are satisfied with your changes while running `gel watch --migrate`, just create the migration with `gel migration
+create` to record the current changes to the file system.
+
+### Gel ui
+
+To access the local GelDB UI, command is
+
+```sh
+gel ui --no-server-check
+```
+
+To access the prod GelDB UI, command is
+
+Production is here :
+
+https://192.168.1.101:5656/ui
+
+User : admin
+Password : Check bitwarden

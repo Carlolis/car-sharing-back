@@ -13,20 +13,6 @@ var serverLog: DefaultServerLog[F] = ZioHttpServerOptions
   .defaultServerLog
   .logWhenReceived(true).logAllDecodeFailures(true).logWhenHandled(true).logLogicExceptions(true)
 
-/*val options =
-  ZioHttpServerOptions
-    .customiseInterceptors
-    .exceptionHandler(new DefectHandler())
-    .corsInterceptor(
-      CORSInterceptor.customOrThrow(
-        CORSConfig
-          .default.copy(
-            allowedOrigin = AllowedOrigin.All
-          )
-      )
-    )
-    .decodeFailureHandler(CustomDecodeFailureHandler.create())*/
-
 val options: ZioHttpServerOptions[Any] =
   ZioHttpServerOptions
     .customiseInterceptors.corsInterceptor(
@@ -36,4 +22,4 @@ val options: ZioHttpServerOptions[Any] =
             allowedOrigin = AllowedOrigin.All
           )
       )
-    ).serverLog(serverLog).options
+    ).serverLog(serverLog).decodeFailureHandler(CustomDecodeFailureHandler.create()).options

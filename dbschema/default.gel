@@ -32,5 +32,12 @@ module default {
         required answer: str;
   }
 
+  type InvoiceGel {
+    required name: str;
+    required date: cal::local_date;
+    required amount: int16;
+    required multi gelDrivers: PersonGel;
+  }
+
 }
 using extension ai;
