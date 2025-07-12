@@ -3,7 +3,7 @@ package domain.models
 import zio.json.*
 
 import java.time.LocalDate
-import scala.collection.JavaConverters.*
+import scala.jdk.CollectionConverters.*
 
 case class TripCreate(
   distance: Int,
