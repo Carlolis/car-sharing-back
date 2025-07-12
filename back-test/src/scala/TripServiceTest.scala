@@ -6,17 +6,17 @@ import domain.services.trip.TripService
 import domain.services.trip.gel.TripServiceGel
 import zio.test.*
 import zio.test.Assertion.*
-import zio.{ZIO, ZLayer}
+import zio.{Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
 
 object TripServiceTest extends ZIOSpecDefault {
-  val personName = "Maé"
-  val maé        = PersonCreate(personName)
-  val tripCreate =
+  val personName             = "Maé"
+  val mae: PersonCreate      = PersonCreate(personName)
+  val tripCreate: TripCreate =
     TripCreate(100, LocalDate.now(), "Business", Set(personName))
 
-  def spec =
+  def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("TripServiceTest in Gel") {
 
       test("Maé createTrip should create a trip successfully with Maé") {
