@@ -28,12 +28,12 @@ object TripServiceTest extends ZIOSpecDefault {
 
         } yield assertTrue(UUID != null, tripByUser.trips.length == 1)
       }
-      test("Charles createTrip should create a trip successfully with Charles") {
+      test("Charles and Maé createTrip should create a trip successfully with Charles and Maé") {
         val personName = "Charles"
 
         for {
 
-          UUID       <- TripService.createTrip(tripCreate.copy(drivers = Set(personName)))
+          UUID       <- TripService.createTrip(tripCreate.copy(drivers = tripCreate.drivers + personName))
           tripByUser <- TripService.getAllTrips
 
         } yield assertTrue(UUID != null, tripByUser.trips.length == 1)
@@ -60,6 +60,18 @@ object TripServiceTest extends ZIOSpecDefault {
           tripByUser <- TripService.getAllTrips
         } yield assertTrue(
           tripByUser.trips.exists(trip => trip.id == uuid && trip.name == updatedTripName && trip.distance == updatedDistance),
+          tripByUser.trips.length == 1)
+      }
+
+      test("updateTrip should add a driver to a trip successfully with Charles and Maé") {
+
+        for {
+          uuid       <- TripService.createTrip(tripCreate)
+          updatedTrip = Trip(uuid, tripCreate.distance, tripCreate.date, tripCreate.name, tripCreate.drivers + "Charles")
+          _          <- TripService.updateTrip(updatedTrip)
+          tripByUser <- TripService.getAllTrips
+        } yield assertTrue(
+          tripByUser.trips.exists(trip => trip.id == uuid && trip.drivers == tripCreate.drivers + "Charles"),
           tripByUser.trips.length == 1)
       }
     }
