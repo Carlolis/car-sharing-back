@@ -63,18 +63,18 @@ object InvoiceServiceTest extends ZIOSpecDefault {
           invoiceByUser.invoices.length == 1)
       }*/
     }
-    /* @@ TestAspect
+      @@ TestAspect
         .after {
 
           (for {
 
-            allInvoices <- InvoiceService.getAllInvoices.map(_.invoices)
+            allInvoices <- InvoiceService.getAllInvoices
             _           <- ZIO
                              .foreachDiscard(allInvoices)(invoice => InvoiceService.deleteInvoice(invoice.id))
 
           } yield ()).catchAll(e => ZIO.logError(e.getMessage))
 
-        }*/
+        }
       @@ TestAspect
         .before {
           val allPersons = Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))

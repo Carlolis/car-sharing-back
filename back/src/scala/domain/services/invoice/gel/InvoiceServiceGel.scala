@@ -37,8 +37,6 @@ case class InvoiceServiceGel(gelDb: GelDriverLive) extends InvoiceService {
           |"""
       )
       .map(_.map(Invoice.fromInvoiceGel))
-  /*
-  override def getTotalStats: Task[InvoiceStats] = ZIO.succeed(InvoiceStats(List.empty, 0))
 
   override def deleteInvoice(id: UUID): Task[UUID] =
     gelDb
@@ -50,6 +48,10 @@ case class InvoiceServiceGel(gelDb: GelDriverLive) extends InvoiceService {
            |"""
       )
       .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted invoice with id: $id"))
+  /*
+  override def getTotalStats: Task[InvoiceStats] = ZIO.succeed(InvoiceStats(List.empty, 0))
+
+
 
   override def updateInvoice(invoiceUpdate: Invoice): Task[UUID] =
     gelDb
