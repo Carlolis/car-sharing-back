@@ -3,7 +3,7 @@ package domain.services.trip.gel
 import adapters.GelDriverLive
 import domain.models.*
 import domain.services.trip.TripService
-import domain.services.trip.gel.models.TripGel
+import domain.services.trip.gel.models.{TripGel, TripStatsEdge}
 import zio.*
 
 import java.util.UUID
@@ -29,7 +29,7 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
           |"""
       ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID"))
 
-  override def getAllTrips: Task[TripStats] =
+  override def getAllTrips: Task[List[Trip]] =
     gelDb
       .query(
         classOf[TripGel],
@@ -37,15 +37,22 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
           | select TripGel { id, distance, date, name, gelDrivers: { name } }  ;
           |"""
       )
-      .map { tripGel =>
+      .map(_.map(Trip.fromTripGel))
 
-        val trips   = tripGel.map(Trip.fromTripGel)
-        val totalKm = trips.map(_.distance).sum
-
-        TripStats(trips, totalKm)
-      }
-
-  override def getTotalStats: Task[TripStats] = ZIO.succeed(TripStats(List.empty, 0))
+  override def getTripStatsByUser(username: String): Task[TripStats] = gelDb
+    .querySingle(
+      classOf[TripStatsEdge],
+      s"""
+         |  select {
+         |  totalKilometers := sum(
+         |    (select TripGel
+         |     filter exists (.gelDrivers.name = "$username")
+         |    ).distance
+         |  )
+         |};
+         |"""
+    )
+    .map(tripGel => TripStats(tripGel.getTotalKilometers))
 
   override def deleteTrip(id: UUID): Task[UUID] =
     gelDb

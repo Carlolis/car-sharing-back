@@ -1,6 +1,6 @@
 package domain.services.trip.inMemory
 
-import domain.models.{PersonCreate, Trip, TripCreate, TripStats}
+import domain.models.{Trip, TripCreate, TripStats}
 import domain.services.trip.TripService
 import zio.{Task, ULayer, ZIO, ZLayer}
 
@@ -32,20 +32,15 @@ case class TripServiceInMemory() extends TripService {
           newTrip
         }.as(UUID.randomUUID())
 
-  override def getAllTrips: Task[TripStats] =
+  override def getAllTrips: Task[List[Trip]] =
     ZIO.succeed {
-      val userTrips =
-        trips.filter(trip => true
-        // trip.drivers.flatMap(person => person.name).contains(name)
-        )
-      val totalKm   = userTrips.map(_.distance).sum
-      TripStats(userTrips, totalKm)
+      trips
     }
 
-  override def getTotalStats: Task[TripStats] =
+  override def getTripStatsByUser(username: String): Task[TripStats] =
     ZIO.succeed {
       val totalKm = trips.map(_.distance).sum
-      TripStats(trips, totalKm)
+      TripStats(totalKm)
     }
 
   override def deleteTrip(id: UUID): Task[UUID] = ???

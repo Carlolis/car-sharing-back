@@ -46,12 +46,13 @@ object TripEndpoints:
     .get
     .in("api" / "trips")
     /* .in(auth.bearer[String]())*/
-    .out(jsonBody[TripStats])
+    .out(jsonBody[List[Trip]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
   val getTotalStatsEndpoint = endpoint
     .get
     .in("api" / "trips" / "total")
+    .in(queryParams)
     .out(jsonBody[TripStats])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 

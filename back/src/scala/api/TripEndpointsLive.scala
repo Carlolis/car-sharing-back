@@ -77,11 +77,14 @@ object TripEndpointsLive:
     }
 
   private val getTotalStats: ZServerEndpoint[PersonService & AuthService & TripService, Any]        =
-    TripEndpoints.getTotalStatsEndpoint.serverLogic { _ =>
-      TripService
-        .getTotalStats
-        .map(Right(_))
-        .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    TripEndpoints.getTotalStatsEndpoint.serverLogic { username =>
+      username
+        .get("username").map(username =>
+          TripService
+            .getTripStatsByUser(username)
+            .map(Right(_))
+            .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))).getOrElse(
+          ZIO.left(StatusCode.BadRequest, ErrorResponse("No username in query params")))
     }
   private val createPersonEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
     TripEndpoints.createPersonEndpoint.serverLogic {

@@ -5,7 +5,7 @@ import zio.json.*
 
 import java.time.LocalDate
 import java.util.UUID
-import scala.collection.JavaConverters.*
+import scala.jdk.CollectionConverters.*
 
 case class Trip(
   id: UUID,
@@ -26,16 +26,4 @@ object Trip {
       tripGel.getName,
       tripGel.getDrivers.asScala.map(_.name).toSet
     )
-}
-
-case class TripStats(
-  trips: List[Trip],
-  totalKilometers: Double
-)
-
-object TripStats {
-  implicit val encoder: JsonEncoder[TripStats] =
-    DeriveJsonEncoder.gen[TripStats]
-  implicit val decoder: JsonDecoder[TripStats] =
-    DeriveJsonDecoder.gen[TripStats]
 }
