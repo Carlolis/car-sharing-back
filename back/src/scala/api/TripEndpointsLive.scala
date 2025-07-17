@@ -108,7 +108,10 @@ object TripEndpointsLive:
         .catchAll(err => ZIO.left(StatusCode.Unauthorized, ErrorResponse(err.getMessage)))
     }
 
+  private val healthEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
+    TripEndpoints.healthCheck.serverLogic(_ => ZIO.right(Right(())))
+
   val tripEndpoints: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
-    List(getTotalStats, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint)
+    List(getTotalStats, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint, healthEndpoint)
   // login,
   // register

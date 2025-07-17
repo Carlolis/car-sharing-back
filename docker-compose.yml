@@ -7,12 +7,18 @@ services:
         EDGEDB_DSN: ${EDGEDB_DSN}
     ports:
       - "8081:8081"
-      - "8082:8082"
+      - "8095:8095"
     command: >
       sh -c "/myapp/dist/bin/back"
     volumes:
       - "./dbschema:/dbschema"
     environment:
       EDGEDB_SERVER_SECURITY: insecure_dev_mode
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 
 

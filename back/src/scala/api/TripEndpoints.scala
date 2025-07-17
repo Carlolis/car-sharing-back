@@ -64,6 +64,10 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
+  val healthCheck = endpoint
+    .get
+    .in("api" / "health")
+
   val tripEndPoints = List(
     loginEndpoint,
     createTripEndpoint,
