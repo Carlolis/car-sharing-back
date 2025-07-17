@@ -10,10 +10,24 @@ import domain.services.trip.gel.TripServiceGel
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import zio.*
 import zio.http.*
+import zio.http.netty.NettyConfig
+import zio.http.netty.NettyConfig.LeakDetectionLevel
 
 object Main extends ZIOAppDefault:
   override def run =
-    val port = 8081
+
+    val port   = sys.env("PORT").toInt
+    val config = Server
+      .Config.default
+      .port(port)
+
+    val configLayer = ZLayer.succeed(config)
+
+    val nettyConfig      = NettyConfig
+      .default
+      .leakDetection(LeakDetectionLevel.ADVANCED)
+      .maxThreads(4)
+    val nettyConfigLayer = ZLayer.succeed(nettyConfig)
     (for
 
       _      <- ZIO.log(s"Swagger UI available at http://localhost:$port/docs")
@@ -25,11 +39,11 @@ object Main extends ZIOAppDefault:
                 ) ++ ZioHttpInterpreter(options).toHttp(
                   iaEndpoints
                 )
-      _      <- Server
-                  .install(httpApp)
-      _      <- ZIO.never
+      _      <- httpApp.serve
     yield ()).provide(
-      Server.defaultWithPort(port),
+      configLayer,
+      nettyConfigLayer,
+      Server.customized,
       IAServiceGel.layer,
       TripServiceGel.layer,
       PersonServiceGel.layer,
