@@ -75,7 +75,7 @@ object TripServiceTest extends ZIOSpecDefault {
       test("Maé get her trip stats ") {
 
         for {
-
+          UUID   <- TripService.createTrip(tripCreate.copy(drivers = Set("Charles")))
           UUID   <- TripService.createTrip(tripCreate)
           trips  <- TripService.getTripStatsByUser(personName)
           trips2 <- TripService.getAllTrips

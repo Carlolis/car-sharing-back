@@ -34,25 +34,28 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
       .query(
         classOf[TripGel],
         s"""
-          | select TripGel { id, distance, date, name, gelDrivers: { name } }  ;
+          | select TripGel { id, distance, date, name, gelDrivers: { name } }
+          |   order by
+          |  .date desc then
+          |  .id desc;;
           |"""
       )
       .map(_.map(Trip.fromTripGel))
 
-  override def getTripStatsByUser(username: String): Task[TripStats] = gelDb
-    .querySingle(
-      classOf[TripStatsEdge],
-      s"""
+  override def getTripStatsByUser(username: String): Task[TripStats] =
+    gelDb
+      .querySingle(
+        classOf[TripStatsEdge],
+        s"""
          |  select {
          |  totalKilometers := sum(
-         |    (select TripGel
-         |     filter exists (.gelDrivers.name = "$username")
+         |    (select TripGel { distance, gelDrivers: { name }  } filter '$username' in .gelDrivers.name
          |    ).distance
          |  )
          |};
          |"""
-    )
-    .map(tripGel => TripStats(tripGel.getTotalKilometers))
+      )
+      .map(tripGel => TripStats(tripGel.getTotalKilometers)).tap(t => ZIO.logInfo(t.totalKilometers.toString()))
 
   override def deleteTrip(id: UUID): Task[UUID] =
     gelDb

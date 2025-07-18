@@ -76,7 +76,7 @@ object TripEndpointsLive:
         .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
-  private val getTotalStats: ZServerEndpoint[PersonService & AuthService & TripService, Any]        =
+  private val getTripStatsByUser: ZServerEndpoint[PersonService & AuthService & TripService, Any]   =
     TripEndpoints.getTotalStatsEndpoint.serverLogic { username =>
       username
         .get("username").map(username =>
@@ -112,6 +112,6 @@ object TripEndpointsLive:
     TripEndpoints.healthCheck.serverLogic(_ => ZIO.right(Right(())))
 
   val tripEndpoints: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
-    List(getTotalStats, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint, healthEndpoint)
+    List(getTripStatsByUser, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint, healthEndpoint)
   // login,
   // register
