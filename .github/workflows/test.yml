@@ -19,3 +19,11 @@ jobs:
         run: |
           edgedb migrate
           bleep test
+
+
+      - name: Trigger Coolify Deployment
+        if: success()
+        run: |
+          curl -X GET "${{ secrets.COOLIFY_API_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
+            -H "Content-Type: application/json"
