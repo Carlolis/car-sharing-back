@@ -9,14 +9,13 @@ import zio.*
 import java.util.UUID
 
 case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
-  // TODO: Implement actual database storage
   private val trips: List[Trip] = List.empty
   private val knownPersons      =
     Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
 
   override def createTrip(
     tripCreate: TripCreate
-  ): Task[UUID] =
+  ): Task[TripId] =
     gelDb
       .querySingle(
         classOf[UUID],
@@ -27,7 +26,7 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
             .date.getDayOfMonth}), gelDrivers := (select detached default::PersonGel filter .name in ${tripCreate
             .drivers.mkString("{'", "','", "'}")}) }) select new_trip.id;
           |"""
-      ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID"))
+      ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID")).map(TripId(_))
 
   override def getAllTrips: Task[List[Trip]] =
     gelDb
@@ -57,7 +56,7 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
       )
       .map(tripGel => TripStats(tripGel.getTotalKilometers)).tap(t => ZIO.logInfo(t.totalKilometers.toString()))
 
-  override def deleteTrip(id: UUID): Task[UUID] =
+  override def deleteTrip(id: TripId): Task[TripId] =
     gelDb
       .querySingle(
         classOf[String],
@@ -66,7 +65,7 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
            | select '$id';
            |"""
       )
-      .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted trip with id: $id"))
+      .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted trip with id: $id")).map(TripId(_))
 
   override def updateTrip(tripUpdate: Trip): Task[UUID] =
     gelDb

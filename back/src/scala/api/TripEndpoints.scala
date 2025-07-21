@@ -26,12 +26,12 @@ object TripEndpoints:
     .out(jsonBody[Token])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val createTripEndpoint: Endpoint[Unit, (String, TripCreate), (StatusCode, ErrorResponse), UUID, Any] = endpoint
+  val createTripEndpoint: Endpoint[Unit, (String, TripCreate), (StatusCode, ErrorResponse), TripId, Any] = endpoint
     .post
     .in("api" / "trips")
     .in(auth.bearer[String]())
     .in(jsonBody[TripCreate])
-    .out(jsonBody[UUID])
+    .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
   val updateTripEndpoint: Endpoint[Unit, (String, Trip), (StatusCode, ErrorResponse), UUID, Any] = endpoint
@@ -58,8 +58,8 @@ object TripEndpoints:
 
   val deleteTripEndpoint = endpoint
     .delete
-    .in("api" / "trips" / path[UUID] / "delete")
-    .out(jsonBody[UUID])
+    .in("api" / "trips" / path[TripId] / "delete")
+    .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
   val createPersonEndpoint = endpoint

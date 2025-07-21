@@ -1,6 +1,6 @@
 package domain.services.trip.inMemory
 
-import domain.models.{Trip, TripCreate, TripStats}
+import domain.models.{Trip, TripCreate, TripId, TripStats}
 import domain.services.trip.TripService
 import zio.{Task, ULayer, ZIO, ZLayer}
 
@@ -15,14 +15,14 @@ case class TripServiceInMemory() extends TripService {
 
   override def createTrip(
     tripCreate: TripCreate
-  ): Task[UUID] =
+  ): Task[TripId] =
     if (!tripCreate.drivers.subsetOf(knownPersons))
       ZIO.fail(new Exception("Unknown person"))
     else
       ZIO
         .succeed {
           val newTrip = Trip(
-            id = UUID.randomUUID(),
+            id = TripId(UUID.randomUUID()),
             distance = tripCreate.distance,
             date = tripCreate.date,
             name = tripCreate.name,
@@ -30,7 +30,7 @@ case class TripServiceInMemory() extends TripService {
           )
           trips = trips :+ newTrip
           newTrip
-        }.as(UUID.randomUUID())
+        }.as(TripId(UUID.randomUUID()))
 
   override def getAllTrips: Task[List[Trip]] =
     ZIO.succeed {
@@ -43,7 +43,7 @@ case class TripServiceInMemory() extends TripService {
       TripStats(totalKm)
     }
 
-  override def deleteTrip(id: UUID): Task[UUID] = ???
+  override def deleteTrip(id: TripId): Task[TripId] = ???
 
   override def updateTrip(tripUpdate: Trip): Task[UUID] = ???
 }
