@@ -49,11 +49,17 @@ object TripEndpoints:
     .out(jsonBody[List[Trip]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getTotalStatsEndpoint = endpoint
+  val getTripStatsByUser = endpoint
     .get
     .in("api" / "trips" / "total")
     .in(queryParams)
     .out(jsonBody[TripStats])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+
+  val deleteTripEndpoint = endpoint
+    .delete
+    .in("api" / "trips" / path[UUID] / "delete")
+    .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
   val createPersonEndpoint = endpoint
@@ -72,7 +78,8 @@ object TripEndpoints:
     loginEndpoint,
     createTripEndpoint,
     getAllTripsEndpoint,
-    getTotalStatsEndpoint,
+    getTripStatsByUser,
     createPersonEndpoint,
-    updateTripEndpoint
+    updateTripEndpoint,
+    deleteTripEndpoint
   )

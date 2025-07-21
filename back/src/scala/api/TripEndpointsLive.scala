@@ -76,8 +76,8 @@ object TripEndpointsLive:
         .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
-  private val getTripStatsByUser: ZServerEndpoint[PersonService & AuthService & TripService, Any]   =
-    TripEndpoints.getTotalStatsEndpoint.serverLogic { username =>
+  private val getTripStatsByUser: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
+    TripEndpoints.getTripStatsByUser.serverLogic { username =>
       username
         .get("username").map(username =>
           TripService
@@ -86,6 +86,15 @@ object TripEndpointsLive:
             .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))).getOrElse(
           ZIO.left(StatusCode.BadRequest, ErrorResponse("No username in query params")))
     }
+
+  private val deleteTripEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
+    TripEndpoints.deleteTripEndpoint.serverLogic { tripId =>
+      TripService
+        .deleteTrip(tripId)
+        .map(Right(_))
+        .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    }
+
   private val createPersonEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
     TripEndpoints.createPersonEndpoint.serverLogic {
       case (token, personCreate) =>
@@ -112,6 +121,6 @@ object TripEndpointsLive:
     TripEndpoints.healthCheck.serverLogic(_ => ZIO.right(Right(())))
 
   val tripEndpoints: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
-    List(getTripStatsByUser, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint, healthEndpoint)
+    List(getTripStatsByUser, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint, healthEndpoint, deleteTripEndpoint)
   // login,
   // register
