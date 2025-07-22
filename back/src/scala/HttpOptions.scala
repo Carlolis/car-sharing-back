@@ -9,9 +9,10 @@ given RIOMonadError[Any] = new RIOMonadError[Any]
 
 type F[A] = ZIO[Any, Throwable, A]
 
-var serverLog: DefaultServerLog[F] = ZioHttpServerOptions
-  .defaultServerLog
-  .logWhenReceived(true).logAllDecodeFailures(true).logWhenHandled(true).logLogicExceptions(true)
+var serverLog: DefaultServerLog[F] =
+  ZioHttpServerOptions
+    .defaultServerLog
+    .logWhenReceived(true).logAllDecodeFailures(true).logWhenHandled(true).logLogicExceptions(true)
 
 val options: ZioHttpServerOptions[Any] =
   ZioHttpServerOptions

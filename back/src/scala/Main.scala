@@ -12,8 +12,32 @@ import zio.*
 import zio.http.*
 import zio.http.netty.NettyConfig
 import zio.http.netty.NettyConfig.LeakDetectionLevel
+import zio.logging.LogFormat.{label, quoted, space, timestamp}
+import zio.logging.backend.SLF4J
+import zio.logging.{LogColor, LogFilter, LogFormat}
+
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 object Main extends ZIOAppDefault:
+  val logFormat: LogFormat =
+    label(
+      "timestamp",
+      timestamp(DateTimeFormatter.ofPattern("dd/LL/uu HH:mm:ss:SS", Locale.FRANCE))
+    )
+      .color(LogColor.BLUE) |-|
+      label("level", LogFormat.level).highlight |-|
+      label("message", quoted(LogFormat.line)).highlight +
+      (space + label("cause", LogFormat.cause).highlight).filter(LogFilter.causeNonEmpty) |-| label(
+        "origin",
+        LogFormat.text("(") + LogFormat.enclosingClass + LogFormat.text(
+          ":"
+        ) + LogFormat.traceLine + LogFormat.text(")")
+      ).color(LogColor.GREEN)
+
+  override val bootstrap: ZLayer[Any, Nothing, Unit] =
+    Runtime.removeDefaultLoggers ++ SLF4J.slf4j(logFormat)
+
   override def run =
 
     val port   = sys.env("PORT").toInt
