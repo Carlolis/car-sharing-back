@@ -24,7 +24,8 @@ case class TripServiceInMemory() extends TripService {
           val newTrip = Trip(
             id = TripId(UUID.randomUUID()),
             distance = tripCreate.distance,
-            date = tripCreate.date,
+            startDate = tripCreate.startDate,
+            endDate = tripCreate.endDate,
             name = tripCreate.name,
             drivers = tripCreate.drivers
           )

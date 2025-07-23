@@ -12,21 +12,24 @@ import java.util.UUID
 class TripGel @GelDeserializer() (
   id: UUID,
   distance: Int,
-  date: LocalDate,
+  startDate: LocalDate,
+  endDate: LocalDate,
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
   gelDrivers: util.Collection[PersonCreateGel]
 ) {
   def getId: UUID                                  = id
   def getDistance: Int                             = distance
-  def getDate: LocalDate                           = date
+  def getStartDate: LocalDate                      = startDate
+  def getEndDate: LocalDate                        = endDate
   def getName: String                              = name
   def getDrivers: util.Collection[PersonCreateGel] = gelDrivers
 }
 
 case class TripGelCreate(
   distance: Double,
-  date: LocalDate,
+  startDate: LocalDate,
+  endDate: LocalDate,
   name: String,
   drivers: util.Collection[PersonCreate]
 )

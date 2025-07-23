@@ -5,13 +5,13 @@ import sttp.tapir.Schema
 import zio.json.*
 
 import java.time.LocalDate
-import java.util.UUID
 import scala.jdk.CollectionConverters.*
 
 case class Trip(
   id: TripId,
   distance: Int,
-  date: LocalDate,
+  startDate: LocalDate,
+  endDate: LocalDate,
   name: String,
   drivers: Set[String]
 )
@@ -23,7 +23,8 @@ object Trip {
     Trip(
       TripId(tripGel.getId),
       tripGel.getDistance,
-      tripGel.getDate,
+      tripGel.getStartDate,
+      tripGel.getEndDate,
       tripGel.getName,
       tripGel.getDrivers.asScala.map(_.name).toSet
     )

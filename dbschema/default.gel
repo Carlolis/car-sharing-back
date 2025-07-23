@@ -1,7 +1,8 @@
 module default {
   type TripGel {
     required name: str;
-    required date: cal::local_date;
+    required startDate: cal::local_date;
+    required endDate: cal::local_date;
     required distance: int16;
     required multi gelDrivers: PersonGel;
   }

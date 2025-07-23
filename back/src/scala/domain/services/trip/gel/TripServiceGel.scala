@@ -20,10 +20,13 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
       .querySingle(
         classOf[UUID],
         s"""
-          |  with new_trip := (insert TripGel { name := '${tripCreate.name}', distance := ${tripCreate.distance}, date := cal::to_local_date(${tripCreate
-            .date.getYear}, ${tripCreate
-            .date.getMonthValue}, ${tripCreate
-            .date.getDayOfMonth}), gelDrivers := (select detached default::PersonGel filter .name in ${tripCreate
+          |  with new_trip := (insert TripGel { name := '${tripCreate.name}', distance := ${tripCreate.distance}, startDate := cal::to_local_date(${tripCreate
+            .startDate.getYear}, ${tripCreate
+            .startDate.getMonthValue}, ${tripCreate
+            .startDate.getDayOfMonth}), endDate := cal::to_local_date(${tripCreate
+            .endDate.getYear}, ${tripCreate
+            .endDate.getMonthValue}, ${tripCreate
+            .endDate.getDayOfMonth}), gelDrivers := (select detached default::PersonGel filter .name in ${tripCreate
             .drivers.mkString("{'", "','", "'}")}) }) select new_trip.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID")).map(TripId(_))
@@ -33,9 +36,9 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
       .query(
         classOf[TripGel],
         s"""
-          | select TripGel { id, distance, date, name, gelDrivers: { name } }
+          | select TripGel { id, distance, startDate, endDate, name, gelDrivers: { name } }
           |   order by
-          |  .date desc then
+          |  .startDate desc then
           |  .id desc;;
           |"""
       )
@@ -78,8 +81,10 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
            |    set {
            |        name := '${tripUpdate.name}',
            |        distance := ${tripUpdate.distance},
-           |        date := cal::to_local_date(${tripUpdate
-            .date.getYear}, ${tripUpdate.date.getMonthValue}, ${tripUpdate.date.getDayOfMonth}),
+           |        startDate := cal::to_local_date(${tripUpdate
+            .startDate.getYear}, ${tripUpdate
+            .startDate.getMonthValue}, ${tripUpdate.startDate.getDayOfMonth}),endDate := cal::to_local_date(${tripUpdate
+            .endDate.getYear}, ${tripUpdate.endDate.getMonthValue}, ${tripUpdate.endDate.getDayOfMonth}),
            |        gelDrivers := (select detached default::PersonGel filter .name in ${tripUpdate.drivers.mkString("{'", "','", "'}")})
            |    }
            |)
