@@ -3,7 +3,7 @@ package gel.ia
 import adapters.GelDriverLive
 import domain.models.ia.*
 import domain.services.ia.IAService
-import domain.services.ia.gel.models.*
+import gel.ia.models.{ChatSessionGel, WriterGel}
 import zio.*
 
 import java.util.UUID
@@ -24,7 +24,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           | select WriterGel { id, name };
           |"""
     )
-    .map(_.toSet).map(writers => writers.map(Writer.fromWriterGel))
+    .map(_.toSet).map(writers => writers.map(WriterGel.fromWriterGel))
 
   override def getWriter(id: UUID): Task[Writer] = gelDriverLive
     .querySingle(
@@ -33,7 +33,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           | select WriterGel { id, name } filter .id = <uuid>'$id';
           |"""
     ).tap(writer => ZIO.logInfo(s"Got writer with id: $id"))
-    .map(Writer.fromWriterGel)
+    .map(WriterGel.fromWriterGel)
 
   override def getWriterByName(name: String): Task[Writer] = gelDriverLive
     .querySingle(
@@ -42,7 +42,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           | select WriterGel { id, name } filter .name = '$name';
           |"""
     ).tap(writer => ZIO.logInfo(s"Got writer with name: $name"))
-    .map(Writer.fromWriterGel)
+    .map(WriterGel.fromWriterGel)
 
   override def createChatSession(writerId: UUID, name: String): Task[UUID] = gelDriverLive
     .querySingle(
@@ -59,7 +59,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           | select ChatSessionGel { id, title,messages : {answer, question } } filter .id = <uuid>'$chatId';
           |"""
     ).tap(chat => ZIO.logInfo(s"Got chat session with id: $chatId"))
-    .map(ChatSession.fromChatSessionGel)
+    .map(ChatSessionGel.fromChatSessionGel)
 
   override def deleteChatById(chatId: UUID): Task[UUID] = gelDriverLive
     .querySingle(
@@ -87,7 +87,7 @@ case class IAServiceGel(gelDriverLive: GelDriverLive) extends IAService {
           | select ChatSessionGel { id, title, messages };
           |"""
     )
-    .map(_.toSet).map(chats => chats.map(ChatSession.fromChatSessionGel))
+    .map(_.toSet).map(chats => chats.map(ChatSessionGel.fromChatSessionGel))
 
   override def addMessageToChat(chatId: UUID, message: Message): Task[UUID] = gelDriverLive
     .querySingle(

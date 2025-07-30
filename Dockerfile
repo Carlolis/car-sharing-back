@@ -27,7 +27,7 @@ RUN mv /root/.local/share/coursier/bin/bleep /usr/local/bin/
 COPY . .
 
 # Créer executable
-RUN bleep dist back
+RUN bleep dist web
 
 
 # Finally, build the production image with minimal footprint
@@ -36,7 +36,7 @@ FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
 
 # Change ownership of the .config directory
 WORKDIR /myapp
-COPY --from=base /myapp/.bleep/builds/normal/.bloop/back/dist /myapp/dist
+COPY --from=base /myapp/.bleep/builds/normal/.bloop/web/dist /myapp/dist
 COPY --from=edgedb /myapp/gel.toml /myapp/dist/gel.toml
 
 

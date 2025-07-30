@@ -1,7 +1,7 @@
 package api
 
+import domain.services.AuthService
 import domain.services.person.PersonService
-import domain.services.services.AuthService
 import domain.services.trip.TripService
 import sttp.model.StatusCode
 import sttp.tapir.ztapir.*

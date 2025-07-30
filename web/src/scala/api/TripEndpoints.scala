@@ -1,6 +1,7 @@
 package api
 
 import domain.models.*
+import domain.services
 import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*

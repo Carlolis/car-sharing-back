@@ -2,8 +2,10 @@ import adapters.GelDriver
 import api.TripEndpointsLive.tripEndpoints
 import api.ia.IaRoutes.iaEndpoints
 import api.{TripEndpointsLive, swagger}
+
 import gel.ia.IAServiceGel
 import gel.trip.TripServiceGel
+import gel.person.PersonRepositoryGel
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import zio.*
 import zio.http.*
@@ -67,7 +69,7 @@ object Main extends ZIOAppDefault:
       Server.customized,
       IAServiceGel.layer,
       TripServiceGel.layer,
-      PersonServiceGel.layer,
+      PersonRepositoryGel.layer,
       GelDriver.layer,
       AuthServiceLive.layer
     )

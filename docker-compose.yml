@@ -9,7 +9,7 @@ services:
       - "8081:8081"
       - "8095:8095"
     command: >
-      sh -c "/myapp/dist/bin/back"
+      sh -c "/myapp/dist/bin/web"
     volumes:
       - "./dbschema:/dbschema"
     environment:
