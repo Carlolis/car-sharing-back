@@ -1,5 +1,5 @@
 $schema: https://raw.githubusercontent.com/oyvindberg/bleep/master/schema.json
-$version: 0.0.12
+$version: 0.0.13
 jvm:
   name: temurin:1.17.0.14
 projects:
@@ -58,7 +58,6 @@ projects:
     dependencies:
       - ch.qos.logback:logback-classic:1.4.11
       - com.auth0:java-jwt:4.4.0
-      - com.geldata:driver:0.4.0
       - com.softwaremill.sttp.tapir::tapir-core:1.11.34
       - com.softwaremill.sttp.tapir::tapir-json-zio:1.11.34
       - com.softwaremill.sttp.tapir::tapir-swagger-ui-bundle:1.11.34
@@ -69,9 +68,6 @@ projects:
       - dev.zio::zio:2.1.19
       - dev.zio::zio-logging-slf4j:2.1.14
       - dev.zio::zio-logging:2.1.14
-      - io.scalaland::chimney-java-collections:1.8.1
-      - io.scalaland::chimney:1.8.1
-      - dev.zio::zio-prelude:1.0.0-RC41
     extends: template-common
     platform:
       jvmRuntimeOptions: -Duser.dir=${BUILD_DIR}
