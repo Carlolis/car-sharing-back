@@ -8,7 +8,7 @@ import zio.*
 
 import java.util.UUID
 
-case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
+case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
   private val trips: List[Trip] = List.empty
   private val knownPersons      =
     Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
@@ -96,6 +96,6 @@ case class TripServiceGel(gelDb: GelDriverLive) extends TripService {
       )
 }
 
-object TripServiceGel:
+object TripRepositoryGel:
   val layer: ZLayer[GelDriverLive, Nothing, TripService] =
-    ZLayer.fromFunction(TripServiceGel(_))
+    ZLayer.fromFunction(TripRepositoryGel(_))

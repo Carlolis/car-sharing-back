@@ -1,9 +1,9 @@
 import adapters.GelDriver
 import domain.models.{PersonCreate, Trip, TripCreate}
 import domain.services.person.PersonService
-import domain.services.person.gel.PersonServiceGel
 import domain.services.trip.TripService
-import domain.services.trip.gel.TripServiceGel
+import gel.person.PersonRepositoryGel
+import gel.trip.TripRepositoryGel
 import zio.test.*
 import zio.test.Assertion.*
 import zio.{Scope, ZIO, ZLayer}
@@ -106,8 +106,8 @@ object TripServiceTest extends ZIOSpecDefault {
 
         }
       @@ TestAspect.sequential).provideShared(
-      TripServiceGel.layer,
-      PersonServiceGel.layer,
+      TripRepositoryGel.layer,
+      PersonRepositoryGel.layer,
       GelDriver.testLayer
     )
 }

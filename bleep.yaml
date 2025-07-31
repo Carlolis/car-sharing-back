@@ -39,7 +39,7 @@ projects:
     extends: template-common
     platform:
       jvmRuntimeOptions: -Duser.dir=${BUILD_DIR}
-  domain-test:
+  repository-test:
     dependencies:
       - com.github.sbt:junit-interface:0.13.3
       - dev.zio::zio-test-junit:2.1.19
@@ -47,7 +47,7 @@ projects:
       - dev.zio::zio-test-sbt:2.1.19
       - dev.zio::zio-test:2.1.19
       - org.scalameta::munit:1.0.3
-    dependsOn: domain
+    dependsOn: repository
     extends: template-common
     isTestProject: true
     testFrameworks:

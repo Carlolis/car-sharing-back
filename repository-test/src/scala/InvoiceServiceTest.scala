@@ -1,9 +1,9 @@
 import adapters.GelDriver
 import domain.models.{Invoice, InvoiceCreate, PersonCreate}
 import domain.services.invoice.InvoiceService
-import domain.services.invoice.gel.InvoiceServiceGel
 import domain.services.person.PersonService
-import domain.services.person.gel.PersonServiceGel
+import gel.invoice.InvoiceRepositoryGel
+import gel.person.PersonRepositoryGel
 import zio.test.*
 import zio.test.Assertion.*
 import zio.{ZIO, ZLayer}
@@ -82,8 +82,8 @@ object InvoiceServiceTest extends ZIOSpecDefault {
 
         }
       @@ TestAspect.sequential).provideShared(
-      InvoiceServiceGel.layer,
-      PersonServiceGel.layer,
+      InvoiceRepositoryGel.layer,
+      PersonRepositoryGel.layer,
       GelDriver.testLayer
     )
 }

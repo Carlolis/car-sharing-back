@@ -8,7 +8,7 @@ import zio.*
 
 import java.util.UUID
 
-case class InvoiceServiceGel(gelDb: GelDriverLive) extends InvoiceService {
+case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceService {
   // TODO: Implement actual database storage
   private val invoices: List[Invoice]              = List.empty
   private val knownPersons                         =
@@ -77,6 +77,6 @@ case class InvoiceServiceGel(gelDb: GelDriverLive) extends InvoiceService {
       )*/
 }
 
-object InvoiceServiceGel:
+object InvoiceRepositoryGel:
   val layer: ZLayer[GelDriverLive, Nothing, InvoiceService] =
-    ZLayer.fromFunction(InvoiceServiceGel(_))
+    ZLayer.fromFunction(InvoiceRepositoryGel(_))

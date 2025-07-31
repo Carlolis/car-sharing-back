@@ -1,7 +1,7 @@
 import adapters.GelDriver
 import domain.models.PersonCreate
 import domain.services.person.PersonService
-import domain.services.person.gel.PersonServiceGel
+import gel.person.PersonRepositoryGel
 import zio.ZIO
 import zio.test.*
 
@@ -55,7 +55,7 @@ object PersonServiceTest extends ZIOSpecDefault {
 
         }
       @@ TestAspect.sequential).provideShared(
-      PersonServiceGel.layer,
+      PersonRepositoryGel.layer,
       GelDriver.testLayer
     )
 }

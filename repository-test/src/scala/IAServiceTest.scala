@@ -1,7 +1,7 @@
 import adapters.GelDriver
 import domain.models.ia.*
 import domain.services.ia.IAService
-import domain.services.ia.gel.IAServiceGel
+import gel.ia.IAServiceGel
 import zio.ZIO
 import zio.test.*
 
