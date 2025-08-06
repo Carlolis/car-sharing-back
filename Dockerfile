@@ -10,8 +10,9 @@ RUN edgedb migrate -I db
 
 
 # Utiliser une image de base légère
-FROM eclipse-temurin:17-jdk-bookworm AS base
+FROM debian:bookworm-slim AS base
 WORKDIR /myapp
+RUN apt-get update && apt-get install -y curl gzip openjdk-17-jdk
 
 
 # Installer Coursier
@@ -31,11 +32,10 @@ RUN bleep dist web
 
 
 # Finally, build the production image with minimal footprint
-FROM eclipse-temurin:17-jre-bookworm
-
-
-# Change ownership of the .config directory
+FROM debian:bookworm-slim AS runtime
 WORKDIR /myapp
+RUN apt-get update && apt-get install -y openjdk-17-jre-headless
+
 COPY --from=base /myapp/.bleep/builds/normal/.bloop/web/dist /myapp/dist
 COPY --from=edgedb /myapp/gel.toml /myapp/dist/gel.toml
 
