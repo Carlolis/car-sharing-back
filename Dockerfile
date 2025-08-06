@@ -1,59 +1,61 @@
 # Stage 1: EdgeDB
 FROM edgedb/edgedb AS edgedb
-WORKDIR /myapp
+WORKDIR /app
 ARG EDGEDB_DSN
 
-# Copier tous les fichiers nécessaires pour EdgeDB
+# Copier les fichiers EdgeDB
+COPY dbschema/ ./dbschema/
 COPY gel.toml ./
-COPY dbschema/migrations ./dbschema/migrations/
-COPY dbschema/default.esdl ./dbschema/
-RUN echo "DSN is =${EDGEDB_DSN}" && \
-    edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --trust-tls-cert db && \
+RUN echo "DSN is ${EDGEDB_DSN}" && \
+    edgedb instance link --dsn="${EDGEDB_DSN}" --non-interactive --trust-tls-cert db && \
     edgedb migrate -I db
 
-# Stage 2: Build
-FROM eclipse-temurin:17-jdk-alpine AS builder
-WORKDIR /myapp
+# Stage 2: Build avec Scala
+FROM eclipse-temurin:17-jdk-jammy AS builder
+WORKDIR /app
 
-# Installation des dépendances en une seule couche
-RUN apk add --no-cache curl gcompat
+# Installation des dépendances nécessaires
+RUN apt-get update && apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Installation de Coursier et Bleep en une seule couche
+# Installation de Coursier et Bleep
 RUN curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > /usr/local/bin/cs && \
     chmod +x /usr/local/bin/cs && \
     cs install --channel https://raw.githubusercontent.com/oyvindberg/bleep/master/coursier-channel.json bleep && \
     mv /root/.local/share/coursier/bin/bleep /usr/local/bin/ && \
     rm -rf /root/.cache /root/.local
 
-# Copier uniquement les fichiers nécessaires pour le build
+# Copie des fichiers du projet
 COPY build.bleep.yaml bleep.yaml ./
-COPY src ./src/
-COPY project ./project/
+COPY src/ ./src/
+COPY project/ ./project/
 
-# Build
-RUN bleep dist web && \
-    rm -rf /root/.cache /root/.local /tmp/*
+# Build du projet
+RUN bleep compile web && \
+    bleep dist web
 
-# Stage 3: Final
-FROM eclipse-temurin:17-jre-alpine AS final
-WORKDIR /myapp
+# Stage 3: Image finale
+FROM eclipse-temurin:17-jre-jammy-minimal
+WORKDIR /app
 
-# Installation de gcompat en une seule couche
-RUN apk add --no-cache gcompat && \
-    adduser -S -u 1000 appuser && \
-    mkdir -p /myapp/dist && \
-    chown -R appuser:appuser /myapp
+# Création d'un utilisateur non-root
+RUN groupadd -r appuser && useradd -r -g appuser appuser && \
+    mkdir -p /app/dist && \
+    chown -R appuser:appuser /app
 
-# Copier les fichiers nécessaires
-COPY --from=builder /myapp/.bleep/builds/normal/.bloop/web/dist ./dist/
-COPY --from=edgedb /myapp/gel.toml ./dist/
-COPY --from=edgedb /myapp/dbschema ./dbschema/
+# Copie des artefacts de build
+COPY --from=builder /app/.bleep/builds/normal/.bloop/web/dist ./dist/
+COPY --from=edgedb /app/gel.toml ./dist/
+COPY --from=edgedb /app/dbschema ./dbschema/
 
-# Utiliser un utilisateur non-root
+# Configuration des permissions
+RUN chown -R appuser:appuser /app
+
+# Utilisation de l'utilisateur non-root
 USER appuser
 
-# Exposer les ports nécessaires
-EXPOSE 8081 8095
+# Configuration des ports
+EXPOSE 8081
 
-# Définir le point d'entrée
-CMD ["/myapp/dist/bin/web"]
+# Point d'entrée de l'application
+CMD ["/app/dist/bin/web"]
