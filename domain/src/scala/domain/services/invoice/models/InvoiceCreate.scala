@@ -1,4 +1,4 @@
-package domain.models
+package domain.services.invoice.models
 
 import zio.json.*
 

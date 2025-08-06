@@ -1,4 +1,5 @@
-package domain.models
+package domain.services.invoice.models
+
 
 import zio.json.*
 
@@ -17,7 +18,6 @@ case class Invoice(
 object Invoice {
   implicit val encoder: JsonEncoder[Invoice] = DeriveJsonEncoder.gen[Invoice]
   implicit val decoder: JsonDecoder[Invoice] = DeriveJsonDecoder.gen[Invoice]
- 
 }
 
 case class InvoiceStats(

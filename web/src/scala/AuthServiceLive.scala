@@ -47,7 +47,7 @@ class AuthServiceLive(personService: PersonService) extends AuthService:
       .create()
       .withSubject(username)
       .withIssuedAt(Instant.now())
-      .withExpiresAt(Instant.now().plusSeconds(360000))
+      .withExpiresAt(Instant.now().plusSeconds(36000000))
       .sign(algorithm)
 object AuthServiceLive:
   val layer: ZLayer[PersonService, Nothing, AuthServiceLive] =

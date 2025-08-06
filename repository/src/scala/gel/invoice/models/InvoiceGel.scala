@@ -1,7 +1,8 @@
 package gel.invoice.models
 
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
-import domain.models.{Invoice, PersonCreate}
+import domain.models.PersonCreate
+import domain.services.invoice.models.Invoice
 import gel.person.models.PersonCreateGel
 
 import java.time.LocalDate

@@ -1,6 +1,7 @@
 import adapters.GelDriver
-import domain.models.{Invoice, InvoiceCreate, PersonCreate}
-import domain.services.invoice.InvoiceService
+import domain.models.PersonCreate
+import domain.services.invoice.models.{Invoice, InvoiceCreate}
+import domain.services.invoice.repository.InvoiceRepository
 import domain.services.person.PersonService
 import gel.invoice.InvoiceRepositoryGel
 import gel.person.PersonRepositoryGel
@@ -23,8 +24,8 @@ object InvoiceServiceTest extends ZIOSpecDefault {
 
         for {
 
-          UUID          <- InvoiceService.createInvoice(invoiceCreate)
-          invoiceByUser <- InvoiceService.getAllInvoices
+          UUID          <- InvoiceRepository.createInvoice(invoiceCreate)
+          invoiceByUser <- InvoiceRepository.getAllInvoices
 
         } yield assertTrue(UUID != null, invoiceByUser.length == 1)
       }
@@ -68,9 +69,9 @@ object InvoiceServiceTest extends ZIOSpecDefault {
 
           (for {
 
-            allInvoices <- InvoiceService.getAllInvoices
+            allInvoices <- InvoiceRepository.getAllInvoices
             _           <- ZIO
-                             .foreachDiscard(allInvoices)(invoice => InvoiceService.deleteInvoice(invoice.id))
+                             .foreachDiscard(allInvoices)(invoice => InvoiceRepository.deleteInvoice(invoice.id))
 
           } yield ()).catchAll(e => ZIO.logError(e.getMessage))
 

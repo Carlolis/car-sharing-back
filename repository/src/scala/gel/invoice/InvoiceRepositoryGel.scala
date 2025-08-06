@@ -3,12 +3,14 @@ package gel.invoice
 import adapters.GelDriverLive
 import domain.models.*
 import domain.services.invoice.InvoiceService
+import domain.services.invoice.models.{Invoice, InvoiceCreate}
+import domain.services.invoice.repository.InvoiceRepository
 import gel.invoice.models.InvoiceGel
 import zio.*
 
 import java.util.UUID
 
-case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceService {
+case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository {
   // TODO: Implement actual database storage
   private val invoices: List[Invoice]              = List.empty
   private val knownPersons                         =
@@ -78,5 +80,5 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceService {
 }
 
 object InvoiceRepositoryGel:
-  val layer: ZLayer[GelDriverLive, Nothing, InvoiceService] =
+  val layer: ZLayer[GelDriverLive, Nothing, InvoiceRepository] =
     ZLayer.fromFunction(InvoiceRepositoryGel(_))
