@@ -28,6 +28,7 @@ projects:
       - io.scalaland::chimney-java-collections:1.8.1
       - io.scalaland::chimney:1.8.1
       - dev.zio::zio-prelude:1.0.0-RC41
+      - com.github.lookfirst:sardine:5.13
     extends: template-common
     platform:
       jvmRuntimeOptions: -Duser.dir=${BUILD_DIR}

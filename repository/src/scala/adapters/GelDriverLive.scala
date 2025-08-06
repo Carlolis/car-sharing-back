@@ -8,7 +8,7 @@ import scala.jdk.CollectionConverters.*
 
 case class GelDriverLive(database: String = "main") {
   /*  val tlsCAFromFile = fromFile("/home/carlos/.local/share/edgedb/data/backend/edbtlscert.pem").mkString*/
-  private var EDGEDB_DSN: String =
+  private val EDGEDB_DSN: String =
     sys.env.getOrElse("EDGEDB_DSN", s"edgedb://edgedb:password@localhost:10700/$database?tls_security=insecure")
 
   private val connection = GelConnection.builder().withDsn(EDGEDB_DSN).build()
@@ -28,7 +28,7 @@ case class GelDriverLive(database: String = "main") {
 
   // Config and passwords can be found here :
   // val configPath    = Paths.get(ConfigUtils.getCredentialsDir, "backend" + ".json")
-  private var CI: String =
+  private val CI: String =
     sys.env.getOrElse("CI", "false")
   private var client = new GelClientPool(connection)
   if (CI == "true") {

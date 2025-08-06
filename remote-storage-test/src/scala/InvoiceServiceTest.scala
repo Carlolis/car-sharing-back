@@ -1,5 +1,4 @@
-import domain.models.PersonCreate
-import domain.services.invoice.models.InvoiceCreate
+import adapters.SardineScalaImpl
 import domain.services.invoice.storage.InvoiceStorage
 import webdav.invoice.InvoiceWebDavImpl
 import zio.test.*
@@ -7,24 +6,17 @@ import zio.test.Assertion.*
 import zio.{ZIO, ZLayer}
 
 import java.io.File
-import java.time.LocalDate
 
 object InvoiceStorageTest extends ZIOSpecDefault {
-  val personName    = "Maé"
-  val maé           = PersonCreate(personName)
-  val invoiceCreate =
-    InvoiceCreate(100, LocalDate.now(), "Business", Set(personName))
-
   def spec =
     (suiteAll("InvoiceStorage Test with Webdav") {
-      val defaultPath = "http://localhost:8080/webdav/invoices/"
       val localPdf    = File.createTempFile("test", ".pdf")
       test("upload a pdf invoice") {
 
         for {
 
-          _           <- InvoiceStorage.upload(localPdf, defaultPath)
-          invoiceList <- InvoiceStorage.list(defaultPath)
+          _           <- InvoiceStorage.upload(localPdf)
+          invoiceList <- InvoiceStorage.list
 
         } yield assertTrue(invoiceList.length == 1)
       }
@@ -48,6 +40,7 @@ object InvoiceStorageTest extends ZIOSpecDefault {
 
         }*/
       @@ TestAspect.sequential).provideShared(
-      InvoiceWebDavImpl.layer
+      InvoiceWebDavImpl.layer,
+      SardineScalaImpl.layer
     )
 }
