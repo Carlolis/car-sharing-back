@@ -38,7 +38,7 @@ case class SardineScalaImpl(path: String = "main") {
 
              // Always buffer the input stream to ensure it's repeatable
              val bytes = dataStream.readAllBytes()
-             if (bytes.length == 0) throw new IllegalArgumentException("DataStream is empty")
+             if (bytes.isEmpty) throw new IllegalArgumentException("DataStream is empty")
 
              // Use the simplest put method with byte array
              sardine.put(invoicePath + fileName, bytes)
@@ -55,7 +55,7 @@ case class SardineScalaImpl(path: String = "main") {
   } yield ()
 
   def get(fileName: String): ZIO[Any, Throwable, InputStream] = for {
-    _    <- ZIO.log(s"Dowloading file from WebDAV: $invoicePath$fileName")
+    _    <- ZIO.log(s"Downloading file from WebDAV: $invoicePath$fileName")
     file <- ZIO.attempt {
               sardine.get(invoicePath + fileName)
             }
