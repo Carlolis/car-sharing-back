@@ -8,16 +8,17 @@ import scala.jdk.CollectionConverters.*
 
 case class SardineScalaImpl(path: String = "main") {
   private val NEXTCLOUD_USERNAME: String =
-    sys.env.getOrElse("NEXTCLOUD_USERNAME", "carlosnextcloud")
+    sys.env.getOrElse("NEXTCLOUD_USERNAME", throw new RuntimeException("NEXTCLOUD_USERNAME environment variable is required"))
 
   private val NEXTCLOUD_PASSWORD: String =
-    sys.env.getOrElse("NEXTCLOUD_PASSWORD", "password123")
+    sys.env.getOrElse("NEXTCLOUD_PASSWORD", throw new RuntimeException("NEXTCLOUD_PASSWORD environment variable is required"))
 
   private val NEXTCLOUD_URL =
     sys.env.getOrElse("NEXTCLOUD_URL", "https://nextcloud.ilieff.fr/remote.php/dav/files/carlosnextcloud/")
   private val invoicePath   = NEXTCLOUD_URL + "voiture/" + path + "/"
   // Create a new Sardine instance with proper authentication
   private val sardine       = {
+    println(s"Connecting to $NEXTCLOUD_URL with username $NEXTCLOUD_USERNAME and password $NEXTCLOUD_PASSWORD")
     val s = SardineFactory.begin(NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD)
     s.enablePreemptiveAuthentication(NEXTCLOUD_URL)
     s
