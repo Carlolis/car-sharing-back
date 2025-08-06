@@ -2,46 +2,49 @@ import adapters.SardineScalaImpl
 import domain.services.invoice.storage.InvoiceStorage
 import webdav.invoice.InvoiceWebDavImpl
 import zio.test.*
-import zio.test.Assertion.*
 import zio.{ZIO, ZLayer}
 
 import java.io.File
 
 object InvoiceStorageTest extends ZIOSpecDefault {
-  def spec =
+  val testPdfFile = new File("test.pdf")
+  def spec        =
     (suiteAll("InvoiceStorage Test with Webdav") {
-      val testPdfFile = new File("test.pdf")
 
-      test("upload a test.pdf invoice at repository root") {
+      test("upload a test.pdf invoice") {
 
         for {
-          invoiceList <- InvoiceStorage.list
-          _           <- ZIO.logInfo(invoiceList.toString)
+
           _           <- InvoiceStorage.upload(testPdfFile)
           invoiceList <- InvoiceStorage.list
-          uploadedFile = invoiceList.find(_.name == "test.pdf")
+          uploadedFile = invoiceList.find(_.name == testPdfFile.getName)
           _           <- ZIO.logInfo(invoiceList.toString)
-        } yield assertTrue(invoiceList.length == 1)
+        } yield assertTrue(uploadedFile.isDefined)
+      }
+
+      test("Delete a test.pdf uploaded invoice") {
+
+        for {
+
+          _           <- InvoiceStorage.upload(testPdfFile)
+          _           <- InvoiceStorage.delete(testPdfFile.getName)
+          invoiceList <- InvoiceStorage.list
+          uploadedFile = invoiceList.find(_.name == testPdfFile.getName)
+
+        } yield assertTrue(uploadedFile.isEmpty)
       }
     }
-    /*      @@ TestAspect
+      @@ TestAspect
         .after {
 
           (for {
 
-            allInvoices <- InvoiceStorage.getAllInvoices
-            _           <- ZIO
-                             .foreachDiscard(allInvoices)(invoice => InvoiceStorage.deleteInvoice(invoice.id))
+            allInvoices <- InvoiceStorage.delete(testPdfFile.getName)
 
           } yield ()).catchAll(e => ZIO.logError(e.getMessage))
 
         }
-      @@ TestAspect
-        .before {
-          val allPersons = Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
-          ZIO.foreachPar(allPersons)(person => PersonService.createPerson(person)).catchAll(e => ZIO.logError(e.getMessage))
 
-        }*/
       @@ TestAspect.sequential).provideShared(
       InvoiceWebDavImpl.layer,
       SardineScalaImpl.testLayer

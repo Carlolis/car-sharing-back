@@ -15,15 +15,14 @@ case class SardineScalaImpl(path: String = "main") {
 
   private val NEXTCLOUD_URL =
     sys.env.getOrElse("NEXTCLOUD_URL", "https://nextcloud.ilieff.fr/remote.php/dav/files/carlosnextcloud/")
-
+  private val invoicePath   = NEXTCLOUD_URL + "voiture/" + path + "/"
   // Create a new Sardine instance with proper authentication
-  private val sardine = {
+  private val sardine       = {
     val s = SardineFactory.begin(NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD)
     s.enablePreemptiveAuthentication(NEXTCLOUD_URL)
     s
   }
 
-  private val invoicePath                          = NEXTCLOUD_URL + "voiture/" + path + "/"
   def list: ZIO[Any, Throwable, List[DavResource]] =
     for {
 
@@ -46,6 +45,14 @@ case class SardineScalaImpl(path: String = "main") {
            }
       _ <- ZIO.log("File uploaded successfully")
     } yield ()
+
+  def delete(url: String): ZIO[Any, Throwable, Unit] = for {
+    _ <- ZIO.log(s"Deleting file from WebDAV: $invoicePath$url")
+    _ <- ZIO.attempt {
+           sardine.delete(invoicePath + url)
+         }
+    _ <- ZIO.log("File deleted successfully")
+  } yield ()
   /*
     def setCredentials(username: String, password: String): Unit = ???
 
@@ -103,7 +110,7 @@ case class SardineScalaImpl(path: String = "main") {
 
     def put(url: String, localFile: File, contentType: String, expectContinue: Boolean): Unit = ???
 
-    def delete(url: String): Unit = ???
+
 
     def delete(url: String, headers: Map[String, String]): Unit = ???
 
