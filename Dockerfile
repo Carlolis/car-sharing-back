@@ -1,49 +1,54 @@
-# pull in GelDB CLI
+
+# Stage 1: EdgeDB
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
 ARG EDGEDB_DSN
-RUN echo "DSN is =${EDGEDB_DSN}"
-COPY gel.toml /myapp/gel.toml
-COPY dbschema /myapp/dbschema
-RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --trust-tls-cert db
-RUN edgedb migrate -I db
+COPY gel.toml dbschema ./
+RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --trust-tls-cert db && \
+    edgedb migrate -I db
 
-
-# Utiliser Alpine comme image de base
-FROM eclipse-temurin:17-jdk-alpine AS base
+# Stage 2: Build
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /myapp
 
-# Installation des dépendances nécessaires
-RUN apk add --no-cache \
-    curl \
-    gcompat \
-    binutils
+# Installation des dépendances en une seule couche
+RUN apk add --no-cache curl gcompat
 
-# Installer Coursier
-RUN curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > cs
-RUN chmod +x cs
-RUN mv cs /usr/local/bin/cs
+# Installation de Coursier et Bleep en une seule couche
+RUN curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > /usr/local/bin/cs && \
+    chmod +x /usr/local/bin/cs && \
+    cs install --channel https://raw.githubusercontent.com/oyvindberg/bleep/master/coursier-channel.json bleep && \
+    mv /root/.local/share/coursier/bin/bleep /usr/local/bin/ && \
+    rm -rf /root/.cache /root/.local
 
-# Installer Bleep
-RUN cs install --channel https://raw.githubusercontent.com/oyvindberg/bleep/master/coursier-channel.json bleep
-RUN mv /root/.local/share/coursier/bin/bleep /usr/local/bin/
+# Copier uniquement les fichiers nécessaires pour le build
+COPY build.bleep.yaml bleep.yaml ./
+COPY src ./src/
+COPY project ./project/
 
-# Copier l'app
-COPY . .
+# Build
+RUN bleep dist web && \
+    rm -rf /root/.cache /root/.local /tmp/*
 
-# Créer executable
-RUN bleep dist web
-
-
-# Image finale
-FROM eclipse-temurin:17-jre-alpine
-
-# Change ownership of the .config directory
+# Stage 3: Final
+FROM eclipse-temurin:17-jre-alpine AS final
 WORKDIR /myapp
-COPY --from=base /myapp/.bleep/builds/normal/.bloop/web/dist /myapp/dist
-COPY --from=edgedb /myapp/gel.toml /myapp/dist/gel.toml
 
-# Installation de gcompat pour la compatibilité GLIBC
-RUN apk add --no-cache gcompat
+# Installation de gcompat en une seule couche
+RUN apk add --no-cache gcompat && \
+    adduser -S -u 1000 appuser && \
+    mkdir -p /myapp/dist && \
+    chown -R appuser:appuser /myapp
 
-ENTRYPOINT [""]
+# Copier uniquement les fichiers nécessaires
+COPY --from=builder /myapp/.bleep/builds/normal/.bloop/web/dist ./dist/
+COPY --from=edgedb /myapp/gel.toml ./dist/
+
+# Utiliser un utilisateur non-root
+USER appuser
+
+# Exposer les ports nécessaires
+EXPOSE 8081 8095
+
+# Définir le point d'entrée
+CMD ["/myapp/dist/bin/web"]
