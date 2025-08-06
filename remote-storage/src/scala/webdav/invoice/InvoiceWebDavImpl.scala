@@ -21,10 +21,14 @@ case class InvoiceWebDavImpl(sardine: SardineScalaImpl) extends InvoiceStorage {
       /*.filter(_.getName.equals("test"))*/
       .map(r => InvoiceFile(r.getName, r.getHref.toString, 0, 0))
 
-  override def download(remotePath: String): ZIO[Any, Throwable, Array[Byte]] = ???
+  override def download(invoiceName: String): ZIO[Any, Throwable, Array[Byte]] = for {
+    _            <- ZIO.log(s"Downloading invoice '$invoiceName' from: ${sardine.path}")
+    inputStream  <- sardine.get(invoiceName)
+    fileContents <- ZIO.attempt(inputStream.readAllBytes())
+  } yield fileContents
 
   override def delete(invoiceName: String): ZIO[Any, Throwable, Unit] = for {
-    _           <- ZIO.log(s"Deleting remote invoice: ${sardine.path}")
+    _ <- ZIO.log(s"Deleting remote invoice: ${sardine.path}")
     _ <- sardine.delete(invoiceName)
   } yield ()
 }

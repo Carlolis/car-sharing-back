@@ -33,6 +33,15 @@ object InvoiceStorageTest extends ZIOSpecDefault {
 
         } yield assertTrue(uploadedFile.isEmpty)
       }
+
+      test("Download a test.pdf uploaded invoice") {
+        for {
+          _           <- InvoiceStorage.upload(testPdfFile)
+          invoiceList <- InvoiceStorage.list
+          uploadedFile = invoiceList.find(_.name == testPdfFile.getName)
+          invoice     <- InvoiceStorage.download(uploadedFile.get.name)
+        } yield assertTrue(invoice.length > 0)
+      }
     }
       @@ TestAspect
         .after {

@@ -46,13 +46,21 @@ case class SardineScalaImpl(path: String = "main") {
       _ <- ZIO.log("File uploaded successfully")
     } yield ()
 
-  def delete(url: String): ZIO[Any, Throwable, Unit] = for {
-    _ <- ZIO.log(s"Deleting file from WebDAV: $invoicePath$url")
+  def delete(fileName: String): ZIO[Any, Throwable, Unit] = for {
+    _ <- ZIO.log(s"Deleting file from WebDAV: $invoicePath$fileName")
     _ <- ZIO.attempt {
-           sardine.delete(invoicePath + url)
+           sardine.delete(invoicePath + fileName)
          }
     _ <- ZIO.log("File deleted successfully")
   } yield ()
+
+  def get(fileName: String): ZIO[Any, Throwable, InputStream] = for {
+    _    <- ZIO.log(s"Dowloading file from WebDAV: $invoicePath$fileName")
+    file <- ZIO.attempt {
+              sardine.get(invoicePath + fileName)
+            }
+    _    <- ZIO.log("File downloaded successfully")
+  } yield file
   /*
     def setCredentials(username: String, password: String): Unit = ???
 
@@ -88,7 +96,7 @@ case class SardineScalaImpl(path: String = "main") {
 
     def patch(url: String, addProps: List[Element], removeProps: List[QName], headers: Map[String, String]): List[DavResource] = ???
 
-    def get(url: String): InputStream = ???
+
 
     def get(url: String, version: String): InputStream = ???
 
