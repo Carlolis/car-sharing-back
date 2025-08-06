@@ -10,14 +10,17 @@ import java.io.File
 object InvoiceStorageTest extends ZIOSpecDefault {
   def spec =
     (suiteAll("InvoiceStorage Test with Webdav") {
-      val localPdf    = File.createTempFile("test", ".pdf")
-      test("upload a pdf invoice") {
+      val testPdfFile = new File("test.pdf")
+
+      test("upload a test.pdf invoice at repository root") {
 
         for {
-
-          _           <- InvoiceStorage.upload(localPdf)
           invoiceList <- InvoiceStorage.list
-
+          _           <- ZIO.logInfo(invoiceList.toString)
+          _           <- InvoiceStorage.upload(testPdfFile)
+          invoiceList <- InvoiceStorage.list
+          uploadedFile = invoiceList.find(_.name == "test.pdf")
+          _           <- ZIO.logInfo(invoiceList.toString)
         } yield assertTrue(invoiceList.length == 1)
       }
     }
@@ -41,6 +44,6 @@ object InvoiceStorageTest extends ZIOSpecDefault {
         }*/
       @@ TestAspect.sequential).provideShared(
       InvoiceWebDavImpl.layer,
-      SardineScalaImpl.layer
+      SardineScalaImpl.testLayer
     )
 }
