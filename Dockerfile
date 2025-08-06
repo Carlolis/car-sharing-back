@@ -10,7 +10,7 @@ RUN edgedb migrate -I db
 
 
 # Utiliser une image de base légère
-FROM openjdk:17-jdk AS base
+FROM eclipse-temurin:17-jdk-bookworm AS base
 WORKDIR /myapp
 
 
@@ -31,7 +31,7 @@ RUN bleep dist web
 
 
 # Finally, build the production image with minimal footprint
-FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
+FROM eclipse-temurin:17-jre-bookworm
 
 
 # Change ownership of the .config directory
