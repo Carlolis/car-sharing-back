@@ -1,10 +1,14 @@
-
 # Stage 1: EdgeDB
 FROM edgedb/edgedb AS edgedb
 WORKDIR /myapp
 ARG EDGEDB_DSN
-COPY gel.toml dbschema ./
-RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --trust-tls-cert db && \
+
+# Copier tous les fichiers nécessaires pour EdgeDB
+COPY gel.toml ./
+COPY dbschema/migrations ./dbschema/migrations/
+COPY dbschema/default.esdl ./dbschema/
+RUN echo "DSN is =${EDGEDB_DSN}" && \
+    edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --trust-tls-cert db && \
     edgedb migrate -I db
 
 # Stage 2: Build
@@ -40,9 +44,10 @@ RUN apk add --no-cache gcompat && \
     mkdir -p /myapp/dist && \
     chown -R appuser:appuser /myapp
 
-# Copier uniquement les fichiers nécessaires
+# Copier les fichiers nécessaires
 COPY --from=builder /myapp/.bleep/builds/normal/.bloop/web/dist ./dist/
 COPY --from=edgedb /myapp/gel.toml ./dist/
+COPY --from=edgedb /myapp/dbschema ./dbschema/
 
 # Utiliser un utilisateur non-root
 USER appuser
