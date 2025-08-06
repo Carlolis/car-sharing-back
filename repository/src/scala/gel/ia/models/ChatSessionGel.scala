@@ -5,7 +5,7 @@ import domain.models.ia.{ChatSession, Message}
 
 import java.util
 import java.util.UUID
-import scala.collection.JavaConverters.collectionAsScalaIterableConverter
+import scala.jdk.CollectionConverters.*
 
 @GelType
 case class ChatSessionGel @GelDeserializer() (

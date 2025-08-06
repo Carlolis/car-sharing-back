@@ -4,7 +4,7 @@ import zio.json.*
 
 import java.time.LocalDate
 import java.util.UUID
-import scala.collection.JavaConverters.*
+import scala.jdk.CollectionConverters.*
 
 case class InvoiceCreate(
   distance: Int,

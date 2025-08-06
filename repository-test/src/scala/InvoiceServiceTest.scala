@@ -7,17 +7,17 @@ import gel.invoice.InvoiceRepositoryGel
 import gel.person.PersonRepositoryGel
 import zio.test.*
 import zio.test.Assertion.*
-import zio.{ZIO, ZLayer}
+import zio.{Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
 
 object InvoiceServiceTest extends ZIOSpecDefault {
   val personName    = "Maé"
-  val maé           = PersonCreate(personName)
+  val mae           = PersonCreate(personName)
   val invoiceCreate =
     InvoiceCreate(100, LocalDate.now(), "Business", Set(personName))
 
-  def spec =
+  def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("InvoiceServiceTest in Gel") {
 
       test("Maé createInvoice should create a invoice successfully with Maé") {

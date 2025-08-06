@@ -20,7 +20,7 @@ case class SardineScalaImpl(path: String = "main") {
   private val NEXTCLOUD_URL =
     sys.env.getOrElse("NEXTCLOUD_URL", "https://nextcloud.ilieff.fr/remote.php/dav/files/carlosnextcloud/")
 
-  val sardine = SardineFactory.begin(NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD)
+  private val sardine = SardineFactory.begin(NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD)
 
   def list: ZIO[Any, Throwable, List[DavResource]] = {
     val invoicePath = NEXTCLOUD_URL + "voiture/" + path

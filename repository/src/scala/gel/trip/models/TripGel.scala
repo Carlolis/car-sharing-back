@@ -1,14 +1,13 @@
 package gel.trip.models
 
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
-import domain.models.TripId
+import domain.models.{PersonCreate, Trip, TripId}
 import gel.person.models.PersonCreateGel
-import domain.models.{PersonCreate, Trip}
 
 import java.time.LocalDate
 import java.util
 import java.util.UUID
-import scala.collection.JavaConverters.collectionAsScalaIterableConverter
+import scala.jdk.CollectionConverters.*
 
 @GelType
 class TripGel @GelDeserializer() (

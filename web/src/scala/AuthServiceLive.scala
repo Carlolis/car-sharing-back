@@ -30,7 +30,7 @@ class AuthServiceLive(personService: PersonService) extends AuthService:
   override def login(login: String): Task[Token] =
     (for {
       user  <- personService.getPersonByName(login).orElseFail(new Exception("User not found"))
-      token <- ZIO.attempt(createToken(user.name)).map(Token.apply(_))
+      token <- ZIO.attempt(createToken(user.name)).map(Token.apply)
 
       _ <- ZIO.logInfo("Login success !")
     } yield token).tapError(error => ZIO.logError(error.getMessage))

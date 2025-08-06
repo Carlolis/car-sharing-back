@@ -8,7 +8,7 @@ import gel.person.models.PersonCreateGel
 import java.time.LocalDate
 import java.util
 import java.util.UUID
-import scala.collection.JavaConverters.collectionAsScalaIterableConverter
+import scala.jdk.CollectionConverters.*
 
 @GelType
 class InvoiceGel @GelDeserializer() (
