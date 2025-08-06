@@ -9,10 +9,15 @@ RUN edgedb instance link --dsn=${EDGEDB_DSN} --non-interactive --trust-tls-cert 
 RUN edgedb migrate -I db
 
 
-# Utiliser une image de base légère
-FROM openjdk:17-jdk AS base
+# Utiliser Alpine comme image de base
+FROM eclipse-temurin:17-jdk-alpine AS base
 WORKDIR /myapp
 
+# Installation des dépendances nécessaires
+RUN apk add --no-cache \
+    curl \
+    gcompat \
+    binutils
 
 # Installer Coursier
 RUN curl -fL "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz" | gzip -d > cs
@@ -30,15 +35,15 @@ COPY . .
 RUN bleep dist web
 
 
-# Finally, build the production image with minimal footprint
-FROM eclipse-temurin:17.0.14_7-jre-ubi9-minimal
-
+# Image finale
+FROM eclipse-temurin:17-jre-alpine
 
 # Change ownership of the .config directory
 WORKDIR /myapp
 COPY --from=base /myapp/.bleep/builds/normal/.bloop/web/dist /myapp/dist
 COPY --from=edgedb /myapp/gel.toml /myapp/dist/gel.toml
 
-
+# Installation de gcompat pour la compatibilité GLIBC
+RUN apk add --no-cache gcompat
 
 ENTRYPOINT [""]
