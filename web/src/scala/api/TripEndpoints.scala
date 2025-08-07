@@ -1,7 +1,6 @@
 package api
 
 import domain.models.*
-import domain.services
 import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
@@ -10,8 +9,6 @@ import sttp.tapir.ztapir.*
 import zio.json.*
 
 import java.util.UUID
-
-case class ErrorResponse(message: String) derives JsonEncoder, JsonDecoder
 
 object TripEndpoints:
 

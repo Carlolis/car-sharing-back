@@ -1,12 +1,12 @@
 package domain.services.invoice
 
-import domain.services.invoice.models.{Invoice, InvoiceCreate}
+import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId}
 import zio.*
 
 import java.util.UUID
 
 trait InvoiceService {
-  def createInvoice(tripCreate: InvoiceCreate): Task[UUID]
+  def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId]
   def getAllInvoices: Task[List[Invoice]]
   def deleteInvoice(id: UUID): Task[UUID]
   // def getTotalStats: Task[InvoiceStats]
@@ -15,7 +15,7 @@ trait InvoiceService {
 }
 
 object InvoiceService:
-  def createInvoice(tripCreate: InvoiceCreate): RIO[InvoiceService, UUID] =
+  def createInvoice(tripCreate: InvoiceCreate): RIO[InvoiceService, InvoiceId] =
     ZIO.serviceWithZIO[InvoiceService](_.createInvoice(tripCreate))
   def getAllInvoices: RIO[InvoiceService, List[Invoice]]                  =
     ZIO.serviceWithZIO[InvoiceService](_.getAllInvoices)

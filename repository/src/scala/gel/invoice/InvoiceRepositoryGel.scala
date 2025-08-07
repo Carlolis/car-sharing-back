@@ -2,8 +2,7 @@ package gel.invoice
 
 import adapters.GelDriverLive
 import domain.models.*
-import domain.services.invoice.InvoiceService
-import domain.services.invoice.models.{Invoice, InvoiceCreate}
+import domain.models.invoice.{Invoice, InvoiceCreate}
 import domain.services.invoice.repository.InvoiceRepository
 import gel.invoice.models.InvoiceGel
 import zio.*

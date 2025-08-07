@@ -101,7 +101,9 @@ projects:
     extends: template-common
     platform:
       jvmRuntimeOptions: -Duser.dir=${BUILD_DIR}
-    dependsOn: repository
+    dependsOn:
+      - repository
+      - remote-storage
   scripts:
     dependencies: build.bleep::bleep-core:${BLEEP_VERSION}
     platform:

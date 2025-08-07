@@ -1,6 +1,6 @@
 import adapters.GelDriver
 import domain.models.PersonCreate
-import domain.services.invoice.models.{Invoice, InvoiceCreate}
+import domain.models.invoice.{Invoice, InvoiceCreate}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.person.PersonService
 import gel.invoice.InvoiceRepositoryGel

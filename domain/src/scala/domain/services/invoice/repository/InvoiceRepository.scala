@@ -1,6 +1,6 @@
 package domain.services.invoice.repository
 
-import domain.services.invoice.models.{Invoice, InvoiceCreate}
+import domain.models.invoice.{Invoice, InvoiceCreate}
 import zio.*
 
 import java.util.UUID

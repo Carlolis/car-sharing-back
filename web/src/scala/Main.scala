@@ -1,12 +1,15 @@
-import adapters.GelDriver
+import adapters.{GelDriver, SardineScalaImpl}
+import api.InvoiceEndpointsLive.invoiceEndpoints
 import api.TripEndpointsLive.tripEndpoints
 import api.ia.IaRoutes.iaEndpoints
 import api.{TripEndpointsLive, swagger}
-
+import domain.services.invoice.InvoiceServiceLive
 import gel.ia.IAServiceGel
+import gel.invoice.InvoiceRepositoryGel
 import gel.trip.TripRepositoryGel
 import gel.person.PersonRepositoryGel
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
+import webdav.invoice.InvoiceWebDavImpl
 import zio.*
 import zio.http.*
 import zio.http.netty.NettyConfig
@@ -61,7 +64,7 @@ object Main extends ZIOAppDefault:
                   swagger
                 ) ++ ZioHttpInterpreter(options).toHttp(
                   iaEndpoints
-                )
+                ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpoints)
       _      <- httpApp.serve
     yield ()).provide(
       configLayer,
@@ -71,5 +74,9 @@ object Main extends ZIOAppDefault:
       TripRepositoryGel.layer,
       PersonRepositoryGel.layer,
       GelDriver.layer,
-      AuthServiceLive.layer
+      AuthServiceLive.layer,
+      InvoiceServiceLive.layer,
+      InvoiceRepositoryGel.layer,
+      InvoiceWebDavImpl.layer,
+      SardineScalaImpl.layer
     )
