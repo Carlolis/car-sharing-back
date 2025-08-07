@@ -1,7 +1,7 @@
 package api
 
 import domain.models.*
-import sttp.model.StatusCode
+import sttp.model.{QueryParams, StatusCode}
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
@@ -40,27 +40,27 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getAllTripsEndpoint = endpoint
+  val getAllTripsEndpoint: Endpoint[Unit, Unit, (StatusCode, ErrorResponse), List[Trip], Any] = endpoint
     .get
     .in("api" / "trips")
     /* .in(auth.bearer[String]())*/
     .out(jsonBody[List[Trip]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getTripStatsByUser = endpoint
+  val getTripStatsByUser: Endpoint[Unit, QueryParams, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
     .get
     .in("api" / "trips" / "total")
     .in(queryParams)
     .out(jsonBody[TripStats])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val deleteTripEndpoint = endpoint
+  val deleteTripEndpoint: Endpoint[Unit, TripId, (StatusCode, ErrorResponse), TripId, Any] = endpoint
     .delete
     .in("api" / "trips" / path[TripId] / "delete")
     .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val createPersonEndpoint = endpoint
+  val createPersonEndpoint: Endpoint[Unit, (String, PersonCreate), (StatusCode, ErrorResponse), UUID, Any] = endpoint
     .post
     .in("api" / "user")
     .in(auth.bearer[String]())
@@ -68,7 +68,7 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val healthCheck = endpoint
+  val healthCheck: Endpoint[Unit, Unit, Unit, Unit, Any] = endpoint
     .get
     .in("api" / "health")
 
