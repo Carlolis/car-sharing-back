@@ -47,6 +47,21 @@ case class SardineScalaImpl(path: String = "main") {
       _ <- ZIO.log("File uploaded successfully")
     } yield ()
 
+  def put(dataStream:  Array[Byte], contentType: String, fileName: String): ZIO[Any, Throwable, Unit] =
+    for {
+      _ <- ZIO.log(s"Uploading file to WebDAV: $invoicePath")
+      _ <- ZIO.attempt {
+        if (dataStream == null) throw new IllegalArgumentException("DataStream cannot be null")
+
+
+        if (dataStream.isEmpty) throw new IllegalArgumentException("DataStream is empty")
+
+        // Use the simplest put method with byte array
+        sardine.put(invoicePath + fileName, dataStream)
+      }
+      _ <- ZIO.log("File uploaded successfully")
+    } yield ()
+
   def delete(fileName: String): ZIO[Any, Throwable, Unit] = for {
     _ <- ZIO.log(s"Deleting file from WebDAV: $invoicePath$fileName")
     _ <- ZIO.attempt {

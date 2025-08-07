@@ -8,10 +8,11 @@ import zio.*
 import java.io.File
 
 case class InvoiceWebDavImpl(sardine: SardineScalaImpl) extends InvoiceStorage {
-  override def upload(invoice: File): ZIO[Any, Throwable, Unit] =
-    val inputStream = ZIO.attempt(new java.io.FileInputStream(invoice))
-    inputStream.flatMap(is => sardine.put(is, "application/pdf", invoice.getName)).tapError(e => ZIO.logError(e.getMessage))
+  override def upload(invoice: Array[Byte],name:String): ZIO[Any, Throwable, Unit] =
+    //val inputStream = ZIO.attempt(new java.io.FileInputStream(invoice))
+    //inputStream.flatMap(is => )
 
+   sardine.put(invoice, "application/pdf", name).tapError(e => ZIO.logError(e.getMessage))
   override def list: ZIO[Any, Throwable, List[InvoiceFile]] =
     for {
       _           <- ZIO.log(s"Listing remote directory: ${sardine.path}")

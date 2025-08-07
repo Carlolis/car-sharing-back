@@ -10,7 +10,8 @@ case class InvoiceCreate(
   distance: Int,
   date: LocalDate,
   name: String,
-  drivers: Set[String]
+  drivers: Set[String],
+  fileBytes: Option[Array[Byte]] = None
 )
 
 object InvoiceCreate {

@@ -8,7 +8,12 @@ import zio.*
 import java.util.UUID
 
 class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository) extends InvoiceService {
-  override def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId] = ???
+  override def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId] =
+    invoiceExternalStorage
+      .upload(
+        tripCreate
+          .fileBytes.get,tripCreate.name
+      ).as(InvoiceId(UUID.randomUUID()))
 
   override def getAllInvoices: Task[List[Invoice]] = ???
 
