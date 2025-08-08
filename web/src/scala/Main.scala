@@ -41,7 +41,7 @@ object Main extends ZIOAppDefault:
   override val bootstrap: ZLayer[Any, Nothing, Unit] =
     Runtime.removeDefaultLoggers ++ SLF4J.slf4j(logFormat)
 
-  override def run =
+  override def run: ZIO[Any, Throwable, Unit] =
 
     val port   = sys.env("PORT").toInt
     val config = Server

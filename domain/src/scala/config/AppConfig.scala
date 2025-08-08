@@ -29,5 +29,5 @@ private case class WebDavConfig(
 )
 
 object AppConfig:
-  val layer =
+  val layer: ZLayer[Any, Config.Error, AppConfig] =
     ZLayer.fromZIO(TypesafeConfigProvider.fromResourcePath().load(deriveConfig[AppConfig]))
