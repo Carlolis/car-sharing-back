@@ -3,7 +3,6 @@ package api
 import domain.services.AuthService
 import domain.services.invoice.InvoiceService
 import domain.services.person.PersonService
-import domain.services.trip.TripService
 import sttp.model.StatusCode
 import sttp.tapir.ztapir.*
 import zio.*
@@ -23,5 +22,3 @@ object InvoiceEndpointsLive:
 
   val invoiceEndpoints: List[ZServerEndpoint[PersonService & AuthService & InvoiceService, Any]] =
     List(createInvoice)
-  // login,
-  // register

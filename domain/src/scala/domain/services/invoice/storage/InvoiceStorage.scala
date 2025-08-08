@@ -1,10 +1,11 @@
 package domain.services.invoice.storage
 
 import domain.services.invoice.storage.models.InvoiceFile
+import domain.services.invoice.storage.models.errors.UploadFailed
 import zio.*
 
 trait InvoiceStorage {
-  def upload(invoice: Array[Byte], name: String): ZIO[Any, Throwable, Unit]
+  def upload(invoice: Array[Byte], name: String): ZIO[Any, UploadFailed, Unit]
 
   def list: ZIO[Any, Throwable, List[InvoiceFile]]
 
@@ -14,7 +15,7 @@ trait InvoiceStorage {
 }
 
 object InvoiceStorage:
-  def upload(invoice: Array[Byte], name: String): ZIO[InvoiceStorage, Throwable, Unit] =
+  def upload(invoice: Array[Byte], name: String): ZIO[InvoiceStorage, UploadFailed, Unit] =
     ZIO.serviceWithZIO[InvoiceStorage](_.upload(invoice, name))
   def list: ZIO[InvoiceStorage, Throwable, List[InvoiceFile]]                          =
     ZIO.serviceWithZIO[InvoiceStorage](_.list)

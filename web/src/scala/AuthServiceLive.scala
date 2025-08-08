@@ -37,9 +37,10 @@ class AuthServiceLive(personService: PersonService) extends AuthService:
 
   override def authenticate(token: String): Task[Person] = {
     val verifier = JWT.require(algorithm).build()
-    val decoded  = verifier.verify(token)
-    val username = decoded.getSubject
-    personService.getPersonByName(username)
+    ZIO
+      .attempt(verifier.verify(token)).flatMap(jwt => ZIO.attempt(jwt.getSubject)).mapError(error =>
+        new Exception(error.getMessage)).flatMap(personService.getPersonByName)
+
   }.tapError(error => ZIO.logError(error.getMessage))
 
   private def createToken(username: String): String =
