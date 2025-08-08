@@ -2,7 +2,7 @@ import adapters.SardineScalaImpl
 import domain.services.invoice.storage.InvoiceStorage
 import webdav.invoice.InvoiceWebDavImpl
 import zio.test.*
-import zio.{ZIO, ZLayer}
+import zio.{Scope, ZIO, ZLayer}
 
 import java.io.File
 import java.nio.file.Files
@@ -10,7 +10,7 @@ import java.nio.file.Files
 object InvoiceStorageTest extends ZIOSpecDefault {
   val testPdfFile = new File("test.pdf")
   var fileContent: Array[Byte] = Files.readAllBytes(testPdfFile.toPath)
-  def spec        =
+  def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("InvoiceStorage Test with Webdav") {
 
       test("upload a test.pdf invoice") {
