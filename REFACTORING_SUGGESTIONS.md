@@ -40,11 +40,6 @@
 - `InvoiceServiceLive.scala`: The `createInvoice` method (lines 18-64) is too long and should be split into smaller
   functions
 
-## 8. Add Proper Resource Management
-
-- `SardineScalaImpl.scala`: The Sardine instance is created once and never closed
-- Add proper resource cleanup with ZIO's scoping capabilities
-
 ## 9. Use More Type Safety
 
 - Replace raw strings with typed identifiers where appropriate
