@@ -9,7 +9,7 @@ import java.nio.file.Files
 
 object InvoiceStorageTest extends ZIOSpecDefault {
   val testPdfFile = new File("test.pdf")
-  var fileContent = Files.readAllBytes(testPdfFile.toPath)
+  var fileContent: Array[Byte] = Files.readAllBytes(testPdfFile.toPath)
   def spec        =
     (suiteAll("InvoiceStorage Test with Webdav") {
 
