@@ -1,5 +1,6 @@
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import config.{AppConfig, AuthConfig}
 import domain.models.{Person, Token}
 import domain.services.AuthService
 import domain.services.person.PersonService
@@ -7,9 +8,9 @@ import zio.*
 
 import java.time.Instant
 
-class AuthServiceLive(personService: PersonService) extends AuthService:
-  private val secretKey = "your-secret-key-here"
-  private val algorithm = Algorithm.HMAC256(secretKey)
+class AuthServiceLive(personService: PersonService, appConfig: AppConfig) extends AuthService:
+  private val authConfig = appConfig.auth
+  private val algorithm  = Algorithm.HMAC256(authConfig.secretKey)
 
   /*   override def register(userCreate: UserCreate): Task[Person] = {
      for {
@@ -48,8 +49,8 @@ class AuthServiceLive(personService: PersonService) extends AuthService:
       .create()
       .withSubject(username)
       .withIssuedAt(Instant.now())
-      .withExpiresAt(Instant.now().plusSeconds(36000000))
+      .withExpiresAt(Instant.now().plusSeconds(authConfig.tokenExpirationSeconds))
       .sign(algorithm)
 object AuthServiceLive:
-  val layer: ZLayer[PersonService, Nothing, AuthServiceLive] =
-    ZLayer.fromFunction(AuthServiceLive(_))
+  val layer: ZLayer[PersonService & AppConfig, Nothing, AuthServiceLive] =
+    ZLayer.fromFunction(AuthServiceLive(_, _))

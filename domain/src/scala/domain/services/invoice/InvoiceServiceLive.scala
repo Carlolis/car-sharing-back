@@ -59,6 +59,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                   _ => ZIO.logWarning(s"Compensation succeeded: '$sanitizedName' deleted")
                 )
                 .ignore
+          case _                                  => ZIO.unit
 
         }
         .map(_._1)

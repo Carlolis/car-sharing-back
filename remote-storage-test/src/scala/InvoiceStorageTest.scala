@@ -1,4 +1,5 @@
 import adapters.SardineScalaImpl
+import config.AppConfig
 import domain.services.invoice.storage.InvoiceStorage
 import webdav.invoice.InvoiceWebDavImpl
 import zio.test.*
@@ -8,8 +9,10 @@ import java.io.File
 import java.nio.file.Files
 
 object InvoiceStorageTest extends ZIOSpecDefault {
-  val testPdfFile = new File("test.pdf")
-  var fileContent: Array[Byte] = Files.readAllBytes(testPdfFile.toPath)
+  // Use the test layer from AppConfig
+  // This provides a consistent test configuration across all tests
+  val testPdfFile                              = new File("test.pdf")
+  var fileContent: Array[Byte]                 = Files.readAllBytes(testPdfFile.toPath)
   def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("InvoiceStorage Test with Webdav") {
 
@@ -57,6 +60,7 @@ object InvoiceStorageTest extends ZIOSpecDefault {
         }
 
       @@ TestAspect.sequential).provideShared(
+      AppConfig.layer,
       InvoiceWebDavImpl.layer,
       SardineScalaImpl.testLayer
     )

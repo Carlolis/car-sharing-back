@@ -3,11 +3,12 @@ import api.InvoiceEndpointsLive.invoiceEndpoints
 import api.TripEndpointsLive.tripEndpoints
 import api.ia.IaRoutes.iaEndpoints
 import api.{TripEndpointsLive, swagger}
+import config.AppConfig
 import domain.services.invoice.InvoiceServiceLive
 import gel.ia.IAServiceGel
 import gel.invoice.InvoiceRepositoryGel
-import gel.trip.TripRepositoryGel
 import gel.person.PersonRepositoryGel
+import gel.trip.TripRepositoryGel
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import webdav.invoice.InvoiceWebDavImpl
 import zio.*
@@ -78,5 +79,6 @@ object Main extends ZIOAppDefault:
       InvoiceServiceLive.layer,
       InvoiceRepositoryGel.layer,
       InvoiceWebDavImpl.layer,
-      SardineScalaImpl.layer
+      SardineScalaImpl.layer,
+      AppConfig.layer
     )

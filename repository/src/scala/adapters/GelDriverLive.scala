@@ -1,9 +1,8 @@
 package adapters
 
-import com.geldata.driver.{GelClientPool,  TLSSecurityMode,GelConnection}
+import com.geldata.driver.{GelClientPool, GelConnection}
 import zio.*
 
-import scala.io.Source.fromFile
 import scala.jdk.CollectionConverters.*
 
 case class GelDriverLive(database: String = "main") {
@@ -30,11 +29,9 @@ case class GelDriverLive(database: String = "main") {
   // val configPath    = Paths.get(ConfigUtils.getCredentialsDir, "backend" + ".json")
   private val CI: String =
     sys.env.getOrElse("CI", "false")
-  private var client = new GelClientPool(connection)
-  if (CI == "true") {
+  private var client     = new GelClientPool(connection)
+  if (CI == "true")
     client = new GelClientPool()
-    }
-
 
   def querySingle[A](
     cls: Class[A],

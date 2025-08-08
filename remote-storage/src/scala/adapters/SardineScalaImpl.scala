@@ -1,28 +1,22 @@
 package adapters
 
 import com.github.sardine.*
+import config.{AppConfig, WebDavConfig}
 import zio.*
 
 import java.io.InputStream
 import scala.jdk.CollectionConverters.*
 
-case class SardineScalaImpl(path: String = "main") {
-  private val NEXTCLOUD_USERNAME: String =
-    sys.env.getOrElse("NEXTCLOUD_USERNAME", throw new RuntimeException("NEXTCLOUD_USERNAME environment variable is required"))
-
-  private val NEXTCLOUD_PASSWORD: String =
-    sys.env.getOrElse("NEXTCLOUD_PASSWORD", throw new RuntimeException("NEXTCLOUD_PASSWORD environment variable is required"))
-
-  private val NEXTCLOUD_URL =
-    sys.env.getOrElse("NEXTCLOUD_URL", "https://nextcloud.ilieff.fr/remote.php/dav/files/carlosnextcloud/")
-  private val invoicePath   = NEXTCLOUD_URL + "voiture/" + path + "/"
+case class SardineScalaImpl(appConfig: AppConfig, path: String = "main") {
+  private val config = appConfig.webdav
+  private val invoicePath = config.baseUrl + config.basePath + "/" + path + "/"
   
   // Create a Sardine instance with proper resource management
   private def makeSardine: ZIO[Scope, Throwable, Sardine] = ZIO.acquireRelease {
     ZIO.attempt {
-      ZIO.log(s"Connecting to $NEXTCLOUD_URL with username $NEXTCLOUD_USERNAME")
-      val s = SardineFactory.begin(NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD)
-      s.enablePreemptiveAuthentication(NEXTCLOUD_URL)
+      ZIO.log(s"Connecting to ${config.baseUrl} with username ${config.username}")
+      val s = SardineFactory.begin(config.username, config.password)
+      s.enablePreemptiveAuthentication(config.baseUrl)
       s
     }
   } { sardine =>
@@ -92,8 +86,11 @@ case class SardineScalaImpl(path: String = "main") {
 }
 
 object SardineScalaImpl {
-  val layer: ULayer[SardineScalaImpl]     = ZLayer.succeed(SardineScalaImpl())
-  val testLayer: ULayer[SardineScalaImpl] = ZLayer.succeed(SardineScalaImpl("test"))
+  val layer: ZLayer[AppConfig, Nothing, SardineScalaImpl] = 
+    ZLayer.fromFunction(appConfig => SardineScalaImpl(appConfig))
+    
+  val testLayer: ZLayer[AppConfig, Nothing, SardineScalaImpl] = 
+    ZLayer.fromFunction(appConfig => SardineScalaImpl(appConfig, "test"))
   
   // Helper methods to use with ZIO.scoped
   def list: ZIO[Scope & SardineScalaImpl, Throwable, List[DavResource]] =
