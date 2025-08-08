@@ -12,9 +12,9 @@ type F[A] = ZIO[Any, Throwable, A]
 var serverLog: DefaultServerLog[F] =
   ZioHttpServerOptions
     .defaultServerLog
-    .logWhenReceived(true).logAllDecodeFailures(true).logWhenHandled(true).logLogicExceptions(true)
+    .logWhenReceived(true).showEndpoint(s => s.show)
 
-val options: ZioHttpServerOptions[Any] =
+val options =
   ZioHttpServerOptions
     .customiseInterceptors.corsInterceptor(
       CORSInterceptor.customOrThrow(
@@ -23,4 +23,5 @@ val options: ZioHttpServerOptions[Any] =
             allowedOrigin = AllowedOrigin.All
           )
       )
-    ).serverLog(serverLog).decodeFailureHandler(CustomDecodeFailureHandler.create()).options
+    )
+    .decodeFailureHandler(CustomDecodeFailureHandler.create()).serverLog(serverLog).options

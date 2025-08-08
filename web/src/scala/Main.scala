@@ -82,3 +82,6 @@ object Main extends ZIOAppDefault:
       SardineScalaImpl.layer,
       AppConfig.layer
     )
+
+
+

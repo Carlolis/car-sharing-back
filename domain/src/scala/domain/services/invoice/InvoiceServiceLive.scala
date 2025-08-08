@@ -4,8 +4,10 @@ import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.storage.InvoiceStorage
 import domain.services.invoice.storage.models.errors.UploadFailed
+import sttp.tapir.FileRange
 import zio.*
 
+import java.nio.file.Files
 import java.util.UUID
 
 class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository) extends InvoiceService:
@@ -17,18 +19,19 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
 
   override def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId] =
     val sanitizedName = sanitizeName(tripCreate.name)
-
+    val path = tripCreate.fileBytes.get.file.toPath
+    val is = Files.newInputStream(path).readAllBytes()
     ZIO.log(
       s"Creating invoice: originalName='${tripCreate.name}', sanitizedName='$sanitizedName', distance=${tripCreate.distance}, date=${tripCreate.date}") *>
       (for
         // Upload only if a file is provided
         uploaded <- tripCreate.fileBytes match
                       case Some(bytes) =>
-                        ZIO.log(s"File provided (${bytes.length} bytes)")
-
+                        ZIO.log(s"File provided (${bytes.range} bytes)")
+                    
                         ZIO.log(s"Uploading file '$sanitizedName'") *>
                           invoiceExternalStorage
-                            .upload(bytes, sanitizedName)
+                            .upload(is, sanitizedName)
                             .tapBoth(
                               err => ZIO.logError(s"Upload failed for '$sanitizedName': ${err.getMessage}"),
                               _ => ZIO.log(s"Upload succeeded for '$sanitizedName'")
@@ -67,6 +70,10 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
   override def getAllInvoices: Task[List[Invoice]] = ???
 
   override def deleteInvoice(id: UUID): Task[UUID] = ???
+
+
+
+
 object InvoiceServiceLive:
   val layer: ZLayer[InvoiceStorage & InvoiceRepository, Nothing, InvoiceServiceLive] =
     ZLayer.fromFunction(InvoiceServiceLive(_, _))
