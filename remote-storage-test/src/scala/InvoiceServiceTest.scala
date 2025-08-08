@@ -5,9 +5,11 @@ import zio.test.*
 import zio.{ZIO, ZLayer}
 
 import java.io.File
+import java.nio.file.Files
 
 object InvoiceStorageTest extends ZIOSpecDefault {
   val testPdfFile = new File("test.pdf")
+  var fileContent = Files.readAllBytes(testPdfFile.toPath)
   def spec        =
     (suiteAll("InvoiceStorage Test with Webdav") {
 
@@ -15,7 +17,7 @@ object InvoiceStorageTest extends ZIOSpecDefault {
 
         for {
 
-          _           <- InvoiceStorage.upload(testPdfFile)
+          _           <- InvoiceStorage.upload(fileContent, testPdfFile.getName)
           invoiceList <- InvoiceStorage.list
           uploadedFile = invoiceList.find(_.name == testPdfFile.getName)
           _           <- ZIO.logInfo(invoiceList.toString)
@@ -26,7 +28,7 @@ object InvoiceStorageTest extends ZIOSpecDefault {
 
         for {
 
-          _           <- InvoiceStorage.upload(testPdfFile)
+          _           <- InvoiceStorage.upload(fileContent, testPdfFile.getName)
           _           <- InvoiceStorage.delete(testPdfFile.getName)
           invoiceList <- InvoiceStorage.list
           uploadedFile = invoiceList.find(_.name == testPdfFile.getName)
@@ -36,7 +38,7 @@ object InvoiceStorageTest extends ZIOSpecDefault {
 
       test("Download a test.pdf uploaded invoice") {
         for {
-          _           <- InvoiceStorage.upload(testPdfFile)
+          _           <- InvoiceStorage.upload(fileContent, testPdfFile.getName)
           invoiceList <- InvoiceStorage.list
           uploadedFile = invoiceList.find(_.name == testPdfFile.getName)
           invoice     <- InvoiceStorage.download(uploadedFile.get.name)
