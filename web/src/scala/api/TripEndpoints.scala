@@ -56,7 +56,7 @@ object TripEndpoints:
 
   val deleteTripEndpoint: Endpoint[Unit, TripId, (StatusCode, ErrorResponse), TripId, Any] = endpoint
     .delete
-    .in("api" / "trips" / path[TripId] / "delete")
+    .in("api" / "trips" / path[TripId])
     .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 

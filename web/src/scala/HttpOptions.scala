@@ -12,7 +12,11 @@ type F[A] = ZIO[Any, Throwable, A]
 var serverLog: DefaultServerLog[F] =
   ZioHttpServerOptions
     .defaultServerLog
-    .logWhenReceived(true).showEndpoint(s => s.show)
+    .logWhenReceived(true)
+    .logWhenHandled(true)
+    .logAllDecodeFailures(true)
+    .logLogicExceptions(true)
+    .showEndpoint(s => s.show)
 
 val options =
   ZioHttpServerOptions
