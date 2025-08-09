@@ -9,7 +9,7 @@ final case class SaveInvoiceFailed(
   detail: String,
   underlying: Option[Throwable] = None
 ) extends InvoiceRepositoryError:
-  override def getMessage: String         = s"Failed to save invoice file $invoiceName: $detail"
+  override def getMessage: String         = s"Failed to save invoice $invoiceName: $detail"
   override def getCause: Throwable | Null = underlying.orNull
 object SaveInvoiceFailed:
   def apply(invoiceName: String, message: String): SaveInvoiceFailed =
