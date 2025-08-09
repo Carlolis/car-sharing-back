@@ -2,8 +2,8 @@ package domain.services.invoice
 
 import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId}
 import domain.services.invoice.repository.InvoiceRepository
+import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
 import domain.services.invoice.storage.InvoiceStorage
-import domain.services.invoice.storage.models.errors.UploadFailed
 import sttp.tapir.FileRange
 import zio.*
 
@@ -18,9 +18,9 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
     named.take(255) // simple limit
 
   override def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId] =
-    val sanitizedName = sanitizeName(tripCreate.name)
-    val path = tripCreate.fileBytes.get.file.toPath
-    val is = Files.newInputStream(path).readAllBytes()
+    val sanitizedName = sanitizeName(tripCreate.fileBytes.map(_.file.getName).getOrElse("No file provided"))
+    val path          = tripCreate.fileBytes.get.file.toPath
+    val is            = Files.newInputStream(path).readAllBytes()
     ZIO.log(
       s"Creating invoice: originalName='${tripCreate.name}', sanitizedName='$sanitizedName', distance=${tripCreate.distance}, date=${tripCreate.date}") *>
       (for
@@ -28,7 +28,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
         uploaded <- tripCreate.fileBytes match
                       case Some(bytes) =>
                         ZIO.log(s"File provided (${bytes.range} bytes)")
-                    
+
                         ZIO.log(s"Uploading file '$sanitizedName'") *>
                           invoiceExternalStorage
                             .upload(is, sanitizedName)
@@ -53,7 +53,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
         .tapErrorCause(cause => ZIO.logErrorCause(s"Error while creating invoice (file='$sanitizedName')", cause))
         // Compensate only if upload actually happened
         .onError {
-          case zio.Cause.Fail(_: UploadFailed, _) =>
+          case zio.Cause.Fail(_: SaveInvoiceFailed, _) =>
             ZIO.logWarning(s"Compensation: deleting orphan file '$sanitizedName'") *>
               invoiceExternalStorage
                 .delete(sanitizedName)
@@ -62,7 +62,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                   _ => ZIO.logWarning(s"Compensation succeeded: '$sanitizedName' deleted")
                 )
                 .ignore
-          case _                                  => ZIO.unit
+          case _                                       => ZIO.unit
 
         }
         .map(_._1)
@@ -70,10 +70,6 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
   override def getAllInvoices: Task[List[Invoice]] = ???
 
   override def deleteInvoice(id: UUID): Task[UUID] = ???
-
-
-
-
 object InvoiceServiceLive:
   val layer: ZLayer[InvoiceStorage & InvoiceRepository, Nothing, InvoiceServiceLive] =
     ZLayer.fromFunction(InvoiceServiceLive(_, _))

@@ -11,8 +11,8 @@ import zio.{Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
 
-object InvoiceServiceTest extends ZIOSpecDefault {
-  val personName    = "Maé"
+object InvoiceRepositoryTest extends ZIOSpecDefault {
+  val personName    = "maé"
   val mae           = PersonCreate(personName)
   val invoiceCreate =
     InvoiceCreate(100, LocalDate.now(), "Business", Set(personName))
@@ -72,13 +72,15 @@ object InvoiceServiceTest extends ZIOSpecDefault {
             allInvoices <- InvoiceRepository.getAllInvoices
             _           <- ZIO
                              .foreachDiscard(allInvoices)(invoice => InvoiceRepository.deleteInvoice(invoice.id))
+            allPersons  <- PersonService.getAll
+            _           <- ZIO.foreachDiscard(allPersons)(person => PersonService.deletePerson(person.id))
 
           } yield ()).catchAll(e => ZIO.logError(e.getMessage))
 
         }
       @@ TestAspect
         .before {
-          val allPersons = Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
+          val allPersons = Set(PersonCreate("maé"), PersonCreate("brigitte"), PersonCreate("charles"))
           ZIO.foreachPar(allPersons)(person => PersonService.createPerson(person)).catchAll(e => ZIO.logError(e.getMessage))
 
         }

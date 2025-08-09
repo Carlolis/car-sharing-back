@@ -10,6 +10,7 @@ module default {
   type PersonGel {
     required name: str;
     multi drive_in := .<gelDrivers[is TripGel];
+    multi invoice_in := .<gelPersons[is InvoiceGel];
   }
 
   type WriterGel {
@@ -37,7 +38,7 @@ module default {
     required name: str;
     required date: cal::local_date;
     required amount: int16;
-    required multi gelDrivers: PersonGel;
+    required multi gelPersons: PersonGel;
   }
 
 }
