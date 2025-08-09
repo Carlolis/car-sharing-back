@@ -13,6 +13,7 @@ jobs:
       NEXTCLOUD_USERNAME: ${{ secrets.NEXTCLOUD_USERNAME }}
       NEXTCLOUD_PASSWORD: ${{ secrets.NEXTCLOUD_PASSWORD }}
       NEXTCLOUD_URL: ${{ secrets.NEXTCLOUD_URL }}
+      AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: bleep-build/bleep-setup-action@0.0.2
