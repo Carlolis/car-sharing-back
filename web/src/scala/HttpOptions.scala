@@ -16,7 +16,6 @@ var serverLog: DefaultServerLog[F] =
     .logWhenHandled(true)
     .logAllDecodeFailures(true)
     .logLogicExceptions(true)
-    .showEndpoint(s => s.show)
 
 val options =
   ZioHttpServerOptions

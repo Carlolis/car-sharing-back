@@ -12,8 +12,8 @@
     <!-- Set DEBUG level for Tapir HTTP request logging -->
     <logger name="sttp.tapir.server.interceptor.log.DefaultServerLog" level="DEBUG"/>
     <logger name="sttp.tapir" level="DEBUG"/>
-    
-    <root level="INFO">
+
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 

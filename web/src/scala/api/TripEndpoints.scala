@@ -1,7 +1,7 @@
 package api
 
 import domain.models.*
-import sttp.model.{QueryParams, StatusCode}
+import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
@@ -47,10 +47,10 @@ object TripEndpoints:
     .out(jsonBody[List[Trip]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getTripStatsByUser: Endpoint[Unit, QueryParams, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
+  val getTripStatsByUser: Endpoint[Unit, String, (StatusCode, ErrorResponse), TripStats, Any] = endpoint
     .get
     .in("api" / "trips" / "total")
-    .in(queryParams)
+    .in(auth.bearer[String]())
     .out(jsonBody[TripStats])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 

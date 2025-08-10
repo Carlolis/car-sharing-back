@@ -60,6 +60,7 @@ object TripEndpointsLive:
   private val getAllTrips: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
     TripEndpoints.getAllTripsEndpoint.serverLogic { token =>
       (for {
+
         // userOpt <- authService.authenticate(token)
         // user <- ZIO
         //   .fromOption(userOpt)
@@ -77,14 +78,14 @@ object TripEndpointsLive:
     }
 
   private val getTripStatsByUser: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
-    TripEndpoints.getTripStatsByUser.serverLogic { username =>
-      username
-        .get("username").map(username =>
-          TripService
-            .getTripStatsByUser(username)
-            .map(Right(_))
-            .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))).getOrElse(
-          ZIO.left(StatusCode.BadRequest, ErrorResponse("No username in query params")))
+    TripEndpoints.getTripStatsByUser.serverLogic { token =>
+      (for {
+        person <- AuthService.authenticate(token)
+        stats  <- TripService
+                    .getTripStatsByUser(person.name)
+      } yield stats)
+        .map(Right(_))
+        .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
   private val deleteTripEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
