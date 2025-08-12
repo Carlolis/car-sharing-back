@@ -1,6 +1,6 @@
 import adapters.GelDriver
 import domain.models.PersonCreate
-import domain.models.invoice.{Invoice, InvoiceCreate}
+import domain.models.invoice.{DriverName, Invoice, InvoiceCreate}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.person.PersonService
 import gel.invoice.InvoiceRepositoryGel
@@ -15,7 +15,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
   val personName    = "maé"
   val mae           = PersonCreate(personName)
   val invoiceCreate =
-    InvoiceCreate(100, LocalDate.now(), "Business", Set(personName))
+    InvoiceCreate(99, LocalDate.now(), "Business", Set(DriverName(personName)))
 
   def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("InvoiceServiceTest in Gel") {
@@ -28,6 +28,23 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           invoiceByUser <- InvoiceRepository.getAllInvoices
 
         } yield assertTrue(UUID != null, invoiceByUser.length == 1)
+      }
+
+      test("Maé has one invoice for 99€, Charles has to give 33 to Maé, Brigitte 33 to Maé and Maé 0 to anyone else") {
+
+        for {
+
+          UUID                  <- InvoiceRepository.createInvoice(invoiceCreate)
+          reimbursements        <- InvoiceRepository.getReimbursementProposal
+          maéReimbursement      <- ZIO.fromOption(reimbursements.find(_.driverName == DriverName(personName)))
+          charlesReimbursement  <- ZIO.fromOption(reimbursements.find(_.driverName == DriverName("charles")))
+          brigitteReimbursement <- ZIO.fromOption(reimbursements.find(_.driverName == DriverName("brigitte")))
+
+        } yield assertTrue(
+          reimbursements.size == 3,
+          maéReimbursement.totalAmount == 0,
+          charlesReimbursement.totalAmount == 33,
+          brigitteReimbursement.totalAmount == 33)
       }
       /*test("Charles createInvoice should create a invoice successfully with Charles") {
         val personName = "Charles"

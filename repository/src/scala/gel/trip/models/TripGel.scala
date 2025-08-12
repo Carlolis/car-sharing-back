@@ -1,7 +1,8 @@
 package gel.trip.models
 
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
-import domain.models.{PersonCreate, Trip, TripId}
+import domain.models.PersonCreate
+import domain.models.trip.{Trip, TripId}
 import gel.person.models.PersonCreateGel
 
 import java.time.LocalDate

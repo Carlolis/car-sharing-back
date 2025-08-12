@@ -1,6 +1,7 @@
 package api
 
 import domain.models.*
+import domain.models.trip.{Trip, TripCreate, TripId, TripStats}
 import sttp.model.StatusCode
 import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
@@ -40,10 +41,10 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getAllTripsEndpoint: Endpoint[Unit, Unit, (StatusCode, ErrorResponse), List[Trip], Any] = endpoint
+  val getAllTripsEndpoint: Endpoint[Unit, String, (StatusCode, ErrorResponse), List[Trip], Any] = endpoint
     .get
     .in("api" / "trips")
-    /* .in(auth.bearer[String]())*/
+    .in(auth.bearer[String]())
     .out(jsonBody[List[Trip]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 

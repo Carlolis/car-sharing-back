@@ -1,4 +1,4 @@
-package domain.models
+package domain.models.trip
 
 import sttp.tapir.Schema
 import zio.json.*

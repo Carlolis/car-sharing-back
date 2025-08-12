@@ -2,7 +2,7 @@ package gel.invoice.models
 
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
 import domain.models.PersonCreate
-import domain.models.invoice.Invoice
+import domain.models.invoice.{DriverName, Invoice}
 import gel.person.models.PersonCreateGel
 
 import java.time.LocalDate
@@ -45,6 +45,6 @@ object InvoiceGel {
       invoiceGel.getAmount,
       invoiceGel.getDate,
       invoiceGel.getName,
-      invoiceGel.getPersons.asScala.map(_.name).toSet
+      invoiceGel.getPersons.asScala.map(n => DriverName(n.name)).toSet
     )
 }

@@ -2,16 +2,16 @@ package gel.invoice
 
 import adapters.GelDriverLive
 import domain.models.*
-import domain.models.invoice.{Invoice, InvoiceCreate}
+import domain.models.invoice.{DriverName, Invoice, InvoiceCreate, Reimbursement}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
+import domain.services.person.PersonService
 import gel.invoice.models.InvoiceGel
 import zio.*
 
 import java.util.UUID
 
-case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository {
-  // TODO: Implement actual database storage
+case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonService) extends InvoiceRepository {
   private val invoices: List[Invoice] = List.empty
   private val knownPersons            =
     Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
@@ -54,35 +54,17 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
            |"""
       )
       .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted invoice with id: $id"))
-  /*
-  override def getTotalStats: Task[InvoiceStats] = ZIO.succeed(InvoiceStats(List.empty, 0))
 
-
-
-  override def updateInvoice(invoiceUpdate: Invoice): Task[UUID] =
-    gelDb
-      .querySingle(
-        classOf[UUID],
-        s"""
-           | with updated_invoice := (
-           |    update InvoiceGel
-           |    filter .id = <uuid>'${invoiceUpdate.id}'
-           |    set {
-           |        name := '${invoiceUpdate.name}',
-           |        distance := ${invoiceUpdate.distance},
-           |        date := cal::to_local_date(${invoiceUpdate
-            .date.getYear}, ${invoiceUpdate.date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),
-           |        gelDrivers := (select detached default::PersonGel filter .name in ${invoiceUpdate.drivers.mkString("{'", "','", "'}")})
-           |    }
-           |)
-           |select updated_invoice.id;
-           |"""
-      ).tapBoth(
-        error => ZIO.logError(s"Failed to update invoice with id: ${invoiceUpdate.id}, error: $error"),
-        uuid => ZIO.logInfo(s"Updated invoice with id: $uuid")
-      )*/
+  override def getReimbursementProposal: Task[Set[Reimbursement]] =
+    for {
+      allInvoices   <- getAllInvoices
+      drivers       <- personService.getAll
+      _             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
+      reimbursements = drivers.map(d => Reimbursement(DriverName(d.name), 0, Map((DriverName(d.name), 33))))
+      _             <- ZIO.logInfo(s"Got ${reimbursements} ")
+    } yield reimbursements
 }
 
 object InvoiceRepositoryGel:
-  val layer: ZLayer[GelDriverLive, Nothing, InvoiceRepository] =
-    ZLayer.fromFunction(InvoiceRepositoryGel(_))
+  val layer: ZLayer[GelDriverLive & PersonService, Nothing, InvoiceRepository] =
+    ZLayer.fromFunction(InvoiceRepositoryGel(_, _))

@@ -1,4 +1,4 @@
-package domain.models
+package domain.models.trip
 
 import sttp.tapir.Codec.PlainCodec
 import sttp.tapir.{Schema, ValidationResult, Validator, *}

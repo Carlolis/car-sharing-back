@@ -1,6 +1,6 @@
 package domain.services.trip
 
-import domain.models.{Trip, TripCreate, TripId, TripStats}
+import domain.models.trip.{Trip, TripCreate, TripId, TripStats}
 import zio.*
 
 import java.util.UUID

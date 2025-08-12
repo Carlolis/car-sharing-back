@@ -13,7 +13,7 @@ object InvoiceEndpointsLive:
       case (token, invoiceCreate) =>
         (for {
           _    <- AuthService.authenticate(token)
-          uuid <- InvoiceService.createInvoice(invoiceCreate)
+          uuid <- InvoiceService.getAllInvoices(invoiceCreate)
         } yield uuid)
           .map(Right(_))
           .tapError(error => ZIO.logError(s"Error: $error"))

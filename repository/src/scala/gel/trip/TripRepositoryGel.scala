@@ -1,8 +1,9 @@
 package gel.trip
 
 import adapters.GelDriverLive
+import domain.models.PersonCreate
+import domain.models.trip.{Trip, TripCreate, TripId, TripStats}
 import domain.services.trip.TripService
-import domain.models.{PersonCreate, Trip, TripCreate, TripId, TripStats}
 import gel.trip.models.*
 import zio.*
 

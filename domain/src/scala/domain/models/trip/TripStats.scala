@@ -1,4 +1,4 @@
-package domain.models
+package domain.models.trip
 
 import zio.json.*
 

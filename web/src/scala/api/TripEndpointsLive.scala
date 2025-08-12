@@ -61,7 +61,7 @@ object TripEndpointsLive:
     TripEndpoints.getAllTripsEndpoint.serverLogic { token =>
       (for {
 
-        // userOpt <- authService.authenticate(token)
+        _      <- AuthService.authenticate(token)
         // user <- ZIO
         //   .fromOption(userOpt)
         //   .orElseFail(new Exception("Unauthorized"))
@@ -100,6 +100,7 @@ object TripEndpointsLive:
     TripEndpoints.createPersonEndpoint.serverLogic {
       case (token, personCreate) =>
         (for {
+          _    <- AuthService.authenticate(token)
           // userOpt <- authService.authenticate(token)
           // user <- ZIO
           //   .fromOption(userOpt)

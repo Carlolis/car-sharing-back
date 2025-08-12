@@ -1,5 +1,6 @@
 import adapters.GelDriver
-import domain.models.{PersonCreate, Trip, TripCreate}
+import domain.models.PersonCreate
+import domain.models.trip.{Trip, TripCreate}
 import domain.services.person.PersonService
 import domain.services.trip.TripService
 import gel.person.PersonRepositoryGel
