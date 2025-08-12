@@ -60,8 +60,27 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
       allInvoices   <- getAllInvoices
       drivers       <- personService.getAll
       _             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
-      reimbursements = drivers.map(d => Reimbursement(DriverName(d.name), 0, Map((DriverName(d.name), 33))))
-      _             <- ZIO.logInfo(s"Got $reimbursements ")
+      totalAmount    = allInvoices.foldLeft(0)((total, invoice) => invoice.amount + total)
+      driversAmount  =
+        drivers.map(d =>
+          (
+            d.name,
+            allInvoices.foldLeft(0)((total, invoice) => if (invoice.drivers.head.toString == d.name) invoice.amount + total else total)))
+      reimbursements = driversAmount.map { (driverName, total) =>
+
+                         val othersDriverMapReimbursement: Map[DriverName, Int] =
+                           driversAmount
+                             .filter(_._1 != driverName)
+                             .foldLeft(Map.empty[DriverName, Int]) {
+                               case (acc, (name, amount)) =>
+                                 if (amount <= total) acc + (DriverName(name) -> 0)
+                                 else acc + (DriverName(name)                 -> amount / drivers.size)
+                             }
+                         var totalToReimburse                                   = othersDriverMapReimbursement.values.sum
+
+                         Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)
+                       }
+      _ <- ZIO.logInfo(s"Got $reimbursements ")
     } yield reimbursements
 }
 

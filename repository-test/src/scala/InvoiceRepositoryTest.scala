@@ -1,6 +1,6 @@
 import adapters.GelDriver
 import domain.models.PersonCreate
-import domain.models.invoice.{DriverName, Invoice, InvoiceCreate}
+import domain.models.invoice.{DriverName, Invoice, InvoiceCreate, Reimbursement}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.person.PersonService
 import gel.invoice.InvoiceRepositoryGel
@@ -10,98 +10,119 @@ import zio.test.Assertion.*
 import zio.{Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
+import java.util.UUID
 
 object InvoiceRepositoryTest extends ZIOSpecDefault {
-  val personName    = "maé"
-  val mae           = PersonCreate(personName)
-  val invoiceCreate =
-    InvoiceCreate(99, LocalDate.now(), "Business", Set(DriverName(personName)))
+
+  // Configuration des données de test
+  object TestData {
+    val maePersonName      = "maé"
+    val charlesPersonName  = "charles"
+    val brigittePersonName = "brigitte"
+
+    val mae      = PersonCreate(maePersonName)
+    val charles  = PersonCreate(charlesPersonName)
+    val brigitte = PersonCreate(brigittePersonName)
+
+    val allPersons = Set(mae, charles, brigitte)
+
+    val sampleInvoiceCreate = InvoiceCreate(
+      distance = 99,
+      date = LocalDate.now(),
+      name = "Business",
+      drivers = Set(DriverName(maePersonName))
+    )
+
+    val expectedReimbursementAmount = 33
+  }
+
+  // Utilitaires de test
+  object TestUtils {
+    def findReimbursementByDriver(reimbursements: Set[Reimbursement], driverName: String) =
+      ZIO.fromOption(
+        reimbursements.find(r =>
+          // Adaptation nécessaire selon la structure réelle de vos objets de remboursement
+          r.driverName == DriverName(driverName)))
+
+    def cleanupData =
+      for {
+        allInvoices <- InvoiceRepository.getAllInvoices
+        _           <- ZIO.foreachDiscard(allInvoices)(invoice => InvoiceRepository.deleteInvoice(invoice.id))
+        allPersons  <- PersonService.getAll
+        _           <- ZIO.foreachDiscard(allPersons)(person => PersonService.deletePerson(person.id))
+      } yield ()
+
+    def setupTestData =
+      ZIO.foreachPar(TestData.allPersons)(person => PersonService.createPerson(person)).unit
+  }
 
   def spec: Spec[TestEnvironment & Scope, Any] =
-    (suiteAll("InvoiceServiceTest in Gel") {
-
-      test("Maé createInvoice should create a invoice successfully with Maé") {
-
+    (suite("InvoiceRepository - Tests Gel")(
+      test("Création d'une facture - Maé devrait créer une facture avec succès") {
         for {
-
-          UUID          <- InvoiceRepository.createInvoice(invoiceCreate)
-          invoiceByUser <- InvoiceRepository.getAllInvoices
-
-        } yield assertTrue(UUID != null, invoiceByUser.length == 1)
-      }
-
-      test("Maé has one invoice for 99€, Charles has to give 33 to Maé, Brigitte 33 to Maé and Maé 0 to anyone else") {
-
-        for {
-
-          UUID                  <- InvoiceRepository.createInvoice(invoiceCreate)
-          reimbursements        <- InvoiceRepository.getReimbursementProposal
-          maéReimbursement      <- ZIO.fromOption(reimbursements.find(_.driverName == DriverName(personName)))
-          charlesReimbursement  <- ZIO.fromOption(reimbursements.find(_.driverName == DriverName("charles")))
-          brigitteReimbursement <- ZIO.fromOption(reimbursements.find(_.driverName == DriverName("brigitte")))
-
+          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate)
+          allInvoices <- InvoiceRepository.getAllInvoices
         } yield assertTrue(
-          reimbursements.size == 3,
-          maéReimbursement.totalAmount == 0,
-          charlesReimbursement.totalAmount == 33,
-          brigitteReimbursement.totalAmount == 33)
-      }
-      /*test("Charles createInvoice should create a invoice successfully with Charles") {
-        val personName = "Charles"
-
+          invoiceUuid != null,
+          allInvoices.length == 1
+        )
+      },
+      test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {
         for {
+          _              <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate)
+          reimbursements <- InvoiceRepository.getReimbursementProposal
 
-          UUID       <- InvoiceService.createInvoice(invoiceCreate.copy(drivers = Set(personName)))
-          invoiceByUser <- InvoiceService.getAllInvoices
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
 
-        } yield assertTrue(UUID != null, invoiceByUser.invoices.length == 1)
-      }
-      test("deleteInvoice should delete a invoice successfully with Maé") {
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 0,
+            charlesReimbursement.totalAmount == TestData.expectedReimbursementAmount,
+            brigitteReimbursement.totalAmount == TestData.expectedReimbursementAmount
+          )
 
-        for {
+          val maeDistributionAssertion = assert(
+            maeReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.charlesPersonName)  -> 0
+              )))
 
-          UUID       <- InvoiceService.createInvoice(invoiceCreate)
-          _          <- InvoiceService.deleteInvoice(UUID)
-          invoiceByUser <- InvoiceService.getAllInvoices
+          val charlesDistributionAssertion = assert(
+            charlesReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.maePersonName)      -> TestData.expectedReimbursementAmount
+              )))
 
-        } yield assertTrue(UUID != null, invoiceByUser.invoices.isEmpty)
-      }
+          val brigitteDistributionAssertion = assert(
+            brigitteReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.maePersonName)     -> TestData.expectedReimbursementAmount,
+                DriverName(TestData.charlesPersonName) -> 0
+              )))
 
-      test("updateInvoice should update a invoice successfully with Maé") {
-        val updatedInvoiceName = "Updated Business Invoice"
-        val updatedDistance = 200
-
-        for {
-          uuid       <- InvoiceService.createInvoice(invoiceCreate)
-          updatedInvoice = Invoice(uuid, updatedDistance, LocalDate.now(), updatedInvoiceName, Set(personName))
-          _          <- InvoiceService.updateInvoice(updatedInvoice)
-          invoiceByUser <- InvoiceService.getAllInvoices
-        } yield assertTrue(
-          invoiceByUser.invoices.exists(invoice => invoice.id == uuid && invoice.name == updatedInvoiceName && invoice.distance == updatedDistance),
-          invoiceByUser.invoices.length == 1)
-      }*/
-    }
-      @@ TestAspect
-        .after {
-
-          (for {
-
-            allInvoices <- InvoiceRepository.getAllInvoices
-            _           <- ZIO
-                             .foreachDiscard(allInvoices)(invoice => InvoiceRepository.deleteInvoice(invoice.id))
-            allPersons  <- PersonService.getAll
-            _           <- ZIO.foreachDiscard(allPersons)(person => PersonService.deletePerson(person.id))
-
-          } yield ()).catchAll(e => ZIO.logError(e.getMessage))
-
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
         }
-      @@ TestAspect
-        .before {
-          val allPersons = Set(PersonCreate("maé"), PersonCreate("brigitte"), PersonCreate("charles"))
-          ZIO.foreachPar(allPersons)(person => PersonService.createPerson(person)).catchAll(e => ZIO.logError(e.getMessage))
-
-        }
-      @@ TestAspect.sequential).provideShared(
+      }
+    ) @@ TestAspect.after(
+      TestUtils.cleanupData.catchAll(e => ZIO.logError(s"Erreur lors du nettoyage: ${e.getMessage}"))
+    ) @@ TestAspect
+      .before(
+        TestUtils.setupTestData.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
+      ) @@ TestAspect.sequential).provideShared(
       InvoiceRepositoryGel.layer,
       PersonRepositoryGel.layer,
       GelDriver.testLayer
