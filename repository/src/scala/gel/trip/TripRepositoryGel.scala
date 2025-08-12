@@ -58,7 +58,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
          |};
          |"""
       )
-      .map(tripGel => TripStats(tripGel.getTotalKilometers)).tap(t => ZIO.logInfo(t.totalKilometers.toString()))
+      .map(tripGel => TripStats(tripGel.getTotalKilometers)).tap(t => ZIO.logInfo(t.totalKilometers.toString))
 
   override def deleteTrip(id: TripId): Task[TripId] =
     gelDb

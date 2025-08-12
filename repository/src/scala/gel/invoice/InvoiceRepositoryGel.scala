@@ -61,7 +61,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
       drivers       <- personService.getAll
       _             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
       reimbursements = drivers.map(d => Reimbursement(DriverName(d.name), 0, Map((DriverName(d.name), 33))))
-      _             <- ZIO.logInfo(s"Got ${reimbursements} ")
+      _             <- ZIO.logInfo(s"Got $reimbursements ")
     } yield reimbursements
 }
 

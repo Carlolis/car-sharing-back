@@ -28,13 +28,9 @@ object DriverName extends Newtype[String] {
   given PlainCodec[DriverName] = Codec.string.mapDecode(decode)(encode)
 
 
-  given JsonFieldEncoder[DriverName] = new JsonFieldEncoder[DriverName] {
-    def unsafeEncodeField(in: DriverName): String = in.toString
-  }
+  given JsonFieldEncoder[DriverName] = (in: DriverName) => in.toString
 
-  given JsonFieldDecoder[DriverName]= new JsonFieldDecoder[DriverName] {
-    override def unsafeDecodeField(trace: List[JsonError],in: String): DriverName = DriverName(in)
-}
+  given JsonFieldDecoder[DriverName]= (trace: List[JsonError], in: String) => DriverName(in)
 
 
 

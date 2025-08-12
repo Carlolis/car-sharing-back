@@ -14,7 +14,7 @@ import java.time.LocalDate
 object TripServiceTest extends ZIOSpecDefault {
   val personName             = "Maé"
   val mae: PersonCreate      = PersonCreate(personName)
-  var now                    = LocalDate.now()
+  var now: LocalDate = LocalDate.now()
   val tripCreate: TripCreate =
     TripCreate(100, now, now.plusDays(3), "Business", Set(personName))
 
