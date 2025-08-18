@@ -10,7 +10,8 @@ case class TripCreate(
   startDate: LocalDate,
   endDate: LocalDate,
   name: String,
-  drivers: Set[String]
+  drivers: Set[String],
+  comments: Option[String]
 )
 
 object TripCreate {

@@ -21,13 +21,18 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
       .querySingle(
         classOf[UUID],
         s"""
-          |  with new_trip := (insert TripGel { name := '${tripCreate.name}', distance := ${tripCreate.distance}, startDate := cal::to_local_date(${tripCreate
+          |  with new_trip := (insert TripGel { name := '${tripCreate.name}',
+          |   distance := ${tripCreate.distance},
+          |   ${if tripCreate.comments.isDefined then s"comments := '${tripCreate.comments.get}'," else ""}
+          |    startDate := cal::to_local_date(${tripCreate
             .startDate.getYear}, ${tripCreate
             .startDate.getMonthValue}, ${tripCreate
-            .startDate.getDayOfMonth}), endDate := cal::to_local_date(${tripCreate
+            .startDate.getDayOfMonth}),
+            | endDate := cal::to_local_date(${tripCreate
             .endDate.getYear}, ${tripCreate
             .endDate.getMonthValue}, ${tripCreate
-            .endDate.getDayOfMonth}), gelDrivers := (select detached default::PersonGel filter .name in ${tripCreate
+            .endDate.getDayOfMonth}),
+            | gelDrivers := (select detached default::PersonGel filter .name in ${tripCreate
             .drivers.mkString("{'", "','", "'}")}) }) select new_trip.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created trip with id: $error"), UUID => ZIO.logInfo(s"Created trip with id: $UUID")).map(TripId(_))
@@ -37,7 +42,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
       .query(
         classOf[TripGel],
         s"""
-          | select TripGel { id, distance, startDate, endDate, name, gelDrivers: { name } }
+          | select TripGel { id, distance, startDate, endDate, name, comments, gelDrivers: { name } }
           |   order by
           |  .startDate desc then
           |  .id desc;;
@@ -82,6 +87,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
            |    set {
            |        name := '${tripUpdate.name}',
            |        distance := ${tripUpdate.distance},
+           |        ${if tripUpdate.comments.isDefined then s"comments := '${tripUpdate.comments.get}'," else ""}
            |        startDate := cal::to_local_date(${tripUpdate
             .startDate.getYear}, ${tripUpdate
             .startDate.getMonthValue}, ${tripUpdate.startDate.getDayOfMonth}),endDate := cal::to_local_date(${tripUpdate

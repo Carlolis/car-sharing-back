@@ -37,27 +37,27 @@ Follow the [Bleep installation guide](https://bleep.build/docs/install) to insta
 
 2. **Application Configuration:**
 
-   The application uses ZIO Config to load configuration from `application.conf`. 
-   
+   The application uses ZIO Config to load configuration from `application.conf`.
+
    To set up your configuration:
-   
-   - Copy the example configuration file:
-   
-     ```sh
-     cp domain/src/resources/application.conf.example domain/src/resources/application.conf
-     ```
-   
-   - Edit the `application.conf` file with your settings:
-     - WebDAV/NextCloud connection settings (username, password, URL)
-     - Authentication settings (secret key, token expiration)
-   
-   - For production, you can set environment variables instead:
-     - `NEXTCLOUD_USERNAME` - Your NextCloud username
-     - `NEXTCLOUD_PASSWORD` - Your NextCloud password
-     - `NEXTCLOUD_URL` - Your NextCloud URL
-     - `NEXTCLOUD_BASE_PATH` - Base path for files (default: "voiture")
-     - `AUTH_SECRET_KEY` - Secret key for JWT token generation
-     - `AUTH_TOKEN_EXPIRATION_SECONDS` - Token expiration time in seconds
+
+    - Copy the example configuration file:
+
+      ```sh
+      cp domain/src/resources/application.conf.example domain/src/resources/application.conf
+      ```
+
+    - Edit the `application.conf` file with your settings:
+        - WebDAV/NextCloud connection settings (username, password, URL)
+        - Authentication settings (secret key, token expiration)
+
+    - For production, you can set environment variables instead:
+        - `NEXTCLOUD_USERNAME` - Your NextCloud username
+        - `NEXTCLOUD_PASSWORD` - Your NextCloud password
+        - `NEXTCLOUD_URL` - Your NextCloud URL
+        - `NEXTCLOUD_BASE_PATH` - Base path for files (default: "voiture")
+        - `AUTH_SECRET_KEY` - Secret key for JWT token generation
+        - `AUTH_TOKEN_EXPIRATION_SECONDS` - Token expiration time in seconds
 
    Note: The `application.conf` file is excluded from version control to prevent committing sensitive data.
 
@@ -160,7 +160,7 @@ gel migration create
 To apply the migration to test (or main) :
 
 ```sh
-gel migration apply --dev-mode
+gel migration apply --dev-mode -I test
 ```
 
 ### Gel ui

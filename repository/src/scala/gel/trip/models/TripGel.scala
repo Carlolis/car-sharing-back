@@ -4,6 +4,7 @@ import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
 import domain.models.PersonCreate
 import domain.models.trip.{Trip, TripId}
 import gel.person.models.PersonCreateGel
+import jdk.jfr.Experimental
 
 import java.time.LocalDate
 import java.util
@@ -18,7 +19,8 @@ class TripGel @GelDeserializer() (
   endDate: LocalDate,
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
-  gelDrivers: util.Collection[PersonCreateGel]
+  gelDrivers: util.Collection[PersonCreateGel],
+  comments: String
 ) {
   def getId: UUID                                  = id
   def getDistance: Int                             = distance
@@ -26,6 +28,7 @@ class TripGel @GelDeserializer() (
   def getEndDate: LocalDate                        = endDate
   def getName: String                              = name
   def getDrivers: util.Collection[PersonCreateGel] = gelDrivers
+  def getComments: String                          = comments
 }
 
 object TripGel {
@@ -36,7 +39,8 @@ object TripGel {
       tripGel.getStartDate,
       tripGel.getEndDate,
       tripGel.getName,
-      tripGel.getDrivers.asScala.map(_.name).toSet
+      tripGel.getDrivers.asScala.map(_.name).toSet,
+      Option(tripGel.getComments)
     )
 }
 

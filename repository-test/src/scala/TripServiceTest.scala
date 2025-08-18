@@ -14,9 +14,9 @@ import java.time.LocalDate
 object TripServiceTest extends ZIOSpecDefault {
   val personName             = "Maé"
   val mae: PersonCreate      = PersonCreate(personName)
-  var now: LocalDate = LocalDate.now()
+  var now: LocalDate         = LocalDate.now()
   val tripCreate: TripCreate =
-    TripCreate(100, now, now.plusDays(3), "Business", Set(personName))
+    TripCreate(100, now, now.plusDays(3), "Business", Set(personName), None)
 
   def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("TripServiceTest in Gel") {
@@ -28,7 +28,7 @@ object TripServiceTest extends ZIOSpecDefault {
           UUID  <- TripService.createTrip(tripCreate)
           trips <- TripService.getAllTrips
 
-        } yield assertTrue(trips.length == 1)
+        } yield assertTrue(trips.length == 1, trips.head.comments.isEmpty)
       }
       test("Charles and Maé createTrip should create a trip successfully with Charles and Maé") {
         val personName = "Charles"
@@ -57,7 +57,7 @@ object TripServiceTest extends ZIOSpecDefault {
 
         for {
           uuid       <- TripService.createTrip(tripCreate)
-          updatedTrip = Trip(uuid, updatedDistance, now, now.plusDays(3), updatedTripName, Set(personName))
+          updatedTrip = Trip(uuid, updatedDistance, now, now.plusDays(3), updatedTripName, Set(personName), None)
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(
@@ -70,7 +70,7 @@ object TripServiceTest extends ZIOSpecDefault {
         for {
           uuid       <- TripService.createTrip(tripCreate)
           updatedTrip =
-            Trip(uuid, tripCreate.distance, tripCreate.startDate, tripCreate.endDate, tripCreate.name, tripCreate.drivers + "Charles")
+            Trip(uuid, tripCreate.distance, tripCreate.startDate, tripCreate.endDate, tripCreate.name, tripCreate.drivers + "Charles", None)
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(trips.exists(trip => trip.id == uuid && trip.drivers == tripCreate.drivers + "Charles"), trips.length == 1)
@@ -85,6 +85,28 @@ object TripServiceTest extends ZIOSpecDefault {
           _      <- ZIO.logInfo(trips2.toString)
           _      <- ZIO.logInfo(trips.toString)
         } yield assertTrue(trips.totalKilometers == 100)
+      }
+
+      test("Maé createTrip should create a trip successfully with comment") {
+
+        for {
+
+          UUID  <- TripService.createTrip(tripCreate.copy(comments = Some("comments")))
+          trips <- TripService.getAllTrips
+
+        } yield assertTrue(trips.head.comments.contains("comments"))
+      }
+
+      test("updateTrip should update a trip successfully with Maé and a new comment") {
+        val updatedTripName = "Updated Business Trip"
+        val updatedDistance = 200
+
+        for {
+          uuid       <- TripService.createTrip(tripCreate)
+          updatedTrip = Trip(uuid, updatedDistance, now, now.plusDays(3), updatedTripName, Set(personName), Some("comments"))
+          _          <- TripService.updateTrip(updatedTrip)
+          trips      <- TripService.getAllTrips
+        } yield assertTrue(trips.head.comments.contains("comments"))
       }
 
     }

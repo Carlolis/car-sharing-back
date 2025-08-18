@@ -5,6 +5,7 @@ module default {
     required endDate: cal::local_date;
     required distance: int16;
     required multi gelDrivers: PersonGel;
+    comments: str;
   }
 
   type PersonGel {
