@@ -32,15 +32,15 @@ jobs:
       - name: Setup Coursier cache
         uses: coursier/cache-action@v6
 
-      - name: Cache Ivy2 and SBT
+      # Cache des dépendances Bleep pour accélérer les builds
+      - name: Cache Bleep dependencies
         uses: actions/cache@v4
         with:
           path: |
-            ~/.ivy2/cache
-            ~/.sbt
-          key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt', '**/build.properties') }}
+            ~/.cache/bleep
+          key: ${{ runner.os }}-bleep-${{ hashFiles('bleep.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-sbt-
+            ${{ runner.os }}-bleep-
 
       - name: Run migrations & tests
         run: |
