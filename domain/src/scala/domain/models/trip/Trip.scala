@@ -8,12 +8,12 @@ import scala.jdk.CollectionConverters.*
 
 case class Trip(
   id: TripId,
-  distance: Int,
   startDate: LocalDate,
   endDate: LocalDate,
   name: String,
   drivers: Set[String],
-  comments: Option[String]
+  comments: Option[String],
+  distance: Int
 )
 
 object Trip {

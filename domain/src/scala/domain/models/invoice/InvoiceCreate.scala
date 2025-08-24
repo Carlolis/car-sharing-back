@@ -6,7 +6,7 @@ import java.time.LocalDate
 import scala.jdk.CollectionConverters.*
 
 case class InvoiceCreate(
-  distance: Int,
+  mileage: Int,
   date: LocalDate,
   name: String,
   drivers: Set[DriverName],

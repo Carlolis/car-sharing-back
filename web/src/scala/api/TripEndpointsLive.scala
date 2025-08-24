@@ -32,7 +32,7 @@ object TripEndpointsLive:
   //       )
   //   }
   private val createTrip: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
-    TripEndpoints.createTripEndpoint.serverLogic {
+    TripEndpoints.createTrip.serverLogic {
       case (token, tripCreate) =>
         (for {
           _    <- AuthService.authenticate(token)
@@ -44,7 +44,7 @@ object TripEndpointsLive:
     }
 
   private val updateTrip: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
-    TripEndpoints.updateTripEndpoint.serverLogic {
+    TripEndpoints.updateTrip.serverLogic {
       case (token, trip) =>
         (for {
           _    <- AuthService.authenticate(token)
@@ -58,7 +58,7 @@ object TripEndpointsLive:
     }
 
   private val getAllTrips: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
-    TripEndpoints.getAllTripsEndpoint.serverLogic { token =>
+    TripEndpoints.getAllTrips.serverLogic { token =>
       (for {
 
         _      <- AuthService.authenticate(token)
@@ -111,7 +111,7 @@ object TripEndpointsLive:
           .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
   private val loginEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any]        =
-    TripEndpoints.loginEndpoint.serverLogic { credentials =>
+    TripEndpoints.login.serverLogic { credentials =>
       AuthService
         .login(credentials.name)
         .tap(token => ZIO.logInfo(s"Login success ! $token"))

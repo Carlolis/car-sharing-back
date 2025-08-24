@@ -35,12 +35,12 @@ object TripGel {
   def fromTripGel(tripGel: TripGel): Trip =
     Trip(
       TripId(tripGel.getId),
-      tripGel.getDistance,
       tripGel.getStartDate,
       tripGel.getEndDate,
       tripGel.getName,
       tripGel.getDrivers.asScala.map(_.name).toSet,
-      Option(tripGel.getComments)
+      Option(tripGel.getComments),
+      tripGel.getDistance
     )
 }
 

@@ -18,6 +18,13 @@ object InvoiceEndpoints:
     .in(multipartBody[InvoiceCreate])
     .out(jsonBody[InvoiceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
+
+  val getAllInvoices: Endpoint[Unit, String, (StatusCode, ErrorResponse), List[Invoice], Any] = endpoint
+    .get
+    .in("api" / "invoices")
+    .in(auth.bearer[String]())
+    .out(jsonBody[List[Invoice]])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
   /*  val uploadInvoice                                                                                       = endpoint
     .post
     .in("api" / "invoices" / "upload")
@@ -25,6 +32,6 @@ object InvoiceEndpoints:
     .in(multipartBody)
     .out(jsonBody[InvoiceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])*/
-  val invoiceEndPoints                                                                                    = List(
+  val invoiceEndPoints                                                                        = List(
     createInvoice
   )

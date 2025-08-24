@@ -20,5 +20,25 @@ object InvoiceEndpointsLive:
           .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
+  private val getAllInvoices: ZServerEndpoint[PersonService & AuthService & InvoiceService, Any] =
+    InvoiceEndpoints.getAllInvoices.serverLogic { token =>
+      (for {
+
+        _      <- AuthService.authenticate(token)
+        // user <- ZIO
+        //   .fromOption(userOpt)
+        //   .orElseFail(new Exception("Unauthorized"))
+        _      <- ZIO.logInfo(
+                    "Getting invoices "
+                  )
+        result <- InvoiceService.getAllInvoices
+        _      <- ZIO.logInfo(
+                    "Invoices found " + result.toString
+                  )
+      } yield result)
+        .map(Right(_))
+        .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    }
+
   val invoiceEndpoints: List[ZServerEndpoint[PersonService & AuthService & InvoiceService, Any]] =
-    List(createInvoice)
+    List(createInvoice, getAllInvoices)

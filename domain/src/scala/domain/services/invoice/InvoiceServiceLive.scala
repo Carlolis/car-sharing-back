@@ -17,16 +17,16 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
     clean.take(255) // simple limit
 
   override def createInvoice(invoiceCreate: InvoiceCreate): Task[InvoiceId] =
-    val sanitizedName = sanitizeName(invoiceCreate.fileName.getOrElse("No file provided"))
+    val sanitizedName = invoiceCreate.fileName.map(sanitizeName)
 
     ZIO.log(
-      s"Creating invoice: originalName='${invoiceCreate.fileName}', sanitizedName='$sanitizedName', distance=${invoiceCreate.distance}, date=${invoiceCreate.date}") *>
+      s"Creating invoice: originalName='${invoiceCreate.fileName}', sanitizedName='$sanitizedName', mileage=${invoiceCreate.mileage}, date=${invoiceCreate.date}") *>
       (for
         // Upload only if a file is provided
 
         // Persist invoice regardless of file presence
         id       <- invoiceRepository
-                      .createInvoice(invoiceCreate.copy(name = sanitizedName))
+                      .createInvoice(invoiceCreate.copy(fileName = sanitizedName))
                       .map(InvoiceId(_))
                       .tapBoth(
                         err => ZIO.logError(s"Persistence failed for '$sanitizedName': ${err.getMessage}"),
@@ -53,20 +53,24 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
         // Compensate only if upload actually happened
         .onError {
           case zio.Cause.Fail(_: SaveInvoiceFailed, _) =>
-            ZIO.logWarning(s"Compensation: deleting orphan file '$sanitizedName'") *>
-              invoiceExternalStorage
-                .delete(sanitizedName)
-                .tapBoth(
-                  err => ZIO.logWarning(s"Compensation failed (delete '$sanitizedName'): ${err.getMessage}"),
-                  _ => ZIO.logWarning(s"Compensation succeeded: '$sanitizedName' deleted")
-                )
-                .ignore
+            sanitizedName match
+              case Some(name) =>
+                ZIO.logWarning(s"Compensation: deleting orphan file '$sanitizedName'") *>
+                  invoiceExternalStorage
+                    .delete(name)
+                    .tapBoth(
+                      err => ZIO.logWarning(s"Compensation failed (delete '$sanitizedName'): ${err.getMessage}"),
+                      _ => ZIO.logWarning(s"Compensation succeeded: '$sanitizedName' deleted")
+                    )
+                    .ignore
+              case None       =>
+                ZIO.logWarning("No file provided; skipping upload").as(false)
           case _                                       => ZIO.unit
 
         }
         .map(_._1)
 
-  override def getAllInvoices: Task[List[Invoice]] = ???
+  override def getAllInvoices: Task[List[Invoice]] = invoiceRepository.getAllInvoices
 
   override def deleteInvoice(id: UUID): Task[UUID] = ???
 object InvoiceServiceLive:

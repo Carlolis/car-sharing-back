@@ -19,13 +19,13 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
   override def createInvoice(
     invoiceCreate: InvoiceCreate
   ): ZIO[Any, SaveInvoiceFailed, UUID] = {
-    println(s"Creating invoice: ${invoiceCreate.name}, ${invoiceCreate.distance}, ${invoiceCreate.drivers}")
+    println(s"Creating invoice: ${invoiceCreate.name}, ${invoiceCreate.mileage}, ${invoiceCreate.drivers}")
     gelDb
       .querySingle(
         classOf[UUID],
         s"""
           |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
-          |   amount := ${invoiceCreate.distance},
+          |   amount := ${invoiceCreate.mileage},
           |   kind := '${invoiceCreate.kind}',
           |   date := cal::to_local_date(${invoiceCreate.date.getYear},
           |${invoiceCreate.date.getMonthValue},

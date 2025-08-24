@@ -28,7 +28,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
     val allPersons = Set(mae, charles, brigitte)
 
     val sampleInvoiceCreate = InvoiceCreate(
-      distance = 99,
+      mileage = 99,
       date = LocalDate.now(),
       name = "Business",
       drivers = Set(DriverName(maePersonName)),

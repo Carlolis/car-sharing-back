@@ -58,7 +58,7 @@ object TripServiceTest extends ZIOSpecDefault {
 
         for {
           uuid       <- TripService.createTrip(tripCreate)
-          updatedTrip = Trip(uuid, updatedDistance, now, now.plusDays(3), updatedTripName, Set(personName), None)
+          updatedTrip = Trip(uuid, now, now.plusDays(3), updatedTripName, Set(personName), None, updatedDistance)
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(
@@ -71,7 +71,7 @@ object TripServiceTest extends ZIOSpecDefault {
         for {
           uuid       <- TripService.createTrip(tripCreate)
           updatedTrip =
-            Trip(uuid, tripCreate.distance, tripCreate.startDate, tripCreate.endDate, tripCreate.name, tripCreate.drivers + "Charles", None)
+            Trip(uuid, tripCreate.startDate, tripCreate.endDate, tripCreate.name, tripCreate.drivers + "Charles", None, tripCreate.distance)
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(trips.exists(trip => trip.id == uuid && trip.drivers == tripCreate.drivers + "Charles"), trips.length == 1)
@@ -104,7 +104,7 @@ object TripServiceTest extends ZIOSpecDefault {
 
         for {
           uuid       <- TripService.createTrip(tripCreate)
-          updatedTrip = Trip(uuid, updatedDistance, now, now.plusDays(3), updatedTripName, Set(personName), Some("comments"))
+          updatedTrip = Trip(uuid, now, now.plusDays(3), updatedTripName, Set(personName), Some("comments"), updatedDistance)
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(trips.head.comments.contains("comments"))

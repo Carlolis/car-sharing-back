@@ -44,9 +44,9 @@ object InvoiceGel {
   def fromInvoiceGel(invoiceGel: InvoiceGel): Invoice =
     Invoice(
       invoiceGel.getId,
+      invoiceGel.getName,
       invoiceGel.getAmount,
       invoiceGel.getDate,
-      invoiceGel.getName,
       invoiceGel.getPersons.asScala.map(n => DriverName(n.name)).toSet,
       invoiceGel.getKind
     )

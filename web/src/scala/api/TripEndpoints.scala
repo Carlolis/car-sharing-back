@@ -18,14 +18,14 @@ object TripEndpoints:
   //   .in(jsonBody[UserCreate])
   //   .out(jsonBody[Person])
   //   .errorOut(statusCode and jsonBody[ErrorResponse])
-  val loginEndpoint: Endpoint[Unit, PersonCreate, (StatusCode, ErrorResponse), Token, Any] = endpoint
+  val login: Endpoint[Unit, PersonCreate, (StatusCode, ErrorResponse), Token, Any] = endpoint
     .post
     .in("api" / "login")
     .in(jsonBody[PersonCreate])
     .out(jsonBody[Token])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val createTripEndpoint: Endpoint[Unit, (String, TripCreate), (StatusCode, ErrorResponse), TripId, Any] = endpoint
+  val createTrip: Endpoint[Unit, (String, TripCreate), (StatusCode, ErrorResponse), TripId, Any] = endpoint
     .post
     .in("api" / "trips")
     .in(auth.bearer[String]())
@@ -33,7 +33,7 @@ object TripEndpoints:
     .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val updateTripEndpoint: Endpoint[Unit, (String, Trip), (StatusCode, ErrorResponse), UUID, Any] = endpoint
+  val updateTrip: Endpoint[Unit, (String, Trip), (StatusCode, ErrorResponse), UUID, Any] = endpoint
     .put
     .in("api" / "trips")
     .in(auth.bearer[String]())
@@ -41,7 +41,7 @@ object TripEndpoints:
     .out(jsonBody[UUID])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val getAllTripsEndpoint: Endpoint[Unit, String, (StatusCode, ErrorResponse), List[Trip], Any] = endpoint
+  val getAllTrips: Endpoint[Unit, String, (StatusCode, ErrorResponse), List[Trip], Any] = endpoint
     .get
     .in("api" / "trips")
     .in(auth.bearer[String]())
@@ -74,11 +74,11 @@ object TripEndpoints:
     .in("api" / "health")
 
   val tripEndPoints = List(
-    loginEndpoint,
-    createTripEndpoint,
-    getAllTripsEndpoint,
+    login,
+    createTrip,
+    getAllTrips,
     getTripStatsByUser,
     createPersonEndpoint,
-    updateTripEndpoint,
+    updateTrip,
     deleteTripEndpoint
   )
