@@ -13,6 +13,7 @@ import sttp.tapir.server.ziohttp.ZioHttpInterpreter
 import webdav.invoice.InvoiceWebDavImpl
 import zio.*
 import zio.http.*
+import zio.http.Server.RequestStreaming
 import zio.http.netty.NettyConfig
 import zio.http.netty.NettyConfig.LeakDetectionLevel
 import zio.logging.LogFormat.{label, quoted, space, timestamp}
@@ -43,10 +44,12 @@ object Main extends ZIOAppDefault:
 
   override def run: ZIO[Any, Throwable, Unit] =
 
-    val port   = sys.env("PORT").toInt
+    val port = sys.env("PORT").toInt
+
     val config = Server
-      .Config.default
+      .Config.default.requestStreaming(RequestStreaming.Enabled)
       .port(port)
+    /*      .maxRequestSize(50 * 1024 * 1024)*/
 
     val configLayer = ZLayer.succeed(config)
 
