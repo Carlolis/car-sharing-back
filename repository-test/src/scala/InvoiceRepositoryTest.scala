@@ -28,7 +28,8 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
     val allPersons = Set(mae, charles, brigitte)
 
     val sampleInvoiceCreate = InvoiceCreate(
-      mileage = 99,
+      99,
+      mileage = Some(99),
       date = LocalDate.now(),
       name = "Business",
       drivers = Set(DriverName(maePersonName)),
@@ -68,6 +69,17 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           invoiceUuid != null,
           allInvoices.length == 1,
           allInvoices.head.kind == TestData.kind
+        )
+      },
+      test("Création d'une facture - Maé devrait créer une facture avec succès sans kilométrage ") {
+        for {
+          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate.copy(mileage = None))
+          allInvoices <- InvoiceRepository.getAllInvoices
+        } yield assertTrue(
+          invoiceUuid != null,
+          allInvoices.length == 1,
+          allInvoices.head.kind == TestData.kind,
+          allInvoices.head.mileage.isEmpty
         )
       },
       test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {

@@ -5,6 +5,7 @@ import domain.models.PersonCreate
 import domain.models.invoice.{DriverName, Invoice}
 import gel.person.models.PersonCreateGel
 
+import java.lang.Short
 import java.time.LocalDate
 import java.util
 import java.util.UUID
@@ -18,7 +19,9 @@ class InvoiceGel @GelDeserializer() (
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
   gelPersons: util.Collection[PersonCreateGel],
-  kind: String
+  kind: String,
+  // Had to put String when mileage is null, otherwise it was not working
+  mileage: String | Short
 ) {
   def getId: UUID                                  = id
   def getAmount: Int                               = amount
@@ -26,6 +29,7 @@ class InvoiceGel @GelDeserializer() (
   def getName: String                              = name
   def getPersons: util.Collection[PersonCreateGel] = gelPersons
   def getKind: String                              = kind
+  def getMileage: String | Short                   = mileage
 }
 
 case class InvoiceGelCreate(
@@ -48,6 +52,10 @@ object InvoiceGel {
       invoiceGel.getAmount,
       invoiceGel.getDate,
       invoiceGel.getPersons.asScala.map(n => DriverName(n.name)).toSet,
-      invoiceGel.getKind
+      invoiceGel.getKind,
+      Option(invoiceGel.getMileage).map {
+        case s: String => s.toInt
+        case l: Short  => l.toInt
+      }
     )
 }

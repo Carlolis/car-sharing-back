@@ -18,15 +18,15 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
 
   override def createInvoice(
     invoiceCreate: InvoiceCreate
-  ): ZIO[Any, SaveInvoiceFailed, UUID] = {
-    println(s"Creating invoice: ${invoiceCreate.name}, ${invoiceCreate.mileage}, ${invoiceCreate.drivers}")
+  ): ZIO[Any, SaveInvoiceFailed, UUID] =
     gelDb
       .querySingle(
         classOf[UUID],
         s"""
           |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
-          |   amount := ${invoiceCreate.mileage},
+          |   amount := ${invoiceCreate.amount},
           |   kind := '${invoiceCreate.kind}',
+          |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
           |   date := cal::to_local_date(${invoiceCreate.date.getYear},
           |${invoiceCreate.date.getMonthValue},
           |${invoiceCreate.date.getDayOfMonth}),
@@ -35,17 +35,20 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
           |"""
       ).tapBoth(error => ZIO.logError(s"Created invoice with id: $error"), UUID => ZIO.logInfo(s"Created invoice with id: $UUID")).mapError(
         SaveInvoiceFailed(_))
-  }
 
   override def getAllInvoices: Task[List[Invoice]] =
     gelDb
       .query(
         classOf[InvoiceGel],
         s"""
-          | select InvoiceGel { id, amount, date, name, kind, gelPersons: { name } }  ;
+          | select InvoiceGel { id, amount, date, name,  gelPersons: { name }, kind, mileage };
           |"""
       )
-      .map(_.map(InvoiceGel.fromInvoiceGel))
+      .map { invoice =>
+        println("WTF")
+        println(invoice)
+        invoice.map(InvoiceGel.fromInvoiceGel)
+      }
 
   override def deleteInvoice(id: UUID): Task[UUID] =
     gelDb

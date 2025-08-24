@@ -12,7 +12,8 @@ case class Invoice(
   amount: Int,
   date: LocalDate,
   drivers: Set[DriverName],
-  kind: String
+  kind: String,
+  mileage: Option[Int]
 )
 
 object Invoice {
