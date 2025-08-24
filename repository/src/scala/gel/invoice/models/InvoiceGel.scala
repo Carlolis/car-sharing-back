@@ -17,13 +17,15 @@ class InvoiceGel @GelDeserializer() (
   date: LocalDate,
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
-  gelPersons: util.Collection[PersonCreateGel]
+  gelPersons: util.Collection[PersonCreateGel],
+  kind: String
 ) {
   def getId: UUID                                  = id
   def getAmount: Int                               = amount
   def getDate: LocalDate                           = date
   def getName: String                              = name
   def getPersons: util.Collection[PersonCreateGel] = gelPersons
+  def getKind: String                              = kind
 }
 
 case class InvoiceGelCreate(
@@ -45,6 +47,7 @@ object InvoiceGel {
       invoiceGel.getAmount,
       invoiceGel.getDate,
       invoiceGel.getName,
-      invoiceGel.getPersons.asScala.map(n => DriverName(n.name)).toSet
+      invoiceGel.getPersons.asScala.map(n => DriverName(n.name)).toSet,
+      invoiceGel.getKind
     )
 }

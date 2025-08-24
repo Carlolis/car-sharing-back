@@ -11,7 +11,8 @@ case class Invoice(
   amount: Int,
   date: LocalDate,
   name: String,
-  drivers: Set[DriverName]
+  drivers: Set[DriverName],
+  kind: String
 )
 
 object Invoice {

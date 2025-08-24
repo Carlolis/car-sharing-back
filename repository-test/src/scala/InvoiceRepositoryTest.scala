@@ -7,7 +7,7 @@ import gel.invoice.InvoiceRepositoryGel
 import gel.person.PersonRepositoryGel
 import zio.test.*
 import zio.test.Assertion.*
-import zio.{Scope, ZIO, ZLayer}
+import zio.{IO, Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
 import java.util.UUID
@@ -19,6 +19,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
     val maePersonName      = "maé"
     val charlesPersonName  = "charles"
     val brigittePersonName = "brigitte"
+    var kind               = "péage"
 
     val mae      = PersonCreate(maePersonName)
     val charles  = PersonCreate(charlesPersonName)
@@ -30,7 +31,8 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       distance = 99,
       date = LocalDate.now(),
       name = "Business",
-      drivers = Set(DriverName(maePersonName))
+      drivers = Set(DriverName(maePersonName)),
+      kind
     )
 
     val expectedReimbursementAmount = 33
@@ -38,13 +40,13 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
 
   // Utilitaires de test
   object TestUtils {
-    def findReimbursementByDriver(reimbursements: Set[Reimbursement], driverName: String) =
+    def findReimbursementByDriver(reimbursements: Set[Reimbursement], driverName: String): IO[Option[Nothing], Reimbursement] =
       ZIO.fromOption(
         reimbursements.find(r =>
           // Adaptation nécessaire selon la structure réelle de vos objets de remboursement
           r.driverName == DriverName(driverName)))
 
-    def cleanupData =
+    def cleanupData: ZIO[PersonService & InvoiceRepository, Throwable, Unit] =
       for {
         allInvoices <- InvoiceRepository.getAllInvoices
         _           <- ZIO.foreachDiscard(allInvoices)(invoice => InvoiceRepository.deleteInvoice(invoice.id))
@@ -52,7 +54,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
         _           <- ZIO.foreachDiscard(allPersons)(person => PersonService.deletePerson(person.id))
       } yield ()
 
-    def setupTestData =
+    def setupTestData: ZIO[PersonService, Throwable, Unit] =
       ZIO.foreachPar(TestData.allPersons)(person => PersonService.createPerson(person)).unit
   }
 
@@ -64,7 +66,8 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           allInvoices <- InvoiceRepository.getAllInvoices
         } yield assertTrue(
           invoiceUuid != null,
-          allInvoices.length == 1
+          allInvoices.length == 1,
+          allInvoices.head.kind == TestData.kind
         )
       },
       test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {

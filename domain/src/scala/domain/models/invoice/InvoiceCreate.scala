@@ -10,7 +10,9 @@ case class InvoiceCreate(
   date: LocalDate,
   name: String,
   drivers: Set[DriverName],
-  fileBytes: Option[FileRange] = None
+  kind: String,
+  fileBytes: Option[FileRange] = None,
+  fileName: Option[String] = None
 )
 
 object InvoiceCreate {

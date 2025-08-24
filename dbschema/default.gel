@@ -37,6 +37,7 @@ module default {
 
   type InvoiceGel {
     required name: str;
+    required kind: str;
     required date: cal::local_date;
     required amount: int16;
     required multi gelPersons: PersonGel;

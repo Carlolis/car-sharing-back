@@ -24,11 +24,14 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
       .querySingle(
         classOf[UUID],
         s"""
-          |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}', amount := ${invoiceCreate.distance}, date := cal::to_local_date(${invoiceCreate
-            .date.getYear}, ${invoiceCreate
-            .date.getMonthValue}, ${invoiceCreate
-            .date.getDayOfMonth}), gelPersons := (select detached default::PersonGel filter .name in ${invoiceCreate
-            .drivers.mkString("{'", "','", "'}")}) }) select new_invoice.id;
+          |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
+          |   amount := ${invoiceCreate.distance},
+          |   kind := '${invoiceCreate.kind}',
+          |   date := cal::to_local_date(${invoiceCreate.date.getYear},
+          |${invoiceCreate.date.getMonthValue},
+          |${invoiceCreate.date.getDayOfMonth}),
+          | gelPersons := (select detached default::PersonGel
+          | filter .name in ${invoiceCreate.drivers.mkString("{'", "','", "'}")}) }) select new_invoice.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created invoice with id: $error"), UUID => ZIO.logInfo(s"Created invoice with id: $UUID")).mapError(
         SaveInvoiceFailed(_))
@@ -39,7 +42,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
       .query(
         classOf[InvoiceGel],
         s"""
-          | select InvoiceGel { id, amount, date, name, gelPersons: { name } }  ;
+          | select InvoiceGel { id, amount, date, name, kind, gelPersons: { name } }  ;
           |"""
       )
       .map(_.map(InvoiceGel.fromInvoiceGel))
