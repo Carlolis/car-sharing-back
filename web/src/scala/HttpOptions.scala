@@ -17,7 +17,7 @@ var serverLog: DefaultServerLog[F] =
     .logAllDecodeFailures(true)
     .logLogicExceptions(true)
 
-val options =
+val options: ZioHttpServerOptions[Any] =
   ZioHttpServerOptions
     .customiseInterceptors.corsInterceptor(
       CORSInterceptor.customOrThrow(

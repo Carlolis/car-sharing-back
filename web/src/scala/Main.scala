@@ -57,16 +57,23 @@ object Main extends ZIOAppDefault:
     val nettyConfigLayer = ZLayer.succeed(nettyConfig)
     (for
 
-      _      <- ZIO.log(s"Swagger UI available at http://localhost:$port/docs")
-      _      <- ZIO.log(s"Server starting on http://localhost:$port")
-      httpApp = ZioHttpInterpreter(options).toHttp(
-                  tripEndpoints
-                ) ++ ZioHttpInterpreter(options).toHttp(
-                  swagger
-                ) ++ ZioHttpInterpreter(options).toHttp(
-                  iaEndpoints
-                ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpoints)
-      _      <- httpApp.serve
+      _              <- ZIO.log(s"Swagger UI available at http://localhost:$port/docs")
+      _              <- ZIO.log(s"Server starting on http://localhost:$port")
+      tapirApp        = ZioHttpInterpreter(options).toHttp(
+                          tripEndpoints
+                        ) ++ ZioHttpInterpreter(options).toHttp(
+                          swagger
+                        ) ++ ZioHttpInterpreter(options).toHttp(
+                          iaEndpoints
+                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpoints)
+      // Fallback handler for unmatched routes to log unsupported endpoints
+      fallbackHandler = Handler.fromFunctionZIO[Request] { request =>
+                          ZIO.log(
+                            s"Unsupported endpoint requested: ${request.method} ${request.path} from ${request.remoteAddress.getOrElse("unknown")}") *>
+                            ZIO.succeed(Response.json("""{"error":"Not found."}""").status(Status.NotFound))
+                        }
+      httpApp         = tapirApp ++ Routes(RoutePattern.any -> fallbackHandler)
+      _              <- httpApp.serve
     yield ()).provide(
       configLayer,
       nettyConfigLayer,
@@ -82,6 +89,3 @@ object Main extends ZIOAppDefault:
       SardineScalaImpl.layer,
       AppConfig.layer
     )
-
-
-
