@@ -62,6 +62,6 @@ object InvoiceStorageTest extends ZIOSpecDefault {
       @@ TestAspect.sequential).provideShared(
       AppConfig.layer,
       InvoiceWebDavImpl.layer,
-      SardineScalaImpl.testLayer
+      SardineScalaImpl.layer
     )
 }

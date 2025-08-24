@@ -25,7 +25,8 @@ private case class WebDavConfig(
   username: String,
   password: String,
   baseUrl: String,
-  basePath: String
+  basePath: String,
+  directory: String
 )
 
 object AppConfig:

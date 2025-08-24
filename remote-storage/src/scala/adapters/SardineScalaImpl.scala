@@ -7,10 +7,11 @@ import zio.*
 import java.io.InputStream
 import scala.jdk.CollectionConverters.*
 
-case class SardineScalaImpl(appConfig: AppConfig, path: String = "main") {
-  private val config = appConfig.webdav
-  private val invoicePath = config.baseUrl + config.basePath + "/" + path + "/"
-  
+case class SardineScalaImpl(appConfig: AppConfig) {
+  private val config      = appConfig.webdav
+  private val directory   = config.directory
+  private val invoicePath = config.baseUrl + config.basePath + "/" + directory + "/"
+
   // Create a Sardine instance with proper resource management
   private def makeSardine: ZIO[Scope, Throwable, Sardine] = ZIO.acquireRelease {
     ZIO.attempt {
@@ -20,7 +21,8 @@ case class SardineScalaImpl(appConfig: AppConfig, path: String = "main") {
       s
     }
   } { sardine =>
-    ZIO.attempt(sardine.shutdown())
+    ZIO
+      .attempt(sardine.shutdown())
       .tapBoth(
         e => ZIO.logError(s"Error closing Sardine connection: ${e.getMessage}"),
         _ => ZIO.log("Sardine connection closed successfully")
@@ -86,25 +88,22 @@ case class SardineScalaImpl(appConfig: AppConfig, path: String = "main") {
 }
 
 object SardineScalaImpl {
-  val layer: ZLayer[AppConfig, Nothing, SardineScalaImpl] = 
+  val layer: ZLayer[AppConfig, Nothing, SardineScalaImpl] =
     ZLayer.fromFunction(appConfig => SardineScalaImpl(appConfig))
-    
-  val testLayer: ZLayer[AppConfig, Nothing, SardineScalaImpl] = 
-    ZLayer.fromFunction(appConfig => SardineScalaImpl(appConfig, "test"))
-  
+
   // Helper methods to use with ZIO.scoped
   def list: ZIO[Scope & SardineScalaImpl, Throwable, List[DavResource]] =
     ZIO.serviceWithZIO[SardineScalaImpl](_.list)
-    
+
   def put(dataStream: Array[Byte], contentType: String, fileName: String): ZIO[Scope & SardineScalaImpl, Throwable, Unit] =
     ZIO.serviceWithZIO[SardineScalaImpl](_.put(dataStream, contentType, fileName))
-    
+
   def put(dataStream: InputStream, contentType: String, fileName: String): ZIO[Scope & SardineScalaImpl, Throwable, Unit] =
     ZIO.serviceWithZIO[SardineScalaImpl](_.put(dataStream, contentType, fileName))
-    
+
   def delete(fileName: String): ZIO[Scope & SardineScalaImpl, Throwable, Unit] =
     ZIO.serviceWithZIO[SardineScalaImpl](_.delete(fileName))
-    
+
   def get(fileName: String): ZIO[Scope & SardineScalaImpl, Throwable, InputStream] =
     ZIO.serviceWithZIO[SardineScalaImpl](_.get(fileName))
 }
