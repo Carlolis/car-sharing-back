@@ -13,8 +13,14 @@ import java.util.UUID
 class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository) extends InvoiceService:
   def sanitizeName(raw: String): String =
     val base  = Option(raw).getOrElse("invoice")
-    val clean = base.replaceAll("""[\\/:*?"<>|]""", "").replaceAll("\\s+", "").trim()
-    clean.take(255) // simple limit
+    // Remove or replace URL-unsafe characters including spaces, parentheses, and other special chars
+    val clean = base
+      .replaceAll("""[\\/:*?"<>|()\s]""", "_") // Replace URL-unsafe chars with underscore
+      .replaceAll("_{2,}", "_") // Replace multiple consecutive underscores with single underscore
+      .replaceAll("^_|_$", "") // Remove leading/trailing underscores
+      .trim()
+    val result = if (clean.isEmpty) "invoice" else clean
+    result.take(255) // simple limit
 
   override def createInvoice(invoiceCreate: InvoiceCreate): Task[InvoiceId] =
     val sanitizedName = invoiceCreate.fileName.map(sanitizeName)
@@ -39,7 +45,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                         val is   = Files.newInputStream(path).readAllBytes()
                         ZIO.log(s"Uploading file '$sanitizedName' with id $id") *>
                           invoiceExternalStorage
-                            .upload(is, id.toString + "_" + sanitizedName)
+                            .upload(is, id.toString + "_" + sanitizedName.getOrElse(""))
                             .tapBoth(
                               err => ZIO.logError(s"Upload failed for '$sanitizedName': ${err.getMessage}"),
                               _ => ZIO.log(s"Upload succeeded for '$sanitizedName'")
