@@ -2,7 +2,7 @@ package gel.invoice.models
 
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
 import domain.models.PersonCreate
-import domain.models.invoice.{DriverName, Invoice}
+import domain.models.invoice.{DriverName, Invoice, InvoiceId}
 import gel.person.models.PersonCreateGel
 
 import java.lang.Short
@@ -47,7 +47,7 @@ case class InvoiceGelStats(
 object InvoiceGel {
   def fromInvoiceGel(invoiceGel: InvoiceGel): Invoice =
     Invoice(
-      invoiceGel.getId,
+      InvoiceId(invoiceGel.getId),
       invoiceGel.getName,
       invoiceGel.getAmount,
       invoiceGel.getDate,

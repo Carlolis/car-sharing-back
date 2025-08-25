@@ -40,5 +40,25 @@ object InvoiceEndpointsLive:
         .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
+  private val deleteInvoiceEndpoint: ZServerEndpoint[PersonService & AuthService & InvoiceService, Any] =
+    InvoiceEndpoints.deleteInvoiceEndpoint.serverLogic {
+      case (invoiceId, token) =>
+        (for {
+
+          _         <- AuthService.authenticate(token)
+          // user <- ZIO
+          //   .fromOption(userOpt)
+          //   .orElseFail(new Exception("Unauthorized"))
+          _         <- ZIO.logInfo(
+                         "Getting invoices "
+                       )
+          invoiceId <- InvoiceService
+                         .deleteInvoice(invoiceId)
+
+        } yield invoiceId)
+          .map(Right(_))
+          .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    }
+
   val invoiceEndpoints: List[ZServerEndpoint[PersonService & AuthService & InvoiceService, Any]] =
-    List(createInvoice, getAllInvoices)
+    List(createInvoice, getAllInvoices, deleteInvoiceEndpoint)

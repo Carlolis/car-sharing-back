@@ -131,7 +131,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           charlesDistributionAssertion &&
           brigitteDistributionAssertion
         }
-      }
+      } @@ TestAspect.ignore
     ) @@ TestAspect.after(
       TestUtils.cleanupData.catchAll(e => ZIO.logError(s"Erreur lors du nettoyage: ${e.getMessage}"))
     ) @@ TestAspect

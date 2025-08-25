@@ -3,11 +3,10 @@ package domain.models.invoice
 import zio.json.*
 
 import java.time.LocalDate
-import java.util.UUID
 import scala.jdk.CollectionConverters.*
 
 case class Invoice(
-  id: UUID,
+  id: InvoiceId,
   name: String,
   amount: Int,
   date: LocalDate,

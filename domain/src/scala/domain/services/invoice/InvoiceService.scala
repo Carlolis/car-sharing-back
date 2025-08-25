@@ -8,7 +8,7 @@ import java.util.UUID
 trait InvoiceService {
   def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId]
   def getAllInvoices: Task[List[Invoice]]
-  def deleteInvoice(id: UUID): Task[UUID]
+  def deleteInvoice(id: InvoiceId): Task[InvoiceId]
 }
 
 object InvoiceService:
@@ -16,5 +16,5 @@ object InvoiceService:
     ZIO.serviceWithZIO[InvoiceService](_.createInvoice(tripCreate))
   def getAllInvoices: RIO[InvoiceService, List[Invoice]]                       =
     ZIO.serviceWithZIO[InvoiceService](_.getAllInvoices)
-  def deleteInvoice(id: UUID): RIO[InvoiceService, UUID]                       =
+  def deleteInvoice(id: InvoiceId): RIO[InvoiceService, InvoiceId]                  =
     ZIO.serviceWithZIO[InvoiceService](_.deleteInvoice(id))

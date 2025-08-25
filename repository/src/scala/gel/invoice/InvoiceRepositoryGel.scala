@@ -2,7 +2,7 @@ package gel.invoice
 
 import adapters.GelDriverLive
 import domain.models.*
-import domain.models.invoice.{DriverName, Invoice, InvoiceCreate, Reimbursement}
+import domain.models.invoice.*
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
 import domain.services.person.PersonService
@@ -50,16 +50,16 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
         invoice.map(InvoiceGel.fromInvoiceGel)
       }
 
-  override def deleteInvoice(id: UUID): Task[UUID] =
+  override def deleteInvoice(id: InvoiceId): Task[InvoiceId] =
     gelDb
       .querySingle(
         classOf[String],
         s"""
-           | delete InvoiceGel filter .id = <uuid>'$id';
-           | select '$id';
+           | delete InvoiceGel filter .id = <uuid>'${id.toString}';
+           | select '${id.toString}';
            |"""
       )
-      .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted invoice with id: $id"))
+      .map(id => InvoiceId(UUID.fromString(id))).zipLeft(ZIO.logInfo(s"Deleted invoice with id: $id"))
 
   override def getReimbursementProposal: Task[Set[Reimbursement]] =
     for {

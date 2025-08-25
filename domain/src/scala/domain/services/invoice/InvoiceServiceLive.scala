@@ -8,7 +8,6 @@ import sttp.tapir.FileRange
 import zio.*
 
 import java.nio.file.Files
-import java.util.UUID
 
 class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository) extends InvoiceService:
   def sanitizeName(raw: String): String =
@@ -16,8 +15,8 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
     // Remove or replace URL-unsafe characters including spaces, parentheses, and other special chars
     val clean = base
       .replaceAll("""[\\/:*?"<>|()\s]""", "_") // Replace URL-unsafe chars with underscore
-      .replaceAll("_{2,}", "_") // Replace multiple consecutive underscores with single underscore
-      .replaceAll("^_|_$", "") // Remove leading/trailing underscores
+      .replaceAll("_{2,}", "_")                // Replace multiple consecutive underscores with single underscore
+      .replaceAll("^_|_$", "")                 // Remove leading/trailing underscores
       .trim()
     val result = if (clean.isEmpty) "invoice" else clean
     result.take(255) // simple limit
@@ -78,7 +77,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
 
   override def getAllInvoices: Task[List[Invoice]] = invoiceRepository.getAllInvoices
 
-  override def deleteInvoice(id: UUID): Task[UUID] = ???
+  override def deleteInvoice(id: InvoiceId): Task[InvoiceId] = invoiceRepository.deleteInvoice(id)
 object InvoiceServiceLive:
   val layer: ZLayer[InvoiceStorage & InvoiceRepository, Nothing, InvoiceServiceLive] =
     ZLayer.fromFunction(InvoiceServiceLive(_, _))

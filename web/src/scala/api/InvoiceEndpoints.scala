@@ -8,6 +8,8 @@ import sttp.tapir.json.zio.*
 import sttp.tapir.ztapir.*
 import zio.json.*
 
+import java.util.UUID
+
 case class ErrorResponse(message: String) derives JsonEncoder, JsonDecoder
 
 object InvoiceEndpoints:
@@ -25,13 +27,15 @@ object InvoiceEndpoints:
     .in(auth.bearer[String]())
     .out(jsonBody[List[Invoice]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
-  /*  val uploadInvoice                                                                                       = endpoint
-    .post
-    .in("api" / "invoices" / "upload")
+
+  val deleteInvoiceEndpoint: Endpoint[Unit, (InvoiceId, String), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
+    .delete
+    .in("api" / "trips" / path[InvoiceId])
     .in(auth.bearer[String]())
-    .in(multipartBody)
     .out(jsonBody[InvoiceId])
-    .errorOut(statusCode and jsonBody[ErrorResponse])*/
-  val invoiceEndPoints                                                                        = List(
-    createInvoice
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+  val invoiceEndPoints                                                                                        = List(
+    createInvoice,
+    getAllInvoices,
+    deleteInvoiceEndpoint
   )
