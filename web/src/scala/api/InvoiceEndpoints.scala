@@ -30,7 +30,7 @@ object InvoiceEndpoints:
 
   val deleteInvoiceEndpoint: Endpoint[Unit, (InvoiceId, String), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
     .delete
-    .in("api" / "trips" / path[InvoiceId])
+    .in("api" / "invoices" / path[InvoiceId])
     .in(auth.bearer[String]())
     .out(jsonBody[InvoiceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
