@@ -1,14 +1,14 @@
-import api.{ErrorResponse, InvoiceEndpoints}
+package api
+
 import domain.services.AuthService
 import domain.services.invoice.InvoiceService
-import domain.services.invoice.storage.InvoiceStorage
 import domain.services.person.PersonService
 import sttp.model.StatusCode
 import sttp.tapir.ztapir.*
 import zio.*
 
 object InvoiceEndpointsLive:
-  type Env = PersonService & AuthService & InvoiceService & InvoiceStorage
+  type Env = PersonService & AuthService & InvoiceService
 
   private val createInvoice: ZServerEndpoint[Env, Any] =
     InvoiceEndpoints.createInvoice.serverLogic {
@@ -62,11 +62,11 @@ object InvoiceEndpointsLive:
 
   private val downloadInvoiceFile: ZServerEndpoint[Env, Any] =
     InvoiceEndpoints.downloadInvoiceFile.serverLogic {
-      case (fileName, token) =>
+      case (fileName,id, token) =>
         (for {
           _         <- AuthService.authenticate(token)
           _         <- ZIO.logInfo(s"Downloading invoice file: $fileName")
-          fileBytes <- InvoiceStorage.download(fileName)
+          fileBytes <- InvoiceService.download(fileName, id)
           _         <- ZIO.logInfo(s"Successfully downloaded file: $fileName, size: ${fileBytes.length} bytes")
         } yield (fileBytes, "application/octet-stream"))
           .map(Right(_))

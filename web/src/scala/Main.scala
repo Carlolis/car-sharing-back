@@ -1,5 +1,5 @@
-import InvoiceEndpointsLive.invoiceEndpointsLive
 import adapters.{GelDriver, SardineScalaImpl}
+import api.InvoiceEndpointsLive.invoiceEndpointsLive
 import api.TripEndpointsLive.tripEndpointsLive
 import api.ia.IaRoutes.iaEndpoints
 import api.{TripEndpointsLive, swagger}
@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object Main extends ZIOAppDefault:
-  val logFormat: LogFormat =
+  private val logFormat: LogFormat =
     label(
       "timestamp",
       timestamp(DateTimeFormatter.ofPattern("dd/LL/uu HH:mm:ss:SS", Locale.FRANCE))
