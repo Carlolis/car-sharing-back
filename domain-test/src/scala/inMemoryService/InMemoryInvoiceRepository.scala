@@ -23,7 +23,8 @@ class InMemoryInvoiceRepository extends InvoiceRepository {
       date = invoiceCreate.date,
       drivers = invoiceCreate.drivers,
       kind = invoiceCreate.kind,
-      mileage = invoiceCreate.mileage
+      mileage = invoiceCreate.mileage,
+      fileName = invoiceCreate.fileName
     )
     
     ZIO.attempt {
