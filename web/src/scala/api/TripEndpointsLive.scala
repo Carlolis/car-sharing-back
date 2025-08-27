@@ -122,7 +122,7 @@ object TripEndpointsLive:
   private val healthEndpoint: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
     TripEndpoints.healthCheck.serverLogic(_ => ZIO.right(Right(())))
 
-  val tripEndpoints: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
+  val tripEndpointsLive: List[ZServerEndpoint[PersonService & AuthService & TripService, Any]] =
     List(getTripStatsByUser, getAllTrips, createTrip, loginEndpoint, updateTrip, createPersonEndpoint, healthEndpoint, deleteTripEndpoint)
   // login,
   // register

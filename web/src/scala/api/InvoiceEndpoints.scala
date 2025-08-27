@@ -41,9 +41,18 @@ object InvoiceEndpoints:
     .out(jsonBody[InvoiceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
+  val downloadInvoiceFile: Endpoint[Unit, (String, String), (StatusCode, ErrorResponse), (Array[Byte], String), Any] = endpoint
+    .get
+    .in("api" / "invoices" / "download" / path[String]("fileName"))
+    .in(auth.bearer[String]())
+    .out(byteArrayBody)
+    .out(header[String]("Content-Type"))
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+
   val invoiceEndPoints = List(
     createInvoice,
     getAllInvoices,
     deleteInvoice,
-    updateInvoice
+    updateInvoice,
+    downloadInvoiceFile
   )

@@ -1,6 +1,6 @@
+import InvoiceEndpointsLive.invoiceEndpointsLive
 import adapters.{GelDriver, SardineScalaImpl}
-import api.InvoiceEndpointsLive.invoiceEndpoints
-import api.TripEndpointsLive.tripEndpoints
+import api.TripEndpointsLive.tripEndpointsLive
 import api.ia.IaRoutes.iaEndpoints
 import api.{TripEndpointsLive, swagger}
 import config.AppConfig
@@ -63,12 +63,12 @@ object Main extends ZIOAppDefault:
       _              <- ZIO.log(s"Swagger UI available at http://localhost:$port/docs")
       _              <- ZIO.log(s"Server starting on http://localhost:$port")
       tapirApp        = ZioHttpInterpreter(options).toHttp(
-                          tripEndpoints
+                          tripEndpointsLive
                         ) ++ ZioHttpInterpreter(options).toHttp(
                           swagger
                         ) ++ ZioHttpInterpreter(options).toHttp(
                           iaEndpoints
-                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpoints)
+                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpointsLive)
       // Fallback handler for unmatched routes to log unsupported endpoints
       fallbackHandler = Handler.fromFunctionZIO[Request] { request =>
                           ZIO.log(
