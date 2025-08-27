@@ -33,12 +33,12 @@ object TripEndpoints:
     .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val updateTrip: Endpoint[Unit, (String, Trip), (StatusCode, ErrorResponse), UUID, Any] = endpoint
+  val updateTrip: Endpoint[Unit, (String, Trip), (StatusCode, ErrorResponse), TripId, Any] = endpoint
     .put
     .in("api" / "trips")
     .in(auth.bearer[String]())
     .in(jsonBody[Trip])
-    .out(jsonBody[UUID])
+    .out(jsonBody[TripId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
   val getAllTrips: Endpoint[Unit, String, (StatusCode, ErrorResponse), List[Trip], Any] = endpoint

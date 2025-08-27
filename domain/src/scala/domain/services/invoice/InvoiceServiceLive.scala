@@ -76,8 +76,13 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
         .map(_._1)
 
   override def getAllInvoices: Task[List[Invoice]] = invoiceRepository.getAllInvoices
+  
+  
 
   override def deleteInvoice(id: InvoiceId): Task[InvoiceId] = invoiceRepository.deleteInvoice(id)
+
+  override def updateInvoice(invoiceUpdate: Invoice): Task[InvoiceId] = invoiceRepository.updateInvoice(invoiceUpdate)
+
 object InvoiceServiceLive:
   val layer: ZLayer[InvoiceStorage & InvoiceRepository, Nothing, InvoiceServiceLive] =
     ZLayer.fromFunction(InvoiceServiceLive(_, _))

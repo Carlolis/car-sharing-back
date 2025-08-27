@@ -14,7 +14,7 @@
 - `SardineScalaImpl.scala`: The two `put` methods (lines 34-48 and 50-61) share significant duplicate code
 - Error handling patterns are duplicated across multiple files with similar tapError/tapBoth patterns
 
-## 3. Implement Missing Methods
+## 3. Implement Missing MethodsA
 
 - `InvoiceServiceLive.scala`: Methods `getAllInvoices` and `deleteInvoice` are marked with `???` (lines 66-68)
 

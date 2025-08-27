@@ -76,7 +76,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
       )
       .map(id => UUID.fromString(id)).zipLeft(ZIO.logInfo(s"Deleted trip with id: $id")).map(TripId(_))
 
-  override def updateTrip(tripUpdate: Trip): Task[UUID] =
+  override def updateTrip(tripUpdate: Trip): Task[TripId] =
     gelDb
       .querySingle(
         classOf[UUID],
@@ -97,7 +97,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
            |)
            |select updated_trip.id;
            |"""
-      ).tapBoth(
+      ).map(TripId(_)).tapBoth(
         error => ZIO.logError(s"Failed to update trip with id: ${tripUpdate.id}, error: $error"),
         uuid => ZIO.logInfo(s"Updated trip with id: $uuid")
       )

@@ -60,5 +60,19 @@ object InvoiceEndpointsLive:
           .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
+  private val updateInvoice: ZServerEndpoint[PersonService & AuthService & InvoiceService, Any] =
+    InvoiceEndpoints.updateInvoice.serverLogic {
+      case (token, trip) =>
+        (for {
+          _ <- AuthService.authenticate(token)
+          _ <- ZIO.logInfo("Updating trip " + trip.toString)
+          uuid <- InvoiceService.updateInvoice(trip)
+          _ <- ZIO.logInfo("Invoice updated " + uuid.toString)
+        } yield uuid)
+          .map(Right(_))
+          .tapError(error => ZIO.logError(s"Error: $error"))
+          .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    }  
+
   val invoiceEndpoints: List[ZServerEndpoint[PersonService & AuthService & InvoiceService, Any]] =
     List(createInvoice, getAllInvoices, deleteInvoiceEndpoint)

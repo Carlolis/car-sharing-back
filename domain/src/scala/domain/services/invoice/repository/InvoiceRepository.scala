@@ -11,6 +11,7 @@ trait InvoiceRepository {
   def getAllInvoices: Task[List[Invoice]]
   def deleteInvoice(id: InvoiceId): Task[InvoiceId]
   def getReimbursementProposal: Task[Set[Reimbursement]]
+  def updateInvoice(invoiceUpdate: Invoice): Task[InvoiceId]
 }
 
 object InvoiceRepository:
@@ -18,7 +19,9 @@ object InvoiceRepository:
     ZIO.serviceWithZIO[InvoiceRepository](_.createInvoice(tripCreate))
   def getAllInvoices: RIO[InvoiceRepository, List[Invoice]]                  =
     ZIO.serviceWithZIO[InvoiceRepository](_.getAllInvoices)
-  def deleteInvoice(id: InvoiceId): RIO[InvoiceRepository, InvoiceId]                  =
+  def deleteInvoice(id: InvoiceId): RIO[InvoiceRepository, InvoiceId]        =
     ZIO.serviceWithZIO[InvoiceRepository](_.deleteInvoice(id))
   def getReimbursementProposal: RIO[InvoiceRepository, Set[Reimbursement]]   =
     ZIO.serviceWithZIO[InvoiceRepository](_.getReimbursementProposal)
+  def updateInvoice(trip: Invoice): RIO[InvoiceRepository, InvoiceId]        =
+    ZIO.serviceWithZIO[InvoiceRepository](_.updateInvoice(trip))

@@ -44,11 +44,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
           | select InvoiceGel { id, amount, date, name,  gelPersons: { name }, kind, mileage };
           |"""
       )
-      .map { invoice =>
-        println("WTF")
-        println(invoice)
-        invoice.map(InvoiceGel.fromInvoiceGel)
-      }
+      .map(invoice => invoice.map(InvoiceGel.fromInvoiceGel))
 
   override def deleteInvoice(id: InvoiceId): Task[InvoiceId] =
     gelDb
@@ -88,6 +84,32 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
                        }
       _ <- ZIO.logInfo(s"Got $reimbursements ")
     } yield reimbursements
+
+  override def updateInvoice(invoiceUpdate: Invoice): Task[InvoiceId] =
+    gelDb
+      .querySingle(
+        classOf[UUID],
+        s"""
+           | with updated_invoice := (
+           |    update InvoiceGel
+           |    filter .id = <uuid>'${invoiceUpdate.id}'
+           |    set {
+           |        name := '${invoiceUpdate.name}',
+           |        amount := ${invoiceUpdate.amount},
+           |        kind := '${invoiceUpdate.kind}',
+           |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
+           |        date := cal::to_local_date(${invoiceUpdate
+            .date.getYear}, ${invoiceUpdate
+            .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),
+           |        gelPersons := (select detached default::PersonGel filter .name in ${invoiceUpdate.drivers.mkString("{'", "','", "'}")})
+           |    }
+           |)
+           |select updated_invoice.id;
+           |"""
+      ).map(InvoiceId(_)).tapBoth(
+        error => ZIO.logError(s"Failed to update invoice with id: ${invoiceUpdate.id}, error: $error"),
+        uuid => ZIO.logInfo(s"Updated invoice with id: $uuid")
+      )
 }
 
 object InvoiceRepositoryGel:
