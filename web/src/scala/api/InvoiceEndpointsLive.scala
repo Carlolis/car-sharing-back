@@ -8,8 +8,6 @@ import sttp.tapir.ztapir.*
 import zio.*
 
 object InvoiceEndpointsLive:
-
-  // ✅ Alias pour ton environnement commun
   type Env = PersonService & AuthService & InvoiceService & InvoiceStorage
 
   private val createInvoice: ZServerEndpoint[Env, Any] =
@@ -63,7 +61,7 @@ object InvoiceEndpointsLive:
     }
 
   private val downloadInvoiceFile: ZServerEndpoint[Env, Any] =
-     InvoiceEndpoints.downloadInvoiceFile.serverLogic {
+    InvoiceEndpoints.downloadInvoiceFile.serverLogic {
       case (fileName, token) =>
         (for {
           _         <- AuthService.authenticate(token)
@@ -76,6 +74,5 @@ object InvoiceEndpointsLive:
           .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
-  // ✅ Ici aussi : factorisation
   val invoiceEndpointsLive: List[ZServerEndpoint[Env, Any]] =
     List(createInvoice, getAllInvoices, deleteInvoiceEndpoint, updateInvoice, downloadInvoiceFile)

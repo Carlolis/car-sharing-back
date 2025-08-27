@@ -41,6 +41,7 @@ module default {
     mileage: int16;
     required date: cal::local_date;
     required amount: int16;
+    fileName: str;
     required multi gelPersons: PersonGel;
   }
 

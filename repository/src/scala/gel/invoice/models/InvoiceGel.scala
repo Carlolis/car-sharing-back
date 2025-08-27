@@ -21,7 +21,8 @@ class InvoiceGel @GelDeserializer() (
   gelPersons: util.Collection[PersonCreateGel],
   kind: String,
   // Had to put String when mileage is null, otherwise it was not working
-  mileage: String | Short
+  mileage: String | Short,
+  fileName: String
 ) {
   def getId: UUID                                  = id
   def getAmount: Int                               = amount
@@ -30,6 +31,7 @@ class InvoiceGel @GelDeserializer() (
   def getPersons: util.Collection[PersonCreateGel] = gelPersons
   def getKind: String                              = kind
   def getMileage: String | Short                   = mileage
+  def getFileName: String                          = fileName
 }
 
 case class InvoiceGelCreate(
@@ -56,6 +58,7 @@ object InvoiceGel {
       Option(invoiceGel.getMileage).map {
         case s: String => s.toInt
         case l: Short  => l.toInt
-      }
+      },
+      Option(invoiceGel.getFileName).filter(_.nonEmpty)
     )
 }

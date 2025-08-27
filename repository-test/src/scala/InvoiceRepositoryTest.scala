@@ -36,6 +36,16 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       kind
     )
 
+    val sampleInvoiceCreateWithFileName = InvoiceCreate(
+      150,
+      mileage = Some(120),
+      date = LocalDate.now(),
+      name = "Business with file",
+      drivers = Set(DriverName(charlesPersonName)),
+      kind,
+      fileName = Some("test_invoice.pdf")
+    )
+
     val expectedReimbursementAmount = 33
   }
 
@@ -80,6 +90,32 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           allInvoices.length == 1,
           allInvoices.head.kind == TestData.kind,
           allInvoices.head.mileage.isEmpty
+        )
+      },
+      test("Création d'une facture avec fileName - Charles devrait créer une facture avec fileName avec succès") {
+        for {
+          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreateWithFileName)
+          allInvoices <- InvoiceRepository.getAllInvoices
+          createdInvoice = allInvoices.find(_.name == "Business with file")
+        } yield assertTrue(
+          invoiceUuid != null,
+          allInvoices.nonEmpty,
+          createdInvoice.isDefined,
+          createdInvoice.get.fileName.isDefined,
+          createdInvoice.get.fileName.get == "test_invoice.pdf",
+          createdInvoice.get.drivers.contains(DriverName(TestData.charlesPersonName))
+        )
+      },
+      test("Création d'une facture sans fileName - devrait avoir fileName = None") {
+        for {
+          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate)
+          allInvoices <- InvoiceRepository.getAllInvoices
+          createdInvoice = allInvoices.find(_.name == "Business")
+        } yield assertTrue(
+          invoiceUuid != null,
+          allInvoices.nonEmpty,
+          createdInvoice.isDefined,
+          createdInvoice.get.fileName.isEmpty
         )
       },
       test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {

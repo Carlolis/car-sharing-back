@@ -27,6 +27,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
           |   amount := ${invoiceCreate.amount},
           |   kind := '${invoiceCreate.kind}',
           |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
+          |   ${invoiceCreate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
           |   date := cal::to_local_date(${invoiceCreate.date.getYear},
           |${invoiceCreate.date.getMonthValue},
           |${invoiceCreate.date.getDayOfMonth}),
@@ -41,7 +42,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
       .query(
         classOf[InvoiceGel],
         s"""
-          | select InvoiceGel { id, amount, date, name,  gelPersons: { name }, kind, mileage };
+          | select InvoiceGel { id, amount, date, name,  gelPersons: { name }, kind, mileage, fileName };
           |"""
       )
       .map(invoice => invoice.map(InvoiceGel.fromInvoiceGel))
@@ -98,6 +99,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
            |        amount := ${invoiceUpdate.amount},
            |        kind := '${invoiceUpdate.kind}',
            |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
+           |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
            |        date := cal::to_local_date(${invoiceUpdate
             .date.getYear}, ${invoiceUpdate
             .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),

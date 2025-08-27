@@ -102,6 +102,13 @@ The project includes `docker-compose.yml` for containerized deployment:
 - **AI Extension**: Project uses EdgeDB AI extension
 - **Key Types**: `TripGel`, `PersonGel`, `InvoiceGel`, `WriterGel`, `ChatSessionGel`, `MessageGel`
 
+#### Database Migrations
+When there are database schema changes, apply migrations using:
+```bash
+# Apply migrations to test database
+gel migration apply --dev-mode -I test
+```
+
 ## Architecture & Code Patterns
 
 ### ZIO Service Pattern
