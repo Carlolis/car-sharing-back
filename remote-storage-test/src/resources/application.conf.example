@@ -1,0 +1,21 @@
+webdav {
+  # WebDAV/NextCloud connection settings
+  # Set these environment variables or replace with actual values:
+  # NEXTCLOUD_USERNAME - your NextCloud username
+  # NEXTCLOUD_PASSWORD - your NextCloud password  
+  # NEXTCLOUD_URL - your NextCloud instance URL (e.g., https://your-nextcloud.com)
+  username = ${?NEXTCLOUD_USERNAME}
+  password = ${?NEXTCLOUD_PASSWORD}
+  baseUrl = ${?NEXTCLOUD_URL}
+
+  basePath = "voiture"
+  directory = "test"  # Test directory - different from production
+}
+
+auth {
+  # Authentication service settings
+  # Set AUTH_SECRET_KEY environment variable or replace with actual secret key
+  secretKey = ${?AUTH_SECRET_KEY}
+  
+  tokenExpirationSeconds = 2678400  # ~31 days
+}
