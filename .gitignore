@@ -38,7 +38,3 @@ metals.sbt
 
 .vscode
 .metals
-
-# Configuration files
-# Test configuration files (use .example versions instead)
-*-test/src/resources/application.conf
