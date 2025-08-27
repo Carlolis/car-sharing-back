@@ -3,7 +3,7 @@ module default {
     required name: str;
     required startDate: cal::local_date;
     required endDate: cal::local_date;
-    required distance: int16;
+    distance: int16;
     required multi gelDrivers: PersonGel;
     comments: str;
   }

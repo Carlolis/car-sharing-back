@@ -178,6 +178,7 @@ private val endpointImpl: ZServerEndpoint[Dependencies, Any] =
 - Always include cleanup in tests using `TestAspect.after`
 - Use meaningful test descriptions in plain language
 - Test both success and failure scenarios
+- **Clean up temporary test files**: Remove any temporary test files created during development (e.g., `test_*.scala`, debug scripts) from the project root before submitting changes
 
 ### Configuration Management
 - All external configuration via environment variables
@@ -186,3 +187,30 @@ private val endpointImpl: ZServerEndpoint[Dependencies, Any] =
 - Document required environment variables
 
 This project demonstrates a well-structured ZIO application with clean architecture, comprehensive testing, and proper separation of concerns.
+
+### EdgeDB/GelDB Development Patterns
+
+#### Handling Optional Integer Fields
+
+When working with optional integer fields in EdgeDB (like `distance: int16` in TripGel), follow this pattern:
+
+1. **In the Gel model class**: Declare the field as `String | Short` to handle null values from EdgeDB:
+   ```scala
+   // Had to put String when field is null, otherwise it was not working
+   distance: String | Short
+   ```
+
+2. **In the getter method**: Return the raw type without conversion:
+   ```scala
+   def getDistance: String | Short = distance
+   ```
+
+3. **In the conversion method**: Use `Option()` to handle null values and pattern match for type conversion:
+   ```scala
+   Option(gelObject.getField).map {
+     case s: String => s.toInt
+     case l: Short  => l.toInt
+   }
+   ```
+
+This pattern ensures that null values from the database are properly converted to `None` in Scala domain models, rather than defaulting to `Some(0)`.

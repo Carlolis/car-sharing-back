@@ -17,7 +17,7 @@ object TripServiceTest extends ZIOSpecDefault {
   var now: LocalDate    = LocalDate.now()
 
   val tripCreate: TripCreate =
-    TripCreate(100, now, now.plusDays(3), "Business", Set(personName), None)
+    TripCreate(Some(100), now, now.plusDays(3), "Business", Set(personName), None)
 
   def spec: Spec[TestEnvironment & Scope, Any] =
     (suiteAll("TripServiceTest in Gel") {
@@ -58,11 +58,11 @@ object TripServiceTest extends ZIOSpecDefault {
 
         for {
           uuid       <- TripService.createTrip(tripCreate)
-          updatedTrip = Trip(uuid, now, now.plusDays(3), updatedTripName, Set(personName), None, updatedDistance)
+          updatedTrip = Trip(uuid, now, now.plusDays(3), updatedTripName, Set(personName), None, Some(updatedDistance))
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(
-          trips.exists(trip => trip.id == uuid && trip.name == updatedTripName && trip.distance == updatedDistance),
+          trips.exists(trip => trip.id == uuid && trip.name == updatedTripName && trip.distance.contains(updatedDistance)),
           trips.length == 1)
       }
 
@@ -98,13 +98,24 @@ object TripServiceTest extends ZIOSpecDefault {
         } yield assertTrue(trips.head.comments.contains("comments"))
       }
 
+      test("createTrip with None distance should return None (not Some(0))") {
+        for {
+          _ <- ZIO.logInfo("[DEBUG_LOG] Creating trip with None distance")
+          UUID <- TripService.createTrip(tripCreate.copy(distance = None))
+          trips <- TripService.getAllTrips
+          _ <- ZIO.logInfo(s"[DEBUG_LOG] Retrieved trips: ${trips.map(t => s"id=${t.id}, distance=${t.distance}")}")
+        } yield assertTrue(
+          trips.nonEmpty && trips.head.distance.isEmpty // Should be None, not Some(0)
+        )
+      }
+
       test("updateTrip should update a trip successfully with Maé and a new comment") {
         val updatedTripName = "Updated Business Trip"
         val updatedDistance = 200
 
         for {
           uuid       <- TripService.createTrip(tripCreate)
-          updatedTrip = Trip(uuid, now, now.plusDays(3), updatedTripName, Set(personName), Some("comments"), updatedDistance)
+          updatedTrip = Trip(uuid, now, now.plusDays(3), updatedTripName, Set(personName), Some("comments"), Some(updatedDistance))
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
         } yield assertTrue(trips.head.comments.contains("comments"))

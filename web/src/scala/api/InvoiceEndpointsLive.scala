@@ -41,7 +41,7 @@ object InvoiceEndpointsLive:
     }
 
   private val deleteInvoiceEndpoint: ZServerEndpoint[PersonService & AuthService & InvoiceService, Any] =
-    InvoiceEndpoints.deleteInvoiceEndpoint.serverLogic {
+    InvoiceEndpoints.deleteInvoice.serverLogic {
       case (invoiceId, token) =>
         (for {
 
@@ -64,15 +64,15 @@ object InvoiceEndpointsLive:
     InvoiceEndpoints.updateInvoice.serverLogic {
       case (token, trip) =>
         (for {
-          _ <- AuthService.authenticate(token)
-          _ <- ZIO.logInfo("Updating trip " + trip.toString)
+          _    <- AuthService.authenticate(token)
+          _    <- ZIO.logInfo("Updating trip " + trip.toString)
           uuid <- InvoiceService.updateInvoice(trip)
-          _ <- ZIO.logInfo("Invoice updated " + uuid.toString)
+          _    <- ZIO.logInfo("Invoice updated " + uuid.toString)
         } yield uuid)
           .map(Right(_))
           .tapError(error => ZIO.logError(s"Error: $error"))
           .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
-    }  
+    }
 
   val invoiceEndpoints: List[ZServerEndpoint[PersonService & AuthService & InvoiceService, Any]] =
-    List(createInvoice, getAllInvoices, deleteInvoiceEndpoint)
+    List(createInvoice, getAllInvoices, deleteInvoiceEndpoint, updateInvoice)

@@ -6,7 +6,7 @@ import java.time.LocalDate
 import scala.jdk.CollectionConverters.*
 
 case class TripCreate(
-  distance: Int,
+  distance: Option[Int],
   startDate: LocalDate,
   endDate: LocalDate,
   name: String,

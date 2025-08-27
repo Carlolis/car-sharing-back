@@ -13,7 +13,7 @@ case class Trip(
   name: String,
   drivers: Set[String],
   comments: Option[String],
-  distance: Int
+  distance: Option[Int]
 )
 
 object Trip {

@@ -26,24 +26,24 @@ object InvoiceEndpoints:
     .out(jsonBody[List[Invoice]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val deleteInvoiceEndpoint: Endpoint[Unit, (InvoiceId, String), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
+  val updateInvoice: Endpoint[Unit, (String, Invoice), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
+    .put
+    .in("api" / "invoices")
+    .in(auth.bearer[String]())
+    .in(multipartBody[Invoice])
+    .out(jsonBody[InvoiceId])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+
+  val deleteInvoice: Endpoint[Unit, (InvoiceId, String), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
     .delete
     .in("api" / "invoices" / path[InvoiceId])
     .in(auth.bearer[String]())
     .out(jsonBody[InvoiceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val updateInvoice: Endpoint[Unit, (String, Invoice), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
-    .put
-    .in("api" / "invoice")
-    .in(auth.bearer[String]())
-    .in(jsonBody[Invoice])
-    .out(jsonBody[InvoiceId])
-    .errorOut(statusCode and jsonBody[ErrorResponse])
-
   val invoiceEndPoints = List(
     createInvoice,
     getAllInvoices,
-    deleteInvoiceEndpoint,
+    deleteInvoice,
     updateInvoice
   )
