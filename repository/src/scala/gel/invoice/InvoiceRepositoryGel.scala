@@ -98,8 +98,8 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive, personService: PersonServi
            |        name := '${invoiceUpdate.name}',
            |        amount := ${invoiceUpdate.amount},
            |        kind := '${invoiceUpdate.kind}',
-           |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
-           |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
+           |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage").getOrElse("mileage := <int16>{}")},
+           |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '$fileName'").getOrElse("fileName := <str>{}")},
            |        date := cal::to_local_date(${invoiceUpdate
             .date.getYear}, ${invoiceUpdate
             .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),

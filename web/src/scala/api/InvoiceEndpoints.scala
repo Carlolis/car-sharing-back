@@ -26,11 +26,11 @@ object InvoiceEndpoints:
     .out(jsonBody[List[Invoice]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
-  val updateInvoice: Endpoint[Unit, (String, Invoice), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
+  val updateInvoice: Endpoint[Unit, (String, InvoiceUpdate), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
     .put
     .in("api" / "invoices")
     .in(auth.bearer[String]())
-    .in(multipartBody[Invoice])
+    .in(multipartBody[InvoiceUpdate])
     .out(jsonBody[InvoiceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 

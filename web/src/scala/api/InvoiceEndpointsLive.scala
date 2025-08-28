@@ -48,11 +48,11 @@ object InvoiceEndpointsLive:
 
   private val updateInvoice: ZServerEndpoint[Env, Any] =
     InvoiceEndpoints.updateInvoice.serverLogic {
-      case (token, trip) =>
+      case (token, invoiceUpdate) =>
         (for {
           _    <- AuthService.authenticate(token)
-          _    <- ZIO.logInfo("Updating trip " + trip.toString)
-          uuid <- InvoiceService.updateInvoice(trip)
+          _    <- ZIO.logInfo("Updating invoice " + invoiceUpdate.toString)
+          uuid <- InvoiceService.updateInvoice(invoiceUpdate)
           _    <- ZIO.logInfo("Invoice updated " + uuid.toString)
         } yield uuid)
           .map(Right(_))
