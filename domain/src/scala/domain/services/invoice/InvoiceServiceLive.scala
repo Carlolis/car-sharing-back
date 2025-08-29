@@ -195,21 +195,25 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                          else acc
                                        }
       reimbursements                 = driversAmount.map { (driverName, total) =>
+                                         val totalToReimburse = if total >= eachPart then 0 else eachPart - total
 
                                          val othersDriverMapReimbursement: Map[DriverName, Float] =
                                            driversAmount
                                              .filter(_._1 != driverName)
                                              .foldLeft(Map.empty[DriverName, Float]) {
                                                case (acc, (name, amount)) =>
+                                                 val otherDriverAmount = driversAmount.filter(tt => tt._1 != name && driverName != tt._1).head._2
+
                                                  if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0L)
-                                                 else if (amountAboveEachPartDriverCount == 1) acc + (DriverName(name) -> eachPart)
-                                                 else acc + (DriverName(name)                                          -> (amount - eachPart))
+                                                 else if (amountAboveEachPartDriverCount == 1)
+                                                   if amount > otherDriverAmount then acc + (DriverName(name) -> (eachPart - total))
+                                                   else acc + (DriverName(name)                               -> 0L)
+                                                 else acc + (DriverName(name) -> (amount - eachPart - total))
                                              }
-                                         val totalToReimburse                                     = othersDriverMapReimbursement.values.sum
 
                                          Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)
                                        }
-      _ <- ZIO.logInfo(s"Got $reimbursements ")
+      _                             <- ZIO.logInfo(s"Got $reimbursements ")
     } yield reimbursements
 object InvoiceServiceLive:
   val layer: ZLayer[InvoiceStorage & InvoiceRepository & PersonService, Nothing, InvoiceServiceLive] =

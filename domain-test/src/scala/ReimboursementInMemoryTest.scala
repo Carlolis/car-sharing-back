@@ -211,6 +211,59 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           charlesDistributionAssertion &&
           brigitteDistributionAssertion
         }
+      },
+      test(
+        "Calcul des remboursements - 1 conducteur est au-dessus, mais il y a deux factures deux conducteurs doivent rembourser le premier.") {
+        for {
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
+          _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 3))
+          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposal
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 0,
+            charlesReimbursement.totalAmount == 31,
+            brigitteReimbursement.totalAmount == 34
+          )
+
+          val maeDistributionAssertion = assert(
+            maeReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.charlesPersonName)  -> 0
+              )))
+
+          val charlesDistributionAssertion = assert(
+            charlesReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.maePersonName)      -> 31
+              )))
+
+          val brigitteDistributionAssertion = assert(
+            brigitteReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.maePersonName)     -> 34,
+                DriverName(TestData.charlesPersonName) -> 0
+              )))
+
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
+        }
       }
     ) @@ TestAspect.after(
       TestUtils.cleanupStorage.catchAll(e => ZIO.logError(s"[DEBUG_LOG] Cleanup error: ${e.getMessage}"))
