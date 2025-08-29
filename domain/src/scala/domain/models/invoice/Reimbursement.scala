@@ -6,8 +6,8 @@ import scala.jdk.CollectionConverters.*
 
 case class Reimbursement(
   driverName: DriverName,
-  totalAmount: Int,
-  to: Map[DriverName, Int]
+  totalAmount: Float,
+  to: Map[DriverName, Float]
 )
 
 object Reimbursement {

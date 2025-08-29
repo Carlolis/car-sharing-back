@@ -30,9 +30,9 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
     val testPdfFile              = new File("test.pdf")
     val fileContent: Array[Byte] = Files.readAllBytes(testPdfFile.toPath)
 
-    val driverName           = "TestDriver"
-    val updatedDriverName    = "UpdatedDriver"
-    val sampleInvoiceCreate  = InvoiceCreate(
+    val driverName                 = "TestDriver"
+    val updatedDriverName          = "UpdatedDriver"
+    val sampleMaéInvoiceCreate     = InvoiceCreate(
       99,
       mileage = Some(99),
       date = LocalDate.now(),
@@ -40,6 +40,15 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
       drivers = Set(DriverName(maePersonName)),
       kind
     )
+    val sampleCharlesInvoiceCreate = InvoiceCreate(
+      72,
+      mileage = Some(40),
+      date = LocalDate.now(),
+      name = "Business",
+      drivers = Set(DriverName(charlesPersonName)),
+      kind
+    )
+
     val initialInvoiceCreate = InvoiceCreate(
       amount = 500,
       mileage = Some(100),
@@ -82,10 +91,12 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         reimbursements.find(r =>
           // Adaptation nécessaire selon la structure réelle de vos objets de remboursement
           r.driverName == DriverName(driverName)))
-    def cleanupStorage: ZIO[InvoiceStorage, Throwable, Unit]                                                                  =
+    def cleanupStorage: ZIO[InvoiceService, Throwable, Unit]                                                                  =
       for {
-        _ <- InvoiceStorage.delete(TestData.testPdfFile.getName).catchAll(_ => ZIO.unit)
-        _ <- ZIO.log("[DEBUG_LOG] Storage cleanup completed")
+
+        allInvoices <- InvoiceService.getAllInvoices
+        _           <- ZIO.foreachPar(allInvoices)(invoice => InvoiceService.deleteInvoice(invoice.id)).catchAll(_ => ZIO.unit)
+        _           <- ZIO.log("[DEBUG_LOG] Storage cleanup completed")
       } yield ()
   }
 
@@ -102,7 +113,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
     (suite("Invoice Service Test with In-Memory Storage")(
       test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {
         for {
-          _              <- InvoiceService.createInvoice(TestData.sampleInvoiceCreate)
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           reimbursements <- InvoiceService.getReimbursementProposal
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
@@ -142,6 +153,57 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
               Map(
                 DriverName(TestData.maePersonName)     -> TestData.expectedReimbursementAmount,
                 DriverName(TestData.charlesPersonName) -> 0
+              )))
+
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
+        }
+      },
+      test("Calcul des remboursements - 2 conducteurs sont au-dessus, le dernier doit les rembourser.") {
+        for {
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
+          _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate)
+          reimbursements <- InvoiceService.getReimbursementProposal
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 0,
+            charlesReimbursement.totalAmount == 0,
+            brigitteReimbursement.totalAmount == 57
+          )
+
+          val maeDistributionAssertion = assert(
+            maeReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.charlesPersonName)  -> 0
+              )))
+
+          val charlesDistributionAssertion = assert(
+            charlesReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.maePersonName)      -> 0
+              )))
+
+          val brigitteDistributionAssertion = assert(
+            brigitteReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.maePersonName)     -> 42,
+                DriverName(TestData.charlesPersonName) -> 15
               )))
 
           baseAssertions &&

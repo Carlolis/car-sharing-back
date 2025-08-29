@@ -180,29 +180,35 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
 
   override def getReimbursementProposal: Task[Set[Reimbursement]] =
     for {
-      allInvoices   <- getAllInvoices
-      drivers       <- personService.getAll
-      _             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
-      totalAmount    = allInvoices.foldLeft(0)((total, invoice) => invoice.amount + total)
-      driversAmount  =
+      allInvoices                   <- getAllInvoices
+      drivers                       <- personService.getAll
+      _                             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
+      totalAmount                    = allInvoices.foldLeft(0L)((total, invoice) => invoice.amount + total)
+      eachPart                       = totalAmount / drivers.size
+      driversAmount                  =
         drivers.map(d =>
           (
             d.name,
-            allInvoices.foldLeft(0)((total, invoice) => if (invoice.drivers.head.toString == d.name) invoice.amount + total else total)))
-      reimbursements = driversAmount.map { (driverName, total) =>
+            allInvoices.foldLeft(0L)((total, invoice) => if (invoice.drivers.head.toString == d.name) invoice.amount + total else total)))
+      amountAboveEachPartDriverCount = driversAmount.foldLeft(0) { (acc, driverAmount) =>
+                                         if (driverAmount._2 > eachPart) acc + 1
+                                         else acc
+                                       }
+      reimbursements                 = driversAmount.map { (driverName, total) =>
 
-                         val othersDriverMapReimbursement: Map[DriverName, Int] =
-                           driversAmount
-                             .filter(_._1 != driverName)
-                             .foldLeft(Map.empty[DriverName, Int]) {
-                               case (acc, (name, amount)) =>
-                                 if (amount <= total) acc + (DriverName(name) -> 0)
-                                 else acc + (DriverName(name)                 -> amount / drivers.size)
-                             }
-                         val totalToReimburse                                   = othersDriverMapReimbursement.values.sum
+                                         val othersDriverMapReimbursement: Map[DriverName, Float] =
+                                           driversAmount
+                                             .filter(_._1 != driverName)
+                                             .foldLeft(Map.empty[DriverName, Float]) {
+                                               case (acc, (name, amount)) =>
+                                                 if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0L)
+                                                 else if (amountAboveEachPartDriverCount == 1) acc + (DriverName(name) -> eachPart)
+                                                 else acc + (DriverName(name)                                          -> (amount - eachPart))
+                                             }
+                                         val totalToReimburse                                     = othersDriverMapReimbursement.values.sum
 
-                         Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)
-                       }
+                                         Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)
+                                       }
       _ <- ZIO.logInfo(s"Got $reimbursements ")
     } yield reimbursements
 object InvoiceServiceLive:
