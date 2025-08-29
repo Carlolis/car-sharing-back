@@ -208,7 +208,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                                  else if (amountAboveEachPartDriverCount == 1)
                                                    if amount > otherDriverAmount then acc + (DriverName(name) -> (eachPart - total))
                                                    else acc + (DriverName(name)                               -> 0L)
-                                                 else acc + (DriverName(name) -> (amount - eachPart - total))
+                                                 else acc + (DriverName(name) -> (amount - eachPart))
                                              }
 
                                          Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)

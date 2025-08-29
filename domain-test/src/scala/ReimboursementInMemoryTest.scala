@@ -30,9 +30,9 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
     val testPdfFile              = new File("test.pdf")
     val fileContent: Array[Byte] = Files.readAllBytes(testPdfFile.toPath)
 
-    val driverName                 = "TestDriver"
-    val updatedDriverName          = "UpdatedDriver"
-    val sampleMaéInvoiceCreate     = InvoiceCreate(
+    val driverName                  = "TestDriver"
+    val updatedDriverName           = "UpdatedDriver"
+    val sampleMaéInvoiceCreate      = InvoiceCreate(
       99,
       mileage = Some(99),
       date = LocalDate.now(),
@@ -40,12 +40,20 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
       drivers = Set(DriverName(maePersonName)),
       kind
     )
-    val sampleCharlesInvoiceCreate = InvoiceCreate(
+    val sampleCharlesInvoiceCreate  = InvoiceCreate(
       72,
       mileage = Some(40),
       date = LocalDate.now(),
       name = "Business",
       drivers = Set(DriverName(charlesPersonName)),
+      kind
+    )
+    val sampleBrigitteInvoiceCreate = InvoiceCreate(
+      6,
+      mileage = Some(6),
+      date = LocalDate.now(),
+      name = "Business",
+      drivers = Set(DriverName(brigittePersonName)),
       kind
     )
 
@@ -110,8 +118,8 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
   )
 
   def spec: Spec[TestEnvironment & Scope, Any] =
-    (suite("Invoice Service Test with In-Memory Storage")(
-      test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {
+    (suite("Invoice Service Test with In-Memory Storage Calcul des remboursements")(
+          test("Un seul conducteur a une facture, deux conducteurs doivent rembourser le premier") {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           reimbursements <- InvoiceService.getReimbursementProposal
@@ -161,7 +169,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           brigitteDistributionAssertion
         }
       },
-      test("Calcul des remboursements - 2 conducteurs sont au-dessus, le dernier doit les rembourser.") {
+      test("2 conducteurs sont au-dessus, le dernier doit les rembourser") {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate)
@@ -212,8 +220,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           brigitteDistributionAssertion
         }
       },
-      test(
-        "Calcul des remboursements - 1 conducteur est au-dessus, mais il y a deux factures deux conducteurs doivent rembourser le premier.") {
+      test("1 conducteur est au-dessus, mais il y a deux factures deux conducteurs doivent rembourser le premier") {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 3))
@@ -257,6 +264,112 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
               Map(
                 DriverName(TestData.maePersonName)     -> 34,
                 DriverName(TestData.charlesPersonName) -> 0
+              )))
+
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
+        }
+      },
+      test("1 conducteur est au-dessus, mais il y a trois factures deux conducteurs doivent rembourser le premier") {
+        for {
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
+          _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 3))
+          _              <- InvoiceService.createInvoice(TestData.sampleBrigitteInvoiceCreate.copy(amount = 6))
+          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposal
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 0,
+            charlesReimbursement.totalAmount == 33,
+            brigitteReimbursement.totalAmount == 30
+          )
+
+          val maeDistributionAssertion = assert(
+            maeReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.charlesPersonName)  -> 0
+              )))
+
+          val charlesDistributionAssertion = assert(
+            charlesReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.maePersonName)      -> 33
+              )))
+
+          val brigitteDistributionAssertion = assert(
+            brigitteReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.maePersonName)     -> 30,
+                DriverName(TestData.charlesPersonName) -> 0
+              )))
+
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
+        }
+      },
+      test("2 conducteurs sont au-dessus, il y a trois factures un conducteur doit rembourser les deux autres") {
+        for {
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
+          _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 66))
+          _              <- InvoiceService.createInvoice(TestData.sampleBrigitteInvoiceCreate.copy(amount = 6))
+          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposal
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 0,
+            charlesReimbursement.totalAmount == 0,
+            brigitteReimbursement.totalAmount == 51
+          )
+
+          val maeDistributionAssertion = assert(
+            maeReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.charlesPersonName)  -> 0
+              )))
+
+          val charlesDistributionAssertion = assert(
+            charlesReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.brigittePersonName) -> 0,
+                DriverName(TestData.maePersonName)      -> 0
+              )))
+
+          val brigitteDistributionAssertion = assert(
+            brigitteReimbursement.to
+          )(
+            equalTo(
+              Map(
+                DriverName(TestData.maePersonName)     -> 42,
+                DriverName(TestData.charlesPersonName) -> 9
               )))
 
           baseAssertions &&
