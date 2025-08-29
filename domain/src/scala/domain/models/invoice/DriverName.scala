@@ -1,17 +1,14 @@
 package domain.models.invoice
 
-
 import sttp.tapir.Codec.PlainCodec
 import sttp.tapir.{Schema, ValidationResult, Validator, *}
 import zio.json.*
 import zio.prelude.Newtype
 
-import java.util.UUID
-
 object DriverName extends Newtype[String] {
   given (using c: JsonCodec[String]): JsonCodec[Type] = derive[JsonCodec]
 
-  given Validator.Primitive[String] = Validator.Custom(
+  given Validator.Primitive[String]               = Validator.Custom(
     make(_).fold(
       e => ValidationResult.Invalid(e.toList),
       _ => ValidationResult.Valid
@@ -27,13 +24,9 @@ object DriverName extends Newtype[String] {
 
   given PlainCodec[DriverName] = Codec.string.mapDecode(decode)(encode)
 
-
   given JsonFieldEncoder[DriverName] = (in: DriverName) => in.toString
 
-  given JsonFieldDecoder[DriverName]= (trace: List[JsonError], in: String) => DriverName(in)
-
-
-
+  given JsonFieldDecoder[DriverName] = (trace: List[JsonError], in: String) => DriverName(in)
 }
 
 type DriverName = DriverName.Type

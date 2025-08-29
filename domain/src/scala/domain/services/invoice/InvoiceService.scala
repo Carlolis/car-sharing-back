@@ -9,7 +9,7 @@ trait InvoiceService {
   def deleteInvoice(id: InvoiceId): Task[InvoiceId]
   def updateInvoice(invoiceUpdate: InvoiceUpdate): Task[InvoiceId]
   def download(fileName: String, id: InvoiceId): ZIO[Any, Throwable, Array[Byte]]
-  def getReimbursementProposal: Task[Set[Reimbursement]]
+  def getReimbursementProposals: Task[Set[Reimbursement]]
 }
 
 object InvoiceService:
@@ -24,4 +24,4 @@ object InvoiceService:
   def download(fileName: String, id: InvoiceId): RIO[InvoiceService, Array[Byte]] =
     ZIO.serviceWithZIO[InvoiceService](_.download(fileName, id))
   def getReimbursementProposal: RIO[InvoiceService, Set[Reimbursement]]           =
-    ZIO.serviceWithZIO[InvoiceService](_.getReimbursementProposal)
+    ZIO.serviceWithZIO[InvoiceService](_.getReimbursementProposals)

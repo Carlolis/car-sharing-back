@@ -49,6 +49,13 @@ object InvoiceEndpoints:
     .out(header[String]("Content-Type"))
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
+  val getReimbursementProposals: Endpoint[Unit, String, (StatusCode, ErrorResponse), Set[Reimbursement], Any] = endpoint
+    .get
+    .in("api" / "invoices" / "reimbursements")
+    .in(auth.bearer[String]())
+    .out(jsonBody[Set[Reimbursement]])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+
   val invoiceEndPoints = List(
     createInvoice,
     getAllInvoices,

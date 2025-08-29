@@ -178,7 +178,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
     invoiceExternalStorage.download(id.toString + "_" + sanitizeFileName)
   }
 
-  override def getReimbursementProposal: Task[Set[Reimbursement]] =
+  override def getReimbursementProposals: Task[Set[Reimbursement]] =
     for {
       allInvoices                   <- getAllInvoices
       drivers                       <- personService.getAll
