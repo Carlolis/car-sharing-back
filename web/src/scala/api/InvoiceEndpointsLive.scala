@@ -8,7 +8,7 @@ import sttp.tapir.ztapir.*
 import zio.*
 
 object InvoiceEndpointsLive:
-  type Env = PersonService & AuthService & InvoiceService
+  private type Env = PersonService & AuthService & InvoiceService
 
   private val createInvoice: ZServerEndpoint[Env, Any] =
     InvoiceEndpoints.createInvoice.serverLogic {
@@ -62,7 +62,7 @@ object InvoiceEndpointsLive:
 
   private val downloadInvoiceFile: ZServerEndpoint[Env, Any] =
     InvoiceEndpoints.downloadInvoiceFile.serverLogic {
-      case (fileName,id, token) =>
+      case (fileName, id, token) =>
         (for {
           _         <- AuthService.authenticate(token)
           _         <- ZIO.logInfo(s"Downloading invoice file: $fileName")

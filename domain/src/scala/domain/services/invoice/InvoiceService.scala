@@ -1,6 +1,6 @@
 package domain.services.invoice
 
-import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId, InvoiceUpdate}
+import domain.models.invoice.*
 import zio.*
 
 trait InvoiceService {
@@ -9,6 +9,7 @@ trait InvoiceService {
   def deleteInvoice(id: InvoiceId): Task[InvoiceId]
   def updateInvoice(invoiceUpdate: InvoiceUpdate): Task[InvoiceId]
   def download(fileName: String, id: InvoiceId): ZIO[Any, Throwable, Array[Byte]]
+  def getReimbursementProposal: Task[Set[Reimbursement]]
 }
 
 object InvoiceService:
@@ -22,3 +23,5 @@ object InvoiceService:
     ZIO.serviceWithZIO[InvoiceService](_.updateInvoice(invoiceUpdate))
   def download(fileName: String, id: InvoiceId): RIO[InvoiceService, Array[Byte]] =
     ZIO.serviceWithZIO[InvoiceService](_.download(fileName, id))
+  def getReimbursementProposal: RIO[InvoiceService, Set[Reimbursement]]           =
+    ZIO.serviceWithZIO[InvoiceService](_.getReimbursementProposal)

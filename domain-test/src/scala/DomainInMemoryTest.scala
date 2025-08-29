@@ -1,7 +1,8 @@
 import domain.models.invoice.{DriverName, InvoiceCreate, InvoiceUpdate}
 import domain.services.invoice.storage.InvoiceStorage
 import domain.services.invoice.{InvoiceService, InvoiceServiceLive}
-import inMemoryService.{InMemoryInvoiceRepository, InMemoryInvoiceStorage}
+import domain.services.person.PersonService
+import inMemoryService.{InMemoryInvoiceRepository, InMemoryInvoiceStorage, InMemoryPersonRepository}
 import sttp.tapir.FileRange
 import zio.test.*
 import zio.test.Assertion.*
@@ -67,7 +68,8 @@ object DomainInMemoryTest extends ZIOSpecDefault {
   val testLayers = ZLayer.make[InvoiceService & InvoiceStorage](
     InMemoryInvoiceStorage.layer,
     InMemoryInvoiceRepository.layer,
-    InvoiceServiceLive.layer
+    InvoiceServiceLive.layer,
+    InMemoryPersonRepository.layer 
   )
 
   def spec: Spec[TestEnvironment & Scope, Any] =

@@ -1,16 +1,14 @@
 import adapters.GelDriver
 import domain.models.PersonCreate
-import domain.models.invoice.{DriverName, Invoice, InvoiceCreate, Reimbursement}
+import domain.models.invoice.{DriverName, InvoiceCreate}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.person.PersonService
 import gel.invoice.InvoiceRepositoryGel
 import gel.person.PersonRepositoryGel
 import zio.test.*
-import zio.test.Assertion.*
-import zio.{IO, Scope, ZIO, ZLayer}
+import zio.{Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
-import java.util.UUID
 
 object InvoiceRepositoryTest extends ZIOSpecDefault {
 
@@ -51,12 +49,6 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
 
   // Utilitaires de test
   object TestUtils {
-    def findReimbursementByDriver(reimbursements: Set[Reimbursement], driverName: String): IO[Option[Nothing], Reimbursement] =
-      ZIO.fromOption(
-        reimbursements.find(r =>
-          // Adaptation nécessaire selon la structure réelle de vos objets de remboursement
-          r.driverName == DriverName(driverName)))
-
     def cleanupData: ZIO[PersonService & InvoiceRepository, Throwable, Unit] =
       for {
         allInvoices <- InvoiceRepository.getAllInvoices
@@ -94,8 +86,8 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       },
       test("Création d'une facture avec fileName - Charles devrait créer une facture avec fileName avec succès") {
         for {
-          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreateWithFileName)
-          allInvoices <- InvoiceRepository.getAllInvoices
+          invoiceUuid   <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreateWithFileName)
+          allInvoices   <- InvoiceRepository.getAllInvoices
           createdInvoice = allInvoices.find(_.name == "Business with file")
         } yield assertTrue(
           invoiceUuid != null,
@@ -108,8 +100,8 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       },
       test("Création d'une facture sans fileName - devrait avoir fileName = None") {
         for {
-          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate)
-          allInvoices <- InvoiceRepository.getAllInvoices
+          invoiceUuid   <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate)
+          allInvoices   <- InvoiceRepository.getAllInvoices
           createdInvoice = allInvoices.find(_.name == "Business")
         } yield assertTrue(
           invoiceUuid != null,
@@ -117,57 +109,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           createdInvoice.isDefined,
           createdInvoice.get.fileName.isEmpty
         )
-      },
-      test("Calcul des remboursements - Distribution équitable entre 3 conducteurs") {
-        for {
-          _              <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate)
-          reimbursements <- InvoiceRepository.getReimbursementProposal
-
-          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
-          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
-          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
-
-        } yield {
-          val baseAssertions = assertTrue(
-            reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
-            charlesReimbursement.totalAmount == TestData.expectedReimbursementAmount,
-            brigitteReimbursement.totalAmount == TestData.expectedReimbursementAmount
-          )
-
-          val maeDistributionAssertion = assert(
-            maeReimbursement.to
-          )(
-            equalTo(
-              Map(
-                DriverName(TestData.brigittePersonName) -> 0,
-                DriverName(TestData.charlesPersonName)  -> 0
-              )))
-
-          val charlesDistributionAssertion = assert(
-            charlesReimbursement.to
-          )(
-            equalTo(
-              Map(
-                DriverName(TestData.brigittePersonName) -> 0,
-                DriverName(TestData.maePersonName)      -> TestData.expectedReimbursementAmount
-              )))
-
-          val brigitteDistributionAssertion = assert(
-            brigitteReimbursement.to
-          )(
-            equalTo(
-              Map(
-                DriverName(TestData.maePersonName)     -> TestData.expectedReimbursementAmount,
-                DriverName(TestData.charlesPersonName) -> 0
-              )))
-
-          baseAssertions &&
-          maeDistributionAssertion &&
-          charlesDistributionAssertion &&
-          brigitteDistributionAssertion
-        }
-      } @@ TestAspect.ignore
+      }
     ) @@ TestAspect.after(
       TestUtils.cleanupData.catchAll(e => ZIO.logError(s"Erreur lors du nettoyage: ${e.getMessage}"))
     ) @@ TestAspect

@@ -1,15 +1,17 @@
 package domain.services.invoice
 
-import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId, InvoiceUpdate}
+import domain.models.invoice.*
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
 import domain.services.invoice.storage.InvoiceStorage
+import domain.services.person.PersonService
 import sttp.tapir.FileRange
 import zio.*
 
 import java.nio.file.Files
 
-class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository) extends InvoiceService:
+class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository, personService: PersonService)
+    extends InvoiceService:
   def sanitizeName(raw: String): String =
     val base  = Option(raw).getOrElse("invoice")
     // Remove or replace URL-unsafe characters including spaces, parentheses, and other special chars
@@ -87,57 +89,57 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       (for {
         // Get existing invoice to check for old file
         existingInvoice <- invoiceRepository
-                            .getAllInvoices
-                            .map(_.find(_.id == invoiceUpdate.id))
-                            .someOrFail(new RuntimeException(s"Invoice ${invoiceUpdate.id} not found"))
+                             .getAllInvoices
+                             .map(_.find(_.id == invoiceUpdate.id))
+                             .someOrFail(new RuntimeException(s"Invoice ${invoiceUpdate.id} not found"))
 
         // Handle file operations if a new file is provided
-        _ <- invoiceUpdate.fileBytes match {
-          case Some(bytes) =>
-            ZIO.log(s"New file provided (${bytes.range} bytes)") *>
-              (for {
-                // Delete old file if it exists and is different from the new one
-                _ <- existingInvoice.fileName match {
-                  case Some(oldFileName)  =>
-                    ZIO.log(s"Deleting old file: ${existingInvoice.id}_$oldFileName") *>
-                      invoiceExternalStorage
-                        .delete(existingInvoice.id.toString + "_" + oldFileName)
-                        .tapBoth(
-                          err => ZIO.logWarning(s"Failed to delete old file '$oldFileName': ${err.getMessage}"),
-                          _ => ZIO.log(s"Successfully deleted old file '$oldFileName'")
-                        )
-                        .ignore // Don't fail the whole operation if old file deletion fails
-                  case _ => ZIO.unit
-                }
+        _               <- invoiceUpdate.fileBytes match {
+                             case Some(bytes) =>
+                               ZIO.log(s"New file provided (${bytes.range} bytes)") *>
+                                 (for {
+                                   // Delete old file if it exists and is different from the new one
+                                   _ <- existingInvoice.fileName match {
+                                          case Some(oldFileName) =>
+                                            ZIO.log(s"Deleting old file: ${existingInvoice.id}_$oldFileName") *>
+                                              invoiceExternalStorage
+                                                .delete(existingInvoice.id.toString + "_" + oldFileName)
+                                                .tapBoth(
+                                                  err => ZIO.logWarning(s"Failed to delete old file '$oldFileName': ${err.getMessage}"),
+                                                  _ => ZIO.log(s"Successfully deleted old file '$oldFileName'")
+                                                )
+                                                .ignore // Don't fail the whole operation if old file deletion fails
+                                          case _                 => ZIO.unit
+                                        }
 
-                // Upload new file
-                _ <- {
-                  val path = invoiceUpdate.fileBytes.get.file.toPath
-                  val fileBytes = Files.newInputStream(path).readAllBytes()
-                  ZIO.log(s"Uploading new file '$sanitizedName' with id ${invoiceUpdate.id}") *>
-                    invoiceExternalStorage
-                      .upload(fileBytes, invoiceUpdate.id.toString + "_" + sanitizedName.getOrElse(""))
-                      .tapBoth(
-                        err => ZIO.logError(s"Upload failed for '$sanitizedName': ${err.getMessage}"),
-                        _ => ZIO.log(s"Upload succeeded for '$sanitizedName'")
-                      )
-                }
-              } yield ())
-          case None =>
-            ZIO.log("No new file provided; keeping existing file").unit
-        }
+                                   // Upload new file
+                                   _ <- {
+                                     val path      = invoiceUpdate.fileBytes.get.file.toPath
+                                     val fileBytes = Files.newInputStream(path).readAllBytes()
+                                     ZIO.log(s"Uploading new file '$sanitizedName' with id ${invoiceUpdate.id}") *>
+                                       invoiceExternalStorage
+                                         .upload(fileBytes, invoiceUpdate.id.toString + "_" + sanitizedName.getOrElse(""))
+                                         .tapBoth(
+                                           err => ZIO.logError(s"Upload failed for '$sanitizedName': ${err.getMessage}"),
+                                           _ => ZIO.log(s"Upload succeeded for '$sanitizedName'")
+                                         )
+                                   }
+                                 } yield ())
+                             case None        =>
+                               ZIO.log("No new file provided; keeping existing file").unit
+                           }
 
         // Update invoice metadata in repository
-        updatedInvoice = Invoice(
-          id = invoiceUpdate.id,
-          name = invoiceUpdate.name,
-          amount = invoiceUpdate.amount,
-          date = invoiceUpdate.date,
-          drivers = invoiceUpdate.drivers,
-          kind = invoiceUpdate.kind,
-          mileage = invoiceUpdate.mileage,
-          fileName = sanitizedName.orElse(existingInvoice.fileName)
-        )
+        updatedInvoice   = Invoice(
+                             id = invoiceUpdate.id,
+                             name = invoiceUpdate.name,
+                             amount = invoiceUpdate.amount,
+                             date = invoiceUpdate.date,
+                             drivers = invoiceUpdate.drivers,
+                             kind = invoiceUpdate.kind,
+                             mileage = invoiceUpdate.mileage,
+                             fileName = sanitizedName.orElse(existingInvoice.fileName)
+                           )
 
         id <- invoiceRepository
                 .updateInvoice(updatedInvoice)
@@ -163,11 +165,11 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                           _ => ZIO.logWarning(s"Compensation succeeded: '$name' deleted")
                         )
                         .ignore
-                  case None => ZIO.unit
+                  case None       => ZIO.unit
                 }
-              case None => ZIO.unit
+              case None    => ZIO.unit
             }
-          case _ => ZIO.unit
+          case _                                       => ZIO.unit
         }
 
   override def download(fileName: String, id: InvoiceId): ZIO[Any, Throwable, Array[Byte]] = {
@@ -175,6 +177,34 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
 
     invoiceExternalStorage.download(id.toString + "_" + sanitizeFileName)
   }
+
+  override def getReimbursementProposal: Task[Set[Reimbursement]] =
+    for {
+      allInvoices   <- getAllInvoices
+      drivers       <- personService.getAll
+      _             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
+      totalAmount    = allInvoices.foldLeft(0)((total, invoice) => invoice.amount + total)
+      driversAmount  =
+        drivers.map(d =>
+          (
+            d.name,
+            allInvoices.foldLeft(0)((total, invoice) => if (invoice.drivers.head.toString == d.name) invoice.amount + total else total)))
+      reimbursements = driversAmount.map { (driverName, total) =>
+
+                         val othersDriverMapReimbursement: Map[DriverName, Int] =
+                           driversAmount
+                             .filter(_._1 != driverName)
+                             .foldLeft(Map.empty[DriverName, Int]) {
+                               case (acc, (name, amount)) =>
+                                 if (amount <= total) acc + (DriverName(name) -> 0)
+                                 else acc + (DriverName(name)                 -> amount / drivers.size)
+                             }
+                         val totalToReimburse                                   = othersDriverMapReimbursement.values.sum
+
+                         Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)
+                       }
+      _ <- ZIO.logInfo(s"Got $reimbursements ")
+    } yield reimbursements
 object InvoiceServiceLive:
-  val layer: ZLayer[InvoiceStorage & InvoiceRepository, Nothing, InvoiceServiceLive] =
-    ZLayer.fromFunction(InvoiceServiceLive(_, _))
+  val layer: ZLayer[InvoiceStorage & InvoiceRepository & PersonService, Nothing, InvoiceServiceLive] =
+    ZLayer.fromFunction(InvoiceServiceLive(_, _, _))
