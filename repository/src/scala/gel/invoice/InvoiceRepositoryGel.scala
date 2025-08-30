@@ -23,18 +23,18 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
       .querySingle(
         classOf[UUID],
         s"""
-          |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
-          |   amount := ${invoiceCreate.amount},
-          |   kind := '${invoiceCreate.kind}',
-          |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
-          |   ${invoiceCreate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
-          |   isReimbursement := ${invoiceCreate.isReimbursement},
-          |   date := cal::to_local_date(${invoiceCreate.date.getYear},
-          |${invoiceCreate.date.getMonthValue},
-          |${invoiceCreate.date.getDayOfMonth}),
-          | gelPerson := (select detached default::PersonGel
-          | filter .name = '${DriverName.unwrap(invoiceCreate.driver)}') }) select new_invoice.id;
-          |"""
+           |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
+           |   amount := ${invoiceCreate.amount},
+           |   kind := '${invoiceCreate.kind}',
+           |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
+           |   ${invoiceCreate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
+           |   isReimbursement := ${invoiceCreate.isReimbursement},
+           |   date := cal::to_local_date(${invoiceCreate.date.getYear},
+           |${invoiceCreate.date.getMonthValue},
+           |${invoiceCreate.date.getDayOfMonth}),
+           | gelPerson := (select detached default::PersonGel
+           | filter .name = '${DriverName.unwrap(invoiceCreate.driver)}' limit 1) }) select new_invoice.id;
+           |"""
       ).tapBoth(error => ZIO.logError(s"Created invoice with id: $error"), UUID => ZIO.logInfo(s"Created invoice with id: $UUID")).mapError(
         SaveInvoiceFailed(_))
   }
@@ -44,8 +44,8 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
       .query(
         classOf[InvoiceGel],
         s"""
-          | select InvoiceGel { id, amount, date, name,  gelPerson: { name }, kind, mileage, fileName, isReimbursement };
-          |"""
+           | select InvoiceGel { id, amount, date, name,  gelPerson: { name }, kind, mileage, fileName, isReimbursement };
+           |"""
       )
       .map(invoice => invoice.map(InvoiceGel.fromInvoiceGel))
 
@@ -78,7 +78,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
            |        date := cal::to_local_date(${invoiceUpdate
             .date.getYear}, ${invoiceUpdate
             .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),
-           |        gelPerson := (select detached default::PersonGel filter .name = '${DriverName.unwrap(invoiceUpdate.driver)}')
+           |        gelPerson := (select detached default::PersonGel filter .name = '${DriverName.unwrap(invoiceUpdate.driver)}' limit 1)
            |    }
            |)
            |select updated_invoice.id;

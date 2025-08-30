@@ -71,15 +71,15 @@ object TripServiceTest extends ZIOSpecDefault {
         for {
           uuid       <- TripService.createTrip(tripCreate)
           updatedTrip =
-            Trip(uuid, tripCreate.startDate, tripCreate.endDate, tripCreate.name, tripCreate.drivers + "Charles", None, tripCreate.distance)
+            Trip(uuid, tripCreate.startDate, tripCreate.endDate, tripCreate.name, tripCreate.drivers + "charles", None, tripCreate.distance)
           _          <- TripService.updateTrip(updatedTrip)
           trips      <- TripService.getAllTrips
-        } yield assertTrue(trips.exists(trip => trip.id == uuid && trip.drivers == tripCreate.drivers + "Charles"), trips.length == 1)
+        } yield assertTrue(trips.exists(trip => trip.id == uuid && trip.drivers == tripCreate.drivers + "charles"), trips.length == 1)
       }
       test("Maé get her trip stats ") {
 
         for {
-          UUID   <- TripService.createTrip(tripCreate.copy(drivers = Set("Charles")))
+          UUID   <- TripService.createTrip(tripCreate.copy(drivers = Set("charles")))
           UUID   <- TripService.createTrip(tripCreate)
           trips  <- TripService.getTripStatsByUser(personName)
           trips2 <- TripService.getAllTrips
