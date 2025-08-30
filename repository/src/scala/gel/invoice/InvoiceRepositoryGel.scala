@@ -13,7 +13,7 @@ import java.util.UUID
 case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository {
   private val invoices: List[Invoice] = List.empty
   private val knownPersons            =
-    Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
+    Set(PersonCreate("maé"), PersonCreate("brigitte"), PersonCreate("charles"))
 
   override def createInvoice(
     invoiceCreate: InvoiceCreate

@@ -12,7 +12,7 @@ import java.util.UUID
 case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
   private val trips: List[Trip] = List.empty
   private val knownPersons      =
-    Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
+    Set(PersonCreate("maé"), PersonCreate("brigitte"), PersonCreate("charles"))
 
   override def createTrip(
     tripCreate: TripCreate

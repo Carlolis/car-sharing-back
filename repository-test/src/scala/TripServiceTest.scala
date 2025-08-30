@@ -12,7 +12,7 @@ import zio.{Scope, ZIO, ZLayer}
 import java.time.LocalDate
 
 object TripServiceTest extends ZIOSpecDefault {
-  val personName        = "Maé"
+  val personName        = "maé"
   val mae: PersonCreate = PersonCreate(personName)
   var now: LocalDate    = LocalDate.now()
 
@@ -100,10 +100,10 @@ object TripServiceTest extends ZIOSpecDefault {
 
       test("createTrip with None distance should return None (not Some(0))") {
         for {
-          _ <- ZIO.logInfo("[DEBUG_LOG] Creating trip with None distance")
-          UUID <- TripService.createTrip(tripCreate.copy(distance = None))
+          _     <- ZIO.logInfo("[DEBUG_LOG] Creating trip with None distance")
+          UUID  <- TripService.createTrip(tripCreate.copy(distance = None))
           trips <- TripService.getAllTrips
-          _ <- ZIO.logInfo(s"[DEBUG_LOG] Retrieved trips: ${trips.map(t => s"id=${t.id}, distance=${t.distance}")}")
+          _     <- ZIO.logInfo(s"[DEBUG_LOG] Retrieved trips: ${trips.map(t => s"id=${t.id}, distance=${t.distance}")}")
         } yield assertTrue(
           trips.nonEmpty && trips.head.distance.isEmpty // Should be None, not Some(0)
         )
@@ -136,7 +136,7 @@ object TripServiceTest extends ZIOSpecDefault {
         }
       @@ TestAspect
         .before {
-          val allPersons = Set(PersonCreate("Maé"), PersonCreate("Brigitte"), PersonCreate("Charles"))
+          val allPersons = Set(PersonCreate("maé"), PersonCreate("brigitte"), PersonCreate("charles"))
           ZIO.foreachPar(allPersons)(person => PersonService.createPerson(person)).catchAll(e => ZIO.logError(e.getMessage))
 
         }

@@ -6,7 +6,7 @@ import zio.ZIO
 import zio.test.*
 
 object IAServiceTest extends ZIOSpecDefault {
-  val personName        = "Maé"
+  val personName        = "maé"
   val maé: WriterCreate = WriterCreate(personName)
 
   def spec =
