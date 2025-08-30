@@ -38,3 +38,5 @@ metals.sbt
 
 .vscode
 .metals
+
+.env

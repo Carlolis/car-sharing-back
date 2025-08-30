@@ -5,7 +5,6 @@ import zio.*
 
 trait InvoiceService {
   def createInvoice(tripCreate: InvoiceCreate): Task[InvoiceId]
-  def createReimbursementInvoice(reimbursementCreate: ReimbursementInvoiceCreate): Task[InvoiceId]
   def getAllInvoices: Task[List[Invoice]]
   def deleteInvoice(id: InvoiceId): Task[InvoiceId]
   def updateInvoice(invoiceUpdate: InvoiceUpdate): Task[InvoiceId]
@@ -16,8 +15,6 @@ trait InvoiceService {
 object InvoiceService:
   def createInvoice(tripCreate: InvoiceCreate): RIO[InvoiceService, InvoiceId]    =
     ZIO.serviceWithZIO[InvoiceService](_.createInvoice(tripCreate))
-  def createReimbursementInvoice(reimbursementCreate: ReimbursementInvoiceCreate): RIO[InvoiceService, InvoiceId] =
-    ZIO.serviceWithZIO[InvoiceService](_.createReimbursementInvoice(reimbursementCreate))
   def getAllInvoices: RIO[InvoiceService, List[Invoice]]                          =
     ZIO.serviceWithZIO[InvoiceService](_.getAllInvoices)
   def deleteInvoice(id: InvoiceId): RIO[InvoiceService, InvoiceId]                =

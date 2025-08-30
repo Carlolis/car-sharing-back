@@ -23,23 +23,6 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
     val result = if (clean.isEmpty) "invoice" else clean
     result.take(255) // simple limit
 
-  override def createReimbursementInvoice(reimbursementCreate: ReimbursementInvoiceCreate): Task[InvoiceId] =
-    ZIO.log(
-      s"Creating reimbursement invoice: from=${reimbursementCreate.fromDriver}, to=${reimbursementCreate.toDriver}, amount=${reimbursementCreate.amount}") *>
-      createInvoice(
-        InvoiceCreate(
-          amount = reimbursementCreate.amount,
-          mileage = None,
-          date = reimbursementCreate.date,
-          name = reimbursementCreate.name,
-          driver = reimbursementCreate.fromDriver,
-          kind = "reimbursement",
-          fileBytes = None,
-          fileName = None,
-          isReimbursement = true
-        )
-      ).tap(id => ZIO.log(s"Reimbursement invoice created with id: $id"))
-
   override def createInvoice(invoiceCreate: InvoiceCreate): Task[InvoiceId] =
     val sanitizedName = invoiceCreate.fileName.map(sanitizeName)
 
