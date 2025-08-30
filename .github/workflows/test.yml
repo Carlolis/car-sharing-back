@@ -28,6 +28,11 @@ jobs:
 
       - name: Setup Gel
         uses: geldata/setup-gel@v1
+        with:
+          cli-version: stable
+          server-version: stable
+          server-dsn: ""   # <-- changer false en vide pour éviter un type non supporté
+        continue-on-error: true  # <-- permet de continuer pour debug
 
       - name: Setup Coursier cache
         uses: coursier/cache-action@v6
