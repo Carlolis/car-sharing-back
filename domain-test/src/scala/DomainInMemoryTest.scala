@@ -27,7 +27,7 @@ object DomainInMemoryTest extends ZIOSpecDefault {
       mileage = Some(100),
       date = LocalDate.now(),
       name = "Test Invoice",
-      drivers = Set(DriverName(driverName)),
+      driver = DriverName(driverName),
       kind = "fuel",
       fileBytes = Some(FileRange(testPdfFile)),
       fileName = Some(testPdfFile.getName)
@@ -38,7 +38,7 @@ object DomainInMemoryTest extends ZIOSpecDefault {
       mileage = Some(75),
       date = LocalDate.now(),
       name = "Invoice Without File",
-      drivers = Set(DriverName(driverName)),
+      driver = DriverName(driverName),
       kind = "parking"
     )
     
@@ -48,7 +48,7 @@ object DomainInMemoryTest extends ZIOSpecDefault {
       mileage = Some(150), // Updated mileage
       date = LocalDate.now().plusDays(1), // Updated date
       name = "Updated Test Invoice", // Updated name
-      drivers = Set(DriverName(updatedDriverName)), // Updated drivers
+      driver = DriverName(updatedDriverName), // Updated drivers
       kind = "maintenance", // Updated kind
       fileName = Some(testPdfFile.getName),
       fileBytes = Some(FileRange(testPdfFile))

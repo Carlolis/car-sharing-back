@@ -1,11 +1,10 @@
 package inMemoryService
 
-import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId, Reimbursement}
+import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
 import zio.*
 
-import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
@@ -21,10 +20,11 @@ class InMemoryInvoiceRepository extends InvoiceRepository {
       name = invoiceCreate.name,
       amount = invoiceCreate.amount,
       date = invoiceCreate.date,
-      drivers = invoiceCreate.drivers,
+      driver = invoiceCreate.driver,
       kind = invoiceCreate.kind,
       mileage = invoiceCreate.mileage,
-      fileName = invoiceCreate.fileName
+      fileName = invoiceCreate.fileName,
+      isReimbursement = invoiceCreate.isReimbursement
     )
 
     ZIO

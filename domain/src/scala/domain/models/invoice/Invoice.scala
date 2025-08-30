@@ -10,10 +10,11 @@ case class Invoice(
   name: String,
   amount: Long,
   date: LocalDate,
-  drivers: Set[DriverName],
+  driver: DriverName,
   kind: String,
   mileage: Option[Int],
-  fileName: Option[String]
+  fileName: Option[String],
+  isReimbursement: Boolean = false
 )
 
 object Invoice {

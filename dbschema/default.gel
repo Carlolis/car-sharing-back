@@ -42,7 +42,10 @@ module default {
     required date: cal::local_date;
     required amount: int16;
     fileName: str;
-    required multi gelPersons: PersonGel;
+    isReimbursement: bool {
+      default := false;
+    };
+    required gelPerson: PersonGel;
   }
 
 }

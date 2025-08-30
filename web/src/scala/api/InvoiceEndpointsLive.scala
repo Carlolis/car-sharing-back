@@ -75,17 +75,16 @@ object InvoiceEndpointsLive:
     }
 
   private val getReimbursementProposals: ZServerEndpoint[Env, Any] =
-    InvoiceEndpoints.getReimbursementProposals.serverLogic {
-      token =>
-        (for {
-          _ <- AuthService.authenticate(token)
-          _ <- ZIO.logInfo("Getting reimbursement proposal")
-          reimbursementProposals <- InvoiceService.getReimbursementProposal
-          _ <- ZIO.logInfo("Successfully generated reimbursement proposal")
-        } yield reimbursementProposals)
-          .map(Right(_))
-          .tapError(error => ZIO.logError(s"Error generating reimbursement proposal: $error"))
-          .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    InvoiceEndpoints.getReimbursementProposals.serverLogic { token =>
+      (for {
+        _                      <- AuthService.authenticate(token)
+        _                      <- ZIO.logInfo("Getting reimbursement proposal")
+        reimbursementProposals <- InvoiceService.getReimbursementProposal
+        _                      <- ZIO.logInfo("Successfully generated reimbursement proposal")
+      } yield reimbursementProposals)
+        .map(Right(_))
+        .tapError(error => ZIO.logError(s"Error generating reimbursement proposal: $error"))
+        .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
   val invoiceEndpointsLive: List[ZServerEndpoint[Env, Any]] =

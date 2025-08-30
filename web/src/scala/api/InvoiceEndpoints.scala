@@ -61,5 +61,6 @@ object InvoiceEndpoints:
     getAllInvoices,
     deleteInvoice,
     updateInvoice,
-    downloadInvoiceFile
+    downloadInvoiceFile,
+    getReimbursementProposals
   )

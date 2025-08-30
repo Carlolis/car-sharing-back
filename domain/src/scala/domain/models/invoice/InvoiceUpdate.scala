@@ -9,11 +9,12 @@ case class InvoiceUpdate(
   name: String,
   amount: Int,
   date: LocalDate,
-  drivers: Set[DriverName],
+  driver: DriverName,
   kind: String,
   mileage: Option[Int],
   fileName: Option[String] = None,
-  fileBytes: Option[FileRange] = None
+  fileBytes: Option[FileRange] = None,
+  isReimbursement: Boolean = false
 )
 
 object InvoiceUpdate {

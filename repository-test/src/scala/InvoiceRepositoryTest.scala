@@ -30,7 +30,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       mileage = Some(99),
       date = LocalDate.now(),
       name = "Business",
-      drivers = Set(DriverName(maePersonName)),
+      driver = DriverName(maePersonName),
       kind
     )
 
@@ -39,7 +39,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       mileage = Some(120),
       date = LocalDate.now(),
       name = "Business with file",
-      drivers = Set(DriverName(charlesPersonName)),
+      driver = DriverName(charlesPersonName),
       kind,
       fileName = Some("test_invoice.pdf")
     )
@@ -95,7 +95,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           createdInvoice.isDefined,
           createdInvoice.get.fileName.isDefined,
           createdInvoice.get.fileName.get == "test_invoice.pdf",
-          createdInvoice.get.drivers.contains(DriverName(TestData.charlesPersonName))
+          createdInvoice.get.driver == DriverName(TestData.charlesPersonName)
         )
       },
       test("Création d'une facture sans fileName - devrait avoir fileName = None") {

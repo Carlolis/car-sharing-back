@@ -18,27 +18,29 @@ class InvoiceGel @GelDeserializer() (
   date: LocalDate,
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
-  gelPersons: util.Collection[PersonCreateGel],
+  gelPerson: PersonCreateGel,
   kind: String,
   // Had to put String when mileage is null, otherwise it was not working
   mileage: String | Short,
-  fileName: String
+  fileName: String,
+  isReimbursement: Boolean
 ) {
-  def getId: UUID                                  = id
-  def getAmount: Int                               = amount
-  def getDate: LocalDate                           = date
-  def getName: String                              = name
-  def getPersons: util.Collection[PersonCreateGel] = gelPersons
-  def getKind: String                              = kind
-  def getMileage: String | Short                   = mileage
-  def getFileName: String                          = fileName
+  def getId: UUID                      = id
+  def getAmount: Int                   = amount
+  def getDate: LocalDate               = date
+  def getName: String                  = name
+  def getPerson: PersonCreateGel       = gelPerson
+  def getKind: String                  = kind
+  def getMileage: String | Short       = mileage
+  def getFileName: String              = fileName
+  def getIsReimbursement: Boolean      = isReimbursement
 }
 
 case class InvoiceGelCreate(
   amount: Double,
   date: LocalDate,
   name: String,
-  drivers: util.Collection[PersonCreate]
+  driver: PersonCreate
 )
 
 case class InvoiceGelStats(
@@ -53,12 +55,13 @@ object InvoiceGel {
       invoiceGel.getName,
       invoiceGel.getAmount,
       invoiceGel.getDate,
-      invoiceGel.getPersons.asScala.map(n => DriverName(n.name)).toSet,
+      DriverName(invoiceGel.getPerson.name),
       invoiceGel.getKind,
       Option(invoiceGel.getMileage).map {
         case s: String => s.toInt
         case l: Short  => l.toInt
       },
-      Option(invoiceGel.getFileName).filter(_.nonEmpty)
+      Option(invoiceGel.getFileName).filter(_.nonEmpty),
+      invoiceGel.getIsReimbursement
     )
 }

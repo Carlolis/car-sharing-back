@@ -5,7 +5,6 @@ import domain.models.*
 import domain.models.invoice.*
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
-import domain.services.person.PersonService
 import gel.invoice.models.InvoiceGel
 import zio.*
 
@@ -18,7 +17,8 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
 
   override def createInvoice(
     invoiceCreate: InvoiceCreate
-  ): ZIO[Any, SaveInvoiceFailed, UUID] =
+  ): ZIO[Any, SaveInvoiceFailed, UUID] = {
+    println(s"Creating invoice with name: ${invoiceCreate.name}")
     gelDb
       .querySingle(
         classOf[UUID],
@@ -28,21 +28,23 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
           |   kind := '${invoiceCreate.kind}',
           |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
           |   ${invoiceCreate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
+          |   isReimbursement := ${invoiceCreate.isReimbursement},
           |   date := cal::to_local_date(${invoiceCreate.date.getYear},
           |${invoiceCreate.date.getMonthValue},
           |${invoiceCreate.date.getDayOfMonth}),
-          | gelPersons := (select detached default::PersonGel
-          | filter .name in ${invoiceCreate.drivers.mkString("{'", "','", "'}")}) }) select new_invoice.id;
+          | gelPerson := (select detached default::PersonGel
+          | filter .name = '${DriverName.unwrap(invoiceCreate.driver)}') }) select new_invoice.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created invoice with id: $error"), UUID => ZIO.logInfo(s"Created invoice with id: $UUID")).mapError(
         SaveInvoiceFailed(_))
+  }
 
   override def getAllInvoices: Task[List[Invoice]] =
     gelDb
       .query(
         classOf[InvoiceGel],
         s"""
-          | select InvoiceGel { id, amount, date, name,  gelPersons: { name }, kind, mileage, fileName };
+          | select InvoiceGel { id, amount, date, name,  gelPerson: { name }, kind, mileage, fileName, isReimbursement };
           |"""
       )
       .map(invoice => invoice.map(InvoiceGel.fromInvoiceGel))
@@ -72,10 +74,11 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
            |        kind := '${invoiceUpdate.kind}',
            |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage").getOrElse("mileage := <int16>{}")},
            |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '$fileName'").getOrElse("fileName := <str>{}")},
+           |        isReimbursement := ${invoiceUpdate.isReimbursement},
            |        date := cal::to_local_date(${invoiceUpdate
             .date.getYear}, ${invoiceUpdate
             .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),
-           |        gelPersons := (select detached default::PersonGel filter .name in ${invoiceUpdate.drivers.mkString("{'", "','", "'}")})
+           |        gelPerson := (select detached default::PersonGel filter .name = '${DriverName.unwrap(invoiceUpdate.driver)}')
            |    }
            |)
            |select updated_invoice.id;

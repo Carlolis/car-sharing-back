@@ -1,5 +1,6 @@
 package domain.services.invoice
 
+import domain.models.Person
 import domain.models.invoice.*
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
@@ -22,6 +23,23 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       .trim()
     val result = if (clean.isEmpty) "invoice" else clean
     result.take(255) // simple limit
+
+  override def createReimbursementInvoice(reimbursementCreate: ReimbursementInvoiceCreate): Task[InvoiceId] =
+    ZIO.log(
+      s"Creating reimbursement invoice: from=${reimbursementCreate.fromDriver}, to=${reimbursementCreate.toDriver}, amount=${reimbursementCreate.amount}") *>
+      createInvoice(
+        InvoiceCreate(
+          amount = reimbursementCreate.amount,
+          mileage = None,
+          date = reimbursementCreate.date,
+          name = reimbursementCreate.name,
+          driver = reimbursementCreate.fromDriver,
+          kind = "reimbursement",
+          fileBytes = None,
+          fileName = None,
+          isReimbursement = true
+        )
+      ).tap(id => ZIO.log(s"Reimbursement invoice created with id: $id"))
 
   override def createInvoice(invoiceCreate: InvoiceCreate): Task[InvoiceId] =
     val sanitizedName = invoiceCreate.fileName.map(sanitizeName)
@@ -135,10 +153,11 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                              name = invoiceUpdate.name,
                              amount = invoiceUpdate.amount,
                              date = invoiceUpdate.date,
-                             drivers = invoiceUpdate.drivers,
+                             driver = invoiceUpdate.driver,
                              kind = invoiceUpdate.kind,
                              mileage = invoiceUpdate.mileage,
-                             fileName = sanitizedName.orElse(existingInvoice.fileName)
+                             fileName = sanitizedName.orElse(existingInvoice.fileName),
+                             isReimbursement = invoiceUpdate.isReimbursement
                            )
 
         id <- invoiceRepository
@@ -187,9 +206,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       eachPart                       = totalAmount / drivers.size
       driversAmount                  =
         drivers.map(d =>
-          (
-            d.name,
-            allInvoices.foldLeft(0L)((total, invoice) => if (invoice.drivers.head.toString == d.name) invoice.amount + total else total)))
+          (d.name, allInvoices.foldLeft(0L)((total, invoice) => if (invoice.driver.toString == d.name) invoice.amount + total else total)))
       amountAboveEachPartDriverCount = driversAmount.foldLeft(0) { (acc, driverAmount) =>
                                          if (driverAmount._2 > eachPart) acc + 1
                                          else acc
@@ -197,10 +214,10 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       reimbursements                 = driversAmount.map { (driverName, total) =>
                                          val totalToReimburse = if total >= eachPart then 0 else eachPart - total
 
-                                         val othersDriverMapReimbursement: Map[DriverName, Float] =
+                                         val othersDriverMapReimbursement: Map[DriverName, Long] =
                                            driversAmount
                                              .filter(_._1 != driverName)
-                                             .foldLeft(Map.empty[DriverName, Float]) {
+                                             .foldLeft(Map.empty[DriverName, Long]) {
                                                case (acc, (name, amount)) =>
                                                  val otherDriverAmount = driversAmount.filter(tt => tt._1 != name && driverName != tt._1).head._2
 

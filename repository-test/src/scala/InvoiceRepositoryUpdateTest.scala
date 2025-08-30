@@ -21,7 +21,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
       mileage = Some(50),
       date = LocalDate.now(),
       name = "Initial Invoice",
-      drivers = Set(DriverName(testPersonName)),
+      driver = DriverName(testPersonName),
       kind = "test",
       fileName = Some("initial_file.pdf")
     )
@@ -32,7 +32,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
         name = "Updated Invoice",
         amount = 150,
         date = LocalDate.now().plusDays(1),
-        drivers = Set(DriverName(testPersonName)),
+        driver = DriverName(testPersonName),
         kind = "test_updated",
         mileage = Some(75),
         fileName = Some("updated_file.pdf")
@@ -44,7 +44,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
         name = "Updated Invoice No File",
         amount = 200,
         date = LocalDate.now().plusDays(2),
-        drivers = Set(DriverName(testPersonName)),
+        driver = DriverName(testPersonName),
         kind = "test_no_file",
         mileage = Some(100),
         fileName = None
@@ -167,7 +167,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
                          name = "Full Update Test",
                          amount = 500,
                          date = LocalDate.now().plusDays(10),
-                         drivers = Set(DriverName(TestData.testPersonName)),
+                         driver = DriverName(TestData.testPersonName),
                          kind = "full_test",
                          mileage = None, // Remove mileage
                          fileName = Some("full_test.pdf")

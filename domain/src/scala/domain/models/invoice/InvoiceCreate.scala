@@ -10,10 +10,11 @@ case class InvoiceCreate(
   mileage: Option[Int],
   date: LocalDate,
   name: String,
-  drivers: Set[DriverName],
+  driver: DriverName,
   kind: String,
   fileBytes: Option[FileRange] = None,
-  fileName: Option[String] = None
+  fileName: Option[String] = None,
+  isReimbursement: Boolean = false
 )
 
 object InvoiceCreate {
