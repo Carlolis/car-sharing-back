@@ -1,6 +1,5 @@
 package domain.services.invoice
 
-import domain.models.Person
 import domain.models.invoice.*
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.invoice.repository.models.errors.SaveInvoiceFailed
@@ -167,7 +166,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                   _ => ZIO.log(s"Repository update succeeded for invoice ${invoiceUpdate.id}")
                 )
       } yield invoiceUpdate.id)
-        .tap(_ => ZIO.log(s"Invoice updated: id=${invoiceUpdate.id}, file='$sanitizedName'"))
+        .zipLeft(ZIO.log(s"Invoice updated: id=${invoiceUpdate.id}, file='$sanitizedName'"))
         .tapErrorCause(cause => ZIO.logErrorCause(s"Error while updating invoice (id=${invoiceUpdate.id}, file='$sanitizedName')", cause))
         // Compensation logic: if repository update fails after file upload, try to delete the uploaded file
         .onError {
@@ -199,20 +198,32 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
 
   override def getReimbursementProposals: Task[Set[Reimbursement]] =
     for {
-      allInvoices                   <- getAllInvoices
-      drivers                       <- personService.getAll
-      _                             <- ZIO.logInfo(s"Got ${drivers.size} drivers")
-      totalAmount                    = allInvoices.foldLeft(0L)((total, invoice) => invoice.amount + total)
+      allInvoices <- getAllInvoices
+      drivers     <- personService.getAll
+      _           <- ZIO.logInfo(s"Got ${drivers.size} drivers")
+      totalAmount  =
+        allInvoices.foldLeft(0L)((total, invoice) => if (invoice.isReimbursement) total else invoice.amount + total)
+
       eachPart                       = totalAmount / drivers.size
       driversAmount                  =
         drivers.map(d =>
-          (d.name, allInvoices.foldLeft(0L)((total, invoice) => if (invoice.driver.toString == d.name) invoice.amount + total else total)))
+          (
+            d.name,
+            allInvoices.foldLeft(0L) { (total, invoice) =>
+              if (invoice.toDriver.contains(d.name))
+                total - invoice.amount
+              else if (invoice.driver.toString == d.name)
+                if (invoice.isReimbursement) total - invoice.amount
+                else
+                  invoice.amount + total
+              else total
+            }))
       amountAboveEachPartDriverCount = driversAmount.foldLeft(0) { (acc, driverAmount) =>
                                          if (driverAmount._2 > eachPart) acc + 1
                                          else acc
                                        }
       reimbursements                 = driversAmount.map { (driverName, total) =>
-                                         val totalToReimburse = if total >= eachPart then 0 else eachPart - total
+                                         val totalToReimburse = if total >= eachPart || total < 0 then 0 else eachPart - total
 
                                          val othersDriverMapReimbursement: Map[DriverName, Long] =
                                            driversAmount
@@ -220,8 +231,8 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                              .foldLeft(Map.empty[DriverName, Long]) {
                                                case (acc, (name, amount)) =>
                                                  val otherDriverAmount = driversAmount.filter(tt => tt._1 != name && driverName != tt._1).head._2
-
-                                                 if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0L)
+                                                 if (total < 0) acc + (DriverName(name) -> 0L)
+                                                 else if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0L)
                                                  else if (amountAboveEachPartDriverCount == 1)
                                                    if amount > otherDriverAmount then acc + (DriverName(name) -> (eachPart - total))
                                                    else acc + (DriverName(name)                               -> 0L)

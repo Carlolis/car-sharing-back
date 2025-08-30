@@ -14,7 +14,8 @@ case class Invoice(
   kind: String,
   mileage: Option[Int],
   fileName: Option[String],
-  isReimbursement: Boolean = false
+  isReimbursement: Boolean = false,
+  toDriver: Option[DriverName] = None
 )
 
 object Invoice {
