@@ -186,15 +186,15 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       drivers     <- personService.getAll
       _           <- ZIO.logInfo(s"Got ${drivers.size} drivers")
       totalAmount  =
-        allInvoices.foldLeft(0.0)((total, invoice) => if (invoice.isReimbursement) total else invoice.amount + total)
+        allInvoices.foldLeft(BigDecimal(0.0))((total, invoice) => if (invoice.isReimbursement) total else invoice.amount + total)
 
-      eachPart                       = (BigDecimal(totalAmount) / BigDecimal(drivers.size))
+      eachPart                       = (totalAmount / BigDecimal(drivers.size))
                                          .setScale(2, RoundingMode.HALF_UP).doubleValue()
       driversAmount                  =
         drivers.map(d =>
           (
             d.name,
-            allInvoices.foldLeft(0.0) { (total, invoice) =>
+            allInvoices.foldLeft(BigDecimal(0.0)) { (total, invoice) =>
               if (invoice.toDriver.contains(d.name))
                 total - invoice.amount
               else if (invoice.driver.toString == d.name)
@@ -208,19 +208,19 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                          else acc
                                        }
       reimbursements                 = driversAmount.map { (driverName, total) =>
-                                         val totalToReimburse = if total >= eachPart then 0 else eachPart - total
+                                         val totalToReimburse = if total >= eachPart then BigDecimal(0) else eachPart - total
 
-                                         val othersDriverMapReimbursement: Map[DriverName, Double] =
+                                         val othersDriverMapReimbursement: Map[DriverName, BigDecimal] =
                                            driversAmount
                                              .filter(_._1 != driverName)
-                                             .foldLeft(Map.empty[DriverName, Double]) {
+                                             .foldLeft(Map.empty[DriverName, BigDecimal]) {
                                                case (acc, (name, amount)) =>
                                                  val otherDriverAmount = driversAmount.filter(tt => tt._1 != name && driverName != tt._1).head._2
-                                                 if (total < 0.0) acc + (DriverName(name) -> 0.0)
-                                                 else if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0.0)
+                                                 if (total < 0.0) acc + (DriverName(name) -> BigDecimal(0.0))
+                                                 else if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> BigDecimal(0.0))
                                                  else if (amountAboveEachPartDriverCount == 1)
                                                    if amount > otherDriverAmount then acc + (DriverName(name) -> (eachPart - total))
-                                                   else acc + (DriverName(name)                               -> 0.0)
+                                                   else acc + (DriverName(name)                               -> BigDecimal(0.0))
                                                  else acc + (DriverName(name) -> (amount - eachPart))
                                              }
 

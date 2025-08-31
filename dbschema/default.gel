@@ -40,7 +40,7 @@ module default {
     required kind: str;
     mileage: int16;
     required date: cal::local_date;
-    required amount: int16;
+    required amount: decimal;
     fileName: str;
     isReimbursement: bool {
       default := false;

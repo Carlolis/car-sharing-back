@@ -73,6 +73,17 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           allInvoices.head.kind == TestData.kind
         )
       },
+      test("Création d'une facture - Maé devrait créer une facture avec succès avec un montant non entier") {
+        for {
+          invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate.copy(amount = 100.5))
+          allInvoices <- InvoiceRepository.getAllInvoices
+        } yield assertTrue(
+          invoiceUuid != null,
+          allInvoices.length == 1,
+          allInvoices.head.kind == TestData.kind,
+          allInvoices.head.amount == 100.5
+        )
+      },
       test("Création d'une facture - Maé devrait créer une facture avec succès sans kilométrage ") {
         for {
           invoiceUuid <- InvoiceRepository.createInvoice(TestData.sampleInvoiceCreate.copy(mileage = None))
@@ -131,10 +142,11 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       }
     ) @@ TestAspect.after(
       TestUtils.cleanupData.catchAll(e => ZIO.logError(s"Erreur lors du nettoyage: ${e.getMessage}"))
-    ) @@ TestAspect
-      .before(
-        TestUtils.setupTestData.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
-      ) @@ TestAspect.sequential).provideShared(
+    )
+      @@ TestAspect
+        .before(
+          TestUtils.setupTestData.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
+        ) @@ TestAspect.sequential).provideShared(
       InvoiceRepositoryGel.layer,
       PersonRepositoryGel.layer,
       GelDriver.testLayer

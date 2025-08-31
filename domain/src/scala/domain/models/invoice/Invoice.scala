@@ -8,7 +8,7 @@ import scala.jdk.CollectionConverters.*
 case class Invoice(
   id: InvoiceId,
   name: String,
-  amount: Double,
+  amount: BigDecimal,
   date: LocalDate,
   driver: DriverName,
   kind: String,

@@ -14,7 +14,7 @@ import scala.jdk.CollectionConverters.*
 @GelType
 class InvoiceGel @GelDeserializer() (
   id: UUID,
-  amount: Int,
+  amount: java.math.BigDecimal,
   date: LocalDate,
   name: String,
   @GelLinkType(classOf[PersonCreateGel])
@@ -27,16 +27,19 @@ class InvoiceGel @GelDeserializer() (
   @GelLinkType(classOf[PersonCreateGel])
   toDriver: PersonCreateGel
 ) {
-  def getId: UUID                      = id
-  def getAmount: Int                   = amount
-  def getDate: LocalDate               = date
-  def getName: String                  = name
-  def getPerson: PersonCreateGel       = gelPerson
-  def getKind: String                  = kind
-  def getMileage: String | Short       = mileage
-  def getFileName: String              = fileName
-  def getIsReimbursement: Boolean      = isReimbursement
-  def getToDriver: PersonCreateGel     = toDriver
+  def getId: UUID                  = id
+  def getAmount: BigDecimal        = {
+    println(s"amount type: ${amount.getClass.getName}, value: $amount")
+    return amount;
+  }
+  def getDate: LocalDate           = date
+  def getName: String              = name
+  def getPerson: PersonCreateGel   = gelPerson
+  def getKind: String              = kind
+  def getMileage: String | Short   = mileage
+  def getFileName: String          = fileName
+  def getIsReimbursement: Boolean  = isReimbursement
+  def getToDriver: PersonCreateGel = toDriver
 }
 
 case class InvoiceGelCreate(
@@ -48,7 +51,7 @@ case class InvoiceGelCreate(
 
 case class InvoiceGelStats(
   trips: util.Collection[Invoice],
-  totalKilometers: Double
+  totalKilometers: Int
 )
 
 object InvoiceGel {

@@ -5,7 +5,7 @@ import zio.json.*
 import scala.jdk.CollectionConverters.*
 
 case class TripStats(
-  totalKilometers: Double
+  totalKilometers: Int
 )
 
 object TripStats {

@@ -24,7 +24,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
         classOf[UUID],
         s"""
            |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
-           |   amount := ${invoiceCreate.amount},
+           |   amount := ${invoiceCreate.amount}n,
            |   kind := '${invoiceCreate.kind}',
            |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
            |   ${invoiceCreate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}

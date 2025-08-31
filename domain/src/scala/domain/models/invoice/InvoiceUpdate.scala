@@ -7,7 +7,7 @@ import java.time.LocalDate
 case class InvoiceUpdate(
   id: InvoiceId,
   name: String,
-  amount: Int,
+  amount: BigDecimal,
   date: LocalDate,
   driver: DriverName,
   kind: String,
