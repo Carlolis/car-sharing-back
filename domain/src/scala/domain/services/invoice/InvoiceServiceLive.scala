@@ -9,6 +9,7 @@ import sttp.tapir.FileRange
 import zio.*
 
 import java.nio.file.Files
+import scala.math.BigDecimal.RoundingMode
 
 class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceRepository: InvoiceRepository, personService: PersonService)
     extends InvoiceService:
@@ -41,7 +42,6 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                       )
         uploaded <- invoiceCreate.fileBytes match
                       case Some(bytes) =>
-                        
                         val path = invoiceCreate.fileBytes.get.file.toPath
                         val is   = Files.newInputStream(path).readAllBytes()
                         ZIO.log(s"Uploading file '$sanitizedName' with id $id") *>
@@ -186,14 +186,15 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       drivers     <- personService.getAll
       _           <- ZIO.logInfo(s"Got ${drivers.size} drivers")
       totalAmount  =
-        allInvoices.foldLeft(0L)((total, invoice) => if (invoice.isReimbursement) total else invoice.amount + total)
+        allInvoices.foldLeft(0.0)((total, invoice) => if (invoice.isReimbursement) total else invoice.amount + total)
 
-      eachPart                       = totalAmount / drivers.size
+      eachPart                       = (BigDecimal(totalAmount) / BigDecimal(drivers.size))
+                                         .setScale(2, RoundingMode.HALF_UP).doubleValue()
       driversAmount                  =
         drivers.map(d =>
           (
             d.name,
-            allInvoices.foldLeft(0L) { (total, invoice) =>
+            allInvoices.foldLeft(0.0) { (total, invoice) =>
               if (invoice.toDriver.contains(d.name))
                 total - invoice.amount
               else if (invoice.driver.toString == d.name)
@@ -209,17 +210,17 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       reimbursements                 = driversAmount.map { (driverName, total) =>
                                          val totalToReimburse = if total >= eachPart then 0 else eachPart - total
 
-                                         val othersDriverMapReimbursement: Map[DriverName, Long] =
+                                         val othersDriverMapReimbursement: Map[DriverName, Double] =
                                            driversAmount
                                              .filter(_._1 != driverName)
-                                             .foldLeft(Map.empty[DriverName, Long]) {
+                                             .foldLeft(Map.empty[DriverName, Double]) {
                                                case (acc, (name, amount)) =>
                                                  val otherDriverAmount = driversAmount.filter(tt => tt._1 != name && driverName != tt._1).head._2
-                                                 if (total < 0) acc + (DriverName(name) -> 0L)
-                                                 else if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0L)
+                                                 if (total < 0.0) acc + (DriverName(name) -> 0.0)
+                                                 else if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> 0.0)
                                                  else if (amountAboveEachPartDriverCount == 1)
                                                    if amount > otherDriverAmount then acc + (DriverName(name) -> (eachPart - total))
-                                                   else acc + (DriverName(name)                               -> 0L)
+                                                   else acc + (DriverName(name)                               -> 0.0)
                                                  else acc + (DriverName(name) -> (amount - eachPart))
                                              }
 

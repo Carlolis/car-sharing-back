@@ -34,7 +34,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
     val driverName                  = "TestDriver"
     val updatedDriverName           = "UpdatedDriver"
     val sampleMaéInvoiceCreate      = InvoiceCreate(
-      99,
+      amount = 99,
       mileage = Some(99),
       date = LocalDate.now(),
       name = "Business",
@@ -156,6 +156,50 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
             brigitteReimbursement.to == Map(
               DriverName(TestData.maePersonName)     -> TestData.expectedReimbursementAmount,
               DriverName(TestData.charlesPersonName) -> 0L
+            )
+          )
+
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
+        }
+      },
+      test("Un seul conducteur avec un montant non entier a une facture, deux conducteurs doivent rembourser le premier") {
+        for {
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate.copy(amount = 24.12))
+          reimbursements <- InvoiceService.getReimbursementProposal
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 0,
+            charlesReimbursement.totalAmount == 8.04,
+            brigitteReimbursement.totalAmount == 8.04
+          )
+
+          val maeDistributionAssertion = assertTrue(
+            maeReimbursement.to == Map(
+              DriverName(TestData.brigittePersonName) -> 0.0,
+              DriverName(TestData.charlesPersonName)  -> 0.0
+            )
+          )
+
+          val charlesDistributionAssertion = assertTrue(
+            charlesReimbursement.to == Map(
+              DriverName(TestData.brigittePersonName) -> 0.0,
+              DriverName(TestData.maePersonName)      -> 8.04
+            )
+          )
+
+          val brigitteDistributionAssertion = assertTrue(
+            brigitteReimbursement.to == Map(
+              DriverName(TestData.maePersonName)     -> 8.04,
+              DriverName(TestData.charlesPersonName) -> 0.0
             )
           )
 
@@ -348,7 +392,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         }
       },
       test(
-        "1 conducteur est au-dessus, il y a 1 facture, et deux remboursement faible deux conducteurs doivent rembourser les deux autres") {
+        "1 conducteur est au-dessus, il y a 1 facture, et deux remboursements faible deux conducteurs doivent rembourser les deux autres") {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(

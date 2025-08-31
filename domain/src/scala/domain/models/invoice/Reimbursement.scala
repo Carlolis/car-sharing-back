@@ -6,8 +6,8 @@ import zio.json.*
 
 case class Reimbursement(
   driverName: DriverName,
-  totalAmount: Long,
-  to: Map[DriverName, Long]
+  totalAmount: Double,
+  to: Map[DriverName, Double]
 )
 
 object Reimbursement {
@@ -16,5 +16,5 @@ object Reimbursement {
 
   given Schema[Reimbursement] = Schema.derived[Reimbursement]
 
-  given Schema[Map[DriverName, Long]] = Schema.schemaForMap[DriverName, Long](DriverName.encode)
+  given Schema[Map[DriverName, Double]] = Schema.schemaForMap[DriverName, Double](DriverName.encode)
 }
