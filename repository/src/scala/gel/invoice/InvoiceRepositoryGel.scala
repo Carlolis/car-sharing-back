@@ -73,7 +73,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
            |    filter .id = <uuid>'${invoiceUpdate.id}'
            |    set {
            |        name := '${invoiceUpdate.name}',
-           |        amount := ${invoiceUpdate.amount},
+           |        amount := ${invoiceUpdate.amount}n,
            |        kind := '${invoiceUpdate.kind}',
            |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage").getOrElse("mileage := <int16>{}")},
            |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '$fileName'").getOrElse("fileName := <str>{}")},

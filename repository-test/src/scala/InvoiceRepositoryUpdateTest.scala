@@ -120,7 +120,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
 
           // Update invoice to remove filename
           updateData = TestData.createInvoiceWithoutFile(invoiceId)
-          updatedId <- InvoiceRepository.updateInvoice(updateData)
+          updatedId <- InvoiceRepository.updateInvoice(updateData.copy(amount = 12.3))
           _         <- ZIO.log(s"[DEBUG_LOG] Updated invoice to remove filename, ID: $updatedId")
 
           // Verify update
@@ -131,7 +131,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
         } yield assertTrue(
           updatedId == invoiceId,
           updatedInvoice.name == "Updated Invoice No File",
-          updatedInvoice.amount == 200,
+          updatedInvoice.amount == 12.3,
           updatedInvoice.fileName.isEmpty
         )
       },
