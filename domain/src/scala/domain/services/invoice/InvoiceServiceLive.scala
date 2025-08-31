@@ -41,7 +41,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                       )
         uploaded <- invoiceCreate.fileBytes match
                       case Some(bytes) =>
-                        ZIO.log(s"File provided (${bytes.range} bytes)")
+                        
                         val path = invoiceCreate.fileBytes.get.file.toPath
                         val is   = Files.newInputStream(path).readAllBytes()
                         ZIO.log(s"Uploading file '$sanitizedName' with id $id") *>

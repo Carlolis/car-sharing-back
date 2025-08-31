@@ -18,7 +18,7 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
   override def createInvoice(
     invoiceCreate: InvoiceCreate
   ): ZIO[Any, SaveInvoiceFailed, UUID] = {
-    println(s"Creating invoice with name: ${invoiceCreate.name}")
+    println(s"Creating invoice with name: ${invoiceCreate.toDriver}")
     gelDb
       .querySingle(
         classOf[UUID],
