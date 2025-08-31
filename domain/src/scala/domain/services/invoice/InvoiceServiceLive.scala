@@ -197,7 +197,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
               if (invoice.toDriver.contains(d.name))
                 total - invoice.amount
               else if (invoice.driver.toString == d.name)
-                if (invoice.isReimbursement) total - invoice.amount
+                if (invoice.isReimbursement) total + invoice.amount
                 else
                   invoice.amount + total
               else total
@@ -207,7 +207,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                          else acc
                                        }
       reimbursements                 = driversAmount.map { (driverName, total) =>
-                                         val totalToReimburse = if total >= eachPart || total < 0 then 0 else eachPart - total
+                                         val totalToReimburse = if total >= eachPart then 0 else eachPart - total
 
                                          val othersDriverMapReimbursement: Map[DriverName, Long] =
                                            driversAmount
