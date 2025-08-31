@@ -46,6 +46,7 @@ module default {
       default := false;
     };
     gelPerson: PersonGel;
+    toDriver: PersonGel;
   }
 
 }

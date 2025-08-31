@@ -7,21 +7,25 @@ import gel.invoice.InvoiceRepositoryGel
 import gel.person.PersonRepositoryGel
 import zio.test.*
 import zio.test.Assertion.*
-import zio.{IO, Scope, ZIO, ZLayer}
+import zio.{Scope, ZIO, ZLayer}
 
 import java.time.LocalDate
 
 object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
   object TestData {
-    val testPersonName = "testUser"
-    val testPerson     = PersonCreate(testPersonName)
+    val testMae            = "maé"
+    val testCharles        = "charles"
+    val testBrigitte       = "brigitte"
+    val testPersonMae      = PersonCreate(testMae)
+    val testPersonCharles  = PersonCreate(testCharles)
+    val testPersonBrigitte = PersonCreate(testBrigitte)
 
     val initialInvoiceCreate = InvoiceCreate(
       amount = 100,
       mileage = Some(50),
       date = LocalDate.now(),
       name = "Initial Invoice",
-      driver = DriverName(testPersonName),
+      driver = DriverName(testMae),
       kind = "test",
       fileName = Some("initial_file.pdf")
     )
@@ -32,7 +36,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
         name = "Updated Invoice",
         amount = 150,
         date = LocalDate.now().plusDays(1),
-        driver = DriverName(testPersonName),
+        driver = DriverName(testMae),
         kind = "test_updated",
         mileage = Some(75),
         fileName = Some("updated_file.pdf")
@@ -44,7 +48,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
         name = "Updated Invoice No File",
         amount = 200,
         date = LocalDate.now().plusDays(2),
-        driver = DriverName(testPersonName),
+        driver = DriverName(testMae),
         kind = "test_no_file",
         mileage = Some(100),
         fileName = None
@@ -61,7 +65,11 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
       } yield ()
 
     def setupTestData: ZIO[PersonService, Throwable, Unit] =
-      PersonService.createPerson(TestData.testPerson).unit
+      for {
+        _ <- PersonService.createPerson(TestData.testPersonMae)
+        _ <- PersonService.createPerson(TestData.testPersonCharles)
+        _ <- PersonService.createPerson(TestData.testPersonBrigitte)
+      } yield ()
   }
 
   def spec: Spec[TestEnvironment & Scope, Any] =
@@ -76,10 +84,10 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
           _           <- ZIO.log(s"[DEBUG_LOG] Created initial invoice with ID: $invoiceId")
 
           // Verify initial invoice
-          allInvoices    <- InvoiceRepository.getAllInvoices
-          initialInvoice  = allInvoices.find(_.id == invoiceId).get
-          _              <- ZIO.log(s"[DEBUG_LOG] Initial invoice fileName: ${initialInvoice.fileName}")
-          _              <- ZIO.log(s"[DEBUG_LOG] Initial invoice name: ${initialInvoice.name}")
+          allInvoices   <- InvoiceRepository.getAllInvoices
+          initialInvoice = allInvoices.find(_.id == invoiceId).get
+          _             <- ZIO.log(s"[DEBUG_LOG] Initial invoice fileName: ${initialInvoice.fileName}")
+          _             <- ZIO.log(s"[DEBUG_LOG] Initial invoice name: ${initialInvoice.name}")
 
           // Update invoice via repository
           updateData = TestData.createInvoiceForUpdate(invoiceId)
@@ -97,8 +105,8 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
           updatedInvoice.name == "Updated Invoice",
           updatedInvoice.amount == 150,
           updatedInvoice.kind == "test_updated",
-          updatedInvoice.mileage == Some(75),
-          updatedInvoice.fileName == Some("updated_file.pdf")
+          updatedInvoice.mileage.contains(75),
+          updatedInvoice.fileName.contains("updated_file.pdf")
         )
       },
       test("[DEBUG_LOG] Repository update invoice filename to None - should clear filename") {
@@ -149,7 +157,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
 
         } yield assertTrue(
           updatedId == invoiceId,
-          updatedInvoice.fileName == Some("updated_file.pdf")
+          updatedInvoice.fileName.contains("updated_file.pdf")
         )
       },
       test("[DEBUG_LOG] Repository update invoice with all optional fields") {
@@ -167,7 +175,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
                          name = "Full Update Test",
                          amount = 500,
                          date = LocalDate.now().plusDays(10),
-                         driver = DriverName(TestData.testPersonName),
+                         driver = DriverName(TestData.testMae),
                          kind = "full_test",
                          mileage = None, // Remove mileage
                          fileName = Some("full_test.pdf")
@@ -185,7 +193,48 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
           updatedInvoice.name == "Full Update Test",
           updatedInvoice.amount == 500,
           updatedInvoice.mileage.isEmpty,
-          updatedInvoice.fileName == Some("full_test.pdf")
+          updatedInvoice.fileName.contains("full_test.pdf")
+        )
+      },
+      test("[DEBUG_LOG] Repository update reimbursement") {
+        for {
+
+          // Create initial invoice
+          invoiceUuid <-
+            InvoiceRepository.createInvoice(TestData
+              .initialInvoiceCreate.copy(toDriver = Some(DriverName("charles")), isReimbursement = true, kind = "remboursement"))
+          invoiceId    = InvoiceId(invoiceUuid)
+          _           <- ZIO.log(s"[DEBUG_LOG] Created initial invoice, ID: $invoiceId")
+
+          // Update with different optional field values
+          updateData = Invoice(
+                         id = invoiceId,
+                         name = "Full Update Test",
+                         amount = 500,
+                         date = LocalDate.now().plusDays(10),
+                         driver = DriverName(TestData.testMae),
+                         kind = "remboursement",
+                         isReimbursement = true,
+                         mileage = None, // Remove mileage
+                         fileName = Some("full_test.pdf"),
+                         toDriver = Some(DriverName("brigitte"))
+                       )
+          updatedId <- InvoiceRepository.updateInvoice(updateData)
+          _         <- ZIO.log(s"[DEBUG_LOG] Updated invoice with optional fields, ID: $updatedId")
+
+          // Verify update
+          updatedInvoices <- InvoiceRepository.getAllInvoices
+          updatedInvoice   = updatedInvoices.find(_.id == invoiceId).get
+          _               <- ZIO.log(s"[DEBUG_LOG] Updated invoice mileage: ${updatedInvoice.mileage}")
+
+        } yield assertTrue(
+          updatedId == invoiceId,
+          updatedInvoice.name == "Full Update Test",
+          updatedInvoice.amount == 500,
+          updatedInvoice.mileage.isEmpty,
+          updatedInvoice.fileName.contains("full_test.pdf"),
+          updatedInvoice.toDriver.contains(DriverName("brigitte")),
+          updatedInvoice.isReimbursement
         )
       }
     ) @@ TestAspect.after(

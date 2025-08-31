@@ -109,6 +109,25 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           createdInvoice.isDefined,
           createdInvoice.get.fileName.isEmpty
         )
+      },
+      test("Création d'un remboursement - Maé devrait créer un remboursement vers Charles avec succès") {
+        for {
+          invoiceUuid <-
+            InvoiceRepository.createInvoice(
+              TestData
+                .sampleInvoiceCreate.copy(
+                  toDriver = Some(DriverName(TestData.charlesPersonName)),
+                  isReimbursement = true,
+                  kind = "remboursement"))
+          allInvoices <- InvoiceRepository.getAllInvoices
+        } yield assertTrue(
+          invoiceUuid != null,
+          allInvoices.length == 1,
+          allInvoices.head.kind == "remboursement",
+          allInvoices.head.toDriver.isDefined,
+          allInvoices.head.toDriver.get == DriverName(TestData.charlesPersonName),
+          allInvoices.head.isReimbursement
+        )
       }
     ) @@ TestAspect.after(
       TestUtils.cleanupData.catchAll(e => ZIO.logError(s"Erreur lors du nettoyage: ${e.getMessage}"))

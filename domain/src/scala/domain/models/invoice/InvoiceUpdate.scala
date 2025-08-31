@@ -14,7 +14,8 @@ case class InvoiceUpdate(
   mileage: Option[Int],
   fileName: Option[String] = None,
   fileBytes: Option[FileRange] = None,
-  isReimbursement: Boolean = false
+  isReimbursement: Boolean = false,
+  toDriver: Option[DriverName] = None
 )
 
 object InvoiceUpdate {

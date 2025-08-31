@@ -139,7 +139,8 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                              kind = invoiceUpdate.kind,
                              mileage = invoiceUpdate.mileage,
                              fileName = sanitizedName.orElse(existingInvoice.fileName),
-                             isReimbursement = invoiceUpdate.isReimbursement
+                             isReimbursement = invoiceUpdate.isReimbursement,
+                             toDriver = invoiceUpdate.toDriver
                            )
 
         id <- invoiceRepository
