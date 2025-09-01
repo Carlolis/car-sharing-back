@@ -133,7 +133,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -66,
             charlesReimbursement.totalAmount == TestData.expectedReimbursementAmount,
             brigitteReimbursement.totalAmount == TestData.expectedReimbursementAmount
           )
@@ -177,7 +177,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -16.08,
             charlesReimbursement.totalAmount == 8.04,
             brigitteReimbursement.totalAmount == 8.04
           )
@@ -222,9 +222,9 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
-            charlesReimbursement.totalAmount == 0,
-            brigitteReimbursement.totalAmount == 57f
+            maeReimbursement.totalAmount == -42,
+            charlesReimbursement.totalAmount == -15,
+            brigitteReimbursement.totalAmount == 57
           )
 
           val maeDistributionAssertion = assertTrue(
@@ -267,7 +267,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -65,
             charlesReimbursement.totalAmount == 31f,
             brigitteReimbursement.totalAmount == 34f
           )
@@ -313,7 +313,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -63,
             charlesReimbursement.totalAmount == 33f,
             brigitteReimbursement.totalAmount == 30L
           )
@@ -359,8 +359,8 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
-            charlesReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -42,
+            charlesReimbursement.totalAmount == -9,
             brigitteReimbursement.totalAmount == 51f
           )
 
@@ -408,7 +408,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -57,
             charlesReimbursement.totalAmount == 30,
             brigitteReimbursement.totalAmount == 27
           )
@@ -458,7 +458,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         } yield {
           val baseAssertions = assertTrue(
             reimbursements.size == 3,
-            maeReimbursement.totalAmount == 0,
+            maeReimbursement.totalAmount == -33,
             charlesReimbursement.totalAmount == 0,
             brigitteReimbursement.totalAmount == 33
           )

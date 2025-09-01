@@ -207,7 +207,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                          else acc
                                        }
       reimbursements                 = driversAmount.map { (driverName, total) =>
-                                         val totalToReimburse = if total >= eachPart then BigDecimal(0) else eachPart - total
+                                         val totalToReimburse = eachPart - total
 
                                          val othersDriverMapReimbursement: Map[DriverName, BigDecimal] =
                                            driversAmount
