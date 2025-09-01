@@ -24,7 +24,7 @@ class InMemoryInvoiceRepository extends InvoiceRepository {
       kind = invoiceCreate.kind,
       mileage = invoiceCreate.mileage,
       fileName = invoiceCreate.fileName,
-      isReimbursement = invoiceCreate.isReimbursement
+      toDriver = invoiceCreate.toDriver
     )
 
     ZIO

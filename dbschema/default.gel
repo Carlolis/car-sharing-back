@@ -42,9 +42,6 @@ module default {
     required date: cal::local_date;
     required amount: decimal;
     fileName: str;
-    isReimbursement: bool {
-      default := false;
-    };
     gelPerson: PersonGel;
     toDriver: PersonGel;
   }

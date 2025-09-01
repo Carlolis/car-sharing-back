@@ -23,22 +23,19 @@ class InvoiceGel @GelDeserializer() (
   // Had to put String when mileage is null, otherwise it was not working
   mileage: String | Short,
   fileName: String,
-  isReimbursement: Boolean,
   @GelLinkType(classOf[PersonCreateGel])
   toDriver: PersonCreateGel
 ) {
   def getId: UUID                  = id
-  def getAmount: BigDecimal        = {
-    println(s"amount type: ${amount.getClass.getName}, value: $amount")
-    return amount;
-  }
+  def getAmount: BigDecimal =
+    // println(s"amount type: ${amount.getClass.getName}, value: $amount")
+    amount;
   def getDate: LocalDate           = date
   def getName: String              = name
   def getPerson: PersonCreateGel   = gelPerson
   def getKind: String              = kind
   def getMileage: String | Short   = mileage
   def getFileName: String          = fileName
-  def getIsReimbursement: Boolean  = isReimbursement
   def getToDriver: PersonCreateGel = toDriver
 }
 
@@ -68,7 +65,6 @@ object InvoiceGel {
         case l: Short  => l.toInt
       },
       Option(invoiceGel.getFileName).filter(_.nonEmpty),
-      invoiceGel.getIsReimbursement,
       Option(invoiceGel.getToDriver).map(person => DriverName(person.name))
     )
 }

@@ -396,9 +396,9 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(
-                              TestData.sampleCharlesInvoiceCreate.copy(amount = 3, isReimbursement = true, toDriver = Some(DriverName("maé"))))
+                              TestData.sampleCharlesInvoiceCreate.copy(amount = 3, kind = "Remboursement", toDriver = Some(DriverName("maé"))))
           _              <- InvoiceService.createInvoice(
-                              TestData.sampleBrigitteInvoiceCreate.copy(amount = 6, isReimbursement = true, toDriver = Some(DriverName("maé"))))
+                              TestData.sampleBrigitteInvoiceCreate.copy(amount = 6, kind = "Remboursement", toDriver = Some(DriverName("maé"))))
           reimbursements <- InvoiceService.getReimbursementProposal
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
@@ -446,7 +446,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           invoiceId      <-
             InvoiceService.createInvoice(
-              TestData.sampleCharlesInvoiceCreate.copy(isReimbursement = true, amount = 33, toDriver = Some(DriverName("maé"))))
+              TestData.sampleCharlesInvoiceCreate.copy(kind = "Remboursement", amount = 33, toDriver = Some(DriverName("maé"))))
           allInvoices    <- InvoiceService.getAllInvoices
           _              <- ZIO.log(s"[DEBUG_LOG] Created reimbursement invoice with id: $invoiceId")
           reimbursements <- InvoiceService.getReimbursementProposal

@@ -128,7 +128,6 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
               TestData
                 .sampleInvoiceCreate.copy(
                   toDriver = Some(DriverName(TestData.charlesPersonName)),
-                  isReimbursement = true,
                   kind = "remboursement"))
           allInvoices <- InvoiceRepository.getAllInvoices
         } yield assertTrue(
@@ -137,7 +136,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
           allInvoices.head.kind == "remboursement",
           allInvoices.head.toDriver.isDefined,
           allInvoices.head.toDriver.get == DriverName(TestData.charlesPersonName),
-          allInvoices.head.isReimbursement
+          allInvoices.head.kind == "remboursement"
         )
       }
     ) @@ TestAspect.after(

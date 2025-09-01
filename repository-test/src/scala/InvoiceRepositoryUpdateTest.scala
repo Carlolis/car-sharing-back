@@ -202,7 +202,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
           // Create initial invoice
           invoiceUuid <-
             InvoiceRepository.createInvoice(TestData
-              .initialInvoiceCreate.copy(toDriver = Some(DriverName("charles")), isReimbursement = true, kind = "remboursement"))
+              .initialInvoiceCreate.copy(toDriver = Some(DriverName("charles")), kind = "remboursement"))
           invoiceId    = InvoiceId(invoiceUuid)
           _           <- ZIO.log(s"[DEBUG_LOG] Created initial invoice, ID: $invoiceId")
 
@@ -214,7 +214,6 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
                          date = LocalDate.now().plusDays(10),
                          driver = DriverName(TestData.testMae),
                          kind = "remboursement",
-                         isReimbursement = true,
                          mileage = None, // Remove mileage
                          fileName = Some("full_test.pdf"),
                          toDriver = Some(DriverName("brigitte"))
@@ -234,7 +233,7 @@ object InvoiceRepositoryUpdateTest extends ZIOSpecDefault {
           updatedInvoice.mileage.isEmpty,
           updatedInvoice.fileName.contains("full_test.pdf"),
           updatedInvoice.toDriver.contains(DriverName("brigitte")),
-          updatedInvoice.isReimbursement
+          updatedInvoice.kind == "remboursement"
         )
       }
     ) @@ TestAspect.after(

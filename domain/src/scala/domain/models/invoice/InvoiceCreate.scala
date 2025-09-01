@@ -14,7 +14,6 @@ case class InvoiceCreate(
   kind: String,
   fileBytes: Option[FileRange] = None,
   fileName: Option[String] = None,
-  isReimbursement: Boolean = false,
   toDriver: Option[DriverName] = None
 )
 
