@@ -1,12 +1,15 @@
 import adapters.{GelDriver, SardineScalaImpl}
 import api.InvoiceEndpointsLive.invoiceEndpointsLive
+import api.MaintenanceEndpointsLive
 import api.TripEndpointsLive.tripEndpointsLive
 import api.ia.IaRoutes.iaEndpoints
 import api.{TripEndpointsLive, swagger}
 import config.AppConfig
 import domain.services.invoice.InvoiceServiceLive
+import domain.services.maintenance.MaintenanceServiceLive
 import gel.ia.IAServiceGel
 import gel.invoice.InvoiceRepositoryGel
+import gel.maintenance.MaintenanceRepositoryGel
 import gel.person.PersonRepositoryGel
 import gel.trip.TripRepositoryGel
 import sttp.tapir.server.ziohttp.ZioHttpInterpreter
@@ -68,7 +71,10 @@ object Main extends ZIOAppDefault:
                           swagger
                         ) ++ ZioHttpInterpreter(options).toHttp(
                           iaEndpoints
-                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpointsLive)
+                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpointsLive
+                        ) ++ ZioHttpInterpreter(options).toHttp(
+                          MaintenanceEndpointsLive.endpoints
+                        )
       // Fallback handler for unmatched routes to log unsupported endpoints
       fallbackHandler = Handler.fromFunctionZIO[Request] { request =>
                           ZIO.log(
@@ -88,6 +94,8 @@ object Main extends ZIOAppDefault:
       AuthServiceLive.layer,
       InvoiceServiceLive.layer,
       InvoiceRepositoryGel.layer,
+      MaintenanceServiceLive.layer,
+      MaintenanceRepositoryGel.layer,
       InvoiceWebDavImpl.layer,
       SardineScalaImpl.layer,
       AppConfig.layer

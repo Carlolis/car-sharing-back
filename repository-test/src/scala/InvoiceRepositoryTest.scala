@@ -124,11 +124,8 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
       test("Création d'un remboursement - Maé devrait créer un remboursement vers Charles avec succès") {
         for {
           invoiceUuid <-
-            InvoiceRepository.createInvoice(
-              TestData
-                .sampleInvoiceCreate.copy(
-                  toDriver = Some(DriverName(TestData.charlesPersonName)),
-                  kind = "remboursement"))
+            InvoiceRepository.createInvoice(TestData
+              .sampleInvoiceCreate.copy(toDriver = Some(DriverName(TestData.charlesPersonName)), kind = "remboursement"))
           allInvoices <- InvoiceRepository.getAllInvoices
         } yield assertTrue(
           invoiceUuid != null,

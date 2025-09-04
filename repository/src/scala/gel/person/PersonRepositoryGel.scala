@@ -1,8 +1,8 @@
 package gel.person
 
 import adapters.GelDriverLive
-import domain.services.person.PersonService
 import domain.models.{Person, PersonCreate}
+import domain.services.person.PersonService
 import gel.person.models.PersonGel
 import gel.person.models.PersonGel.fromPersonGel
 import zio.*
@@ -10,13 +10,16 @@ import zio.*
 import java.util.UUID
 
 case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
-  override def createPerson(personCreate: PersonCreate): Task[UUID] = edgeDb
-    .querySingle(
-      classOf[UUID],
-      s"""
+  override def createPerson(personCreate: PersonCreate): Task[UUID] = {
+    println(s"Creating person with name: ${personCreate.name}")
+    edgeDb
+      .querySingle(
+        classOf[UUID],
+        s"""
           |  with new_person := (insert PersonGel { name := '${personCreate.name}' }) select new_person.id;
           |"""
-    ).tapBoth(error => ZIO.logError(s"Created person with id: $error"), UUID => ZIO.logInfo(s"Created person with id: $UUID"))
+      ).tapBoth(error => ZIO.logError(s"Created person with id: $error"), UUID => ZIO.logInfo(s"Created person with id: $UUID"))
+  }
 
   override def deletePerson(id: UUID): Task[UUID] = edgeDb
     .querySingle(
@@ -44,7 +47,7 @@ case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
           | select PersonGel { id, name } filter .id = <uuid>'$id';
           |"""
     ).tap(person => ZIO.logInfo(s"Got person with id: $id"))
-    .map(p=> fromPersonGel(p))
+    .map(p => fromPersonGel(p))
 
   override def getPersonByName(name: String): Task[Person] = edgeDb
     .querySingle(
