@@ -53,7 +53,7 @@ case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
     .querySingle(
       classOf[PersonGel],
       s"""
-          | select PersonGel { id, name } filter .name = '$name.replace("'", "\\'")';
+          | select PersonGel { id, name } filter .name = '${name.replace("'", "\\'")}';
           |"""
     ).tap(person => ZIO.logInfo(s"Got person with name: $name"))
     .map(PersonGel.fromPersonGel)
