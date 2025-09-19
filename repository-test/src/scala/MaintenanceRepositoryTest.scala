@@ -106,6 +106,23 @@ object MaintenanceRepositoryTest extends ZIOSpecDefault {
           found.get.invoice.isEmpty
         )
       },
+      test("should create maintenance with char ' ") {
+        for {
+          maintenanceId <-
+            MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1.copy(description = Some("Changement filtre à d'air")))
+          _             <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance with id: $maintenanceId")
+          maintenances  <- MaintenanceRepository.getAllMaintenances
+          found          = maintenances.find(_.id.toString == maintenanceId.toString)
+          _             <- ZIO.logInfo(s"[DEBUG_LOG] Found maintenance: $found")
+        } yield assertTrue(
+          found.isDefined,
+          found.get.`type` == "Vidange",
+          !found.get.isCompleted,
+          found.get.dueMileage.contains(10000),
+          found.get.description.contains("Changement filtre à d'air"),
+          found.get.invoice.isEmpty
+        )
+      },
       test("should create maintenance with invoice") {
         for {
           invoiceId                   <- TestUtils.createTestInvoice

@@ -14,24 +14,24 @@ class MaintenanceGel @GelDeserializer() (
   `type`: String,
   isCompleted: Boolean,
   // Had to put String when field is null, otherwise it was not working
-  dueMileage: String | Short,
+  dueMileage: String | Long,
   dueDate: LocalDate,
   completedDate: LocalDate,
   // Had to put String when field is null, otherwise it was not working
-  completedMileage: String | Short,
+  completedMileage: String | Long,
   description: String,
   @GelLinkType(classOf[InvoiceGel])
   invoice: InvoiceGel
 ) {
-  def getId: UUID                         = id
-  def getType: String                     = `type`
-  def getIsCompleted: Boolean             = isCompleted
-  def getDueMileage: String | Short       = dueMileage
-  def getDueDate: LocalDate               = dueDate
-  def getCompletedDate: LocalDate         = completedDate
-  def getCompletedMileage: String | Short = completedMileage
-  def getDescription: String              = description
-  def getInvoice: InvoiceGel              = {
+  def getId: UUID                        = id
+  def getType: String                    = `type`
+  def getIsCompleted: Boolean            = isCompleted
+  def getDueMileage: String | Long       = dueMileage
+  def getDueDate: LocalDate              = dueDate
+  def getCompletedDate: LocalDate        = completedDate
+  def getCompletedMileage: String | Long = completedMileage
+  def getDescription: String             = description
+  def getInvoice: InvoiceGel             = {
     println(s"invoice value: ${Option(invoice).map(_.getPerson).getOrElse("null")}")
     invoice
   }
@@ -45,13 +45,13 @@ object MaintenanceGel {
       maintenanceGel.getIsCompleted,
       Option(maintenanceGel.getDueMileage).map {
         case s: String => s.toInt
-        case l: Short  => l.toInt
+        case l: Long   => l.toInt
       },
       Option(maintenanceGel.getDueDate),
       Option(maintenanceGel.getCompletedDate),
       Option(maintenanceGel.getCompletedMileage).map {
         case s: String => s.toInt
-        case l: Short  => l.toInt
+        case l: Long   => l.toInt
       },
       Option(maintenanceGel.getDescription).filter(_.nonEmpty),
       Option(maintenanceGel.getInvoice).map(invoiceGel => gel.invoice.models.InvoiceGel.fromInvoiceGel(invoiceGel))

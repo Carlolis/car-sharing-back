@@ -23,11 +23,11 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
       .querySingle(
         classOf[UUID],
         s"""
-           |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name}',
+           |  with new_invoice := (insert InvoiceGel { name := '${invoiceCreate.name.replace("'", "\\'")}',
            |   amount := ${invoiceCreate.amount}n,
            |   kind := '${invoiceCreate.kind}',
            |   ${invoiceCreate.mileage.map(mileage => s"mileage := $mileage,").getOrElse("")}
-           |   ${invoiceCreate.fileName.map(fileName => s"fileName := '$fileName',").getOrElse("")}
+           |   ${invoiceCreate.fileName.map(fileName => s"fileName := '${fileName.replace("'", "\\'")}',").getOrElse("")}
            |   date := cal::to_local_date(${invoiceCreate.date.getYear},
            |${invoiceCreate.date.getMonthValue},
            |${invoiceCreate.date.getDayOfMonth}),
@@ -71,11 +71,11 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
            |    update InvoiceGel
            |    filter .id = <uuid>'${invoiceUpdate.id}'
            |    set {
-           |        name := '${invoiceUpdate.name}',
+           |        name := '${invoiceUpdate.name.replace("'", "\\'")}',
            |        amount := ${invoiceUpdate.amount}n,
            |        kind := '${invoiceUpdate.kind}',
            |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage").getOrElse("mileage := <int16>{}")},
-           |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '$fileName'").getOrElse("fileName := <str>{}")},
+           |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '${fileName.replace("'", "\\'")}'").getOrElse("fileName := <str>{}")},
            |        date := cal::to_local_date(${invoiceUpdate
             .date.getYear}, ${invoiceUpdate
             .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),

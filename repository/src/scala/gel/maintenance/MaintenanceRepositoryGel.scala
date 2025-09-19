@@ -29,7 +29,7 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
             .completedDate.map(date =>
               s"completedDate := cal::to_local_date(${date.getYear}, ${date.getMonthValue}, ${date.getDayOfMonth}),").getOrElse("")}
            |   ${maintenanceCreate.completedMileage.map(mileage => s"completedMileage := $mileage,").getOrElse("")}
-           |   ${maintenanceCreate.description.map(desc => s"description := '$desc',").getOrElse("")}
+           |   ${maintenanceCreate.description.map(desc => s"description := '${desc.replace("'", "\\'")}',").getOrElse("")}
            |   ${maintenanceCreate
             .invoiceId.map(invoiceId =>
               s"invoice := (select detached default::InvoiceGel filter .id = <uuid>'$invoiceId' limit 1),").getOrElse("")}

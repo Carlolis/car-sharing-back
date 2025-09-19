@@ -23,7 +23,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
         s"""
           |  with new_trip := (insert TripGel { name := '${tripCreate.name}',
           |   ${tripCreate.distance.map(d => s"distance := $d,").getOrElse("")}
-          |   ${if tripCreate.comments.isDefined then s"comments := '${tripCreate.comments.get}'," else ""}
+          |   ${if tripCreate.comments.isDefined then s"comments := '${tripCreate.comments.get.replace("'", "\\'")}'," else ""}
           |    startDate := cal::to_local_date(${tripCreate
             .startDate.getYear}, ${tripCreate
             .startDate.getMonthValue}, ${tripCreate
@@ -87,7 +87,7 @@ case class TripRepositoryGel(gelDb: GelDriverLive) extends TripService {
            |    set {
            |        name := '${tripUpdate.name}',
            |        ${tripUpdate.distance.map(d => s"distance := $d,").getOrElse("")}
-           |        ${if tripUpdate.comments.isDefined then s"comments := '${tripUpdate.comments.get}'," else ""}
+           |        ${if tripUpdate.comments.isDefined then s"comments := '${tripUpdate.comments.get.replace("'", "\\'")}'," else ""}
            |        startDate := cal::to_local_date(${tripUpdate
             .startDate.getYear}, ${tripUpdate
             .startDate.getMonthValue}, ${tripUpdate.startDate.getDayOfMonth}),endDate := cal::to_local_date(${tripUpdate

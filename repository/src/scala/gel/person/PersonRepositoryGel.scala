@@ -16,7 +16,7 @@ case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
       .querySingle(
         classOf[UUID],
         s"""
-          |  with new_person := (insert PersonGel { name := '${personCreate.name}' }) select new_person.id;
+          |  with new_person := (insert PersonGel { name := '${personCreate.name.replace("'", "\\'")}' }) select new_person.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created person with id: $error"), UUID => ZIO.logInfo(s"Created person with id: $UUID"))
   }
@@ -53,7 +53,7 @@ case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
     .querySingle(
       classOf[PersonGel],
       s"""
-          | select PersonGel { id, name } filter .name = '$name';
+          | select PersonGel { id, name } filter .name = '$name.replace("'", "\\'")';
           |"""
     ).tap(person => ZIO.logInfo(s"Got person with name: $name"))
     .map(PersonGel.fromPersonGel)
