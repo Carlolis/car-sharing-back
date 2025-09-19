@@ -163,6 +163,14 @@ To apply the migration to test (or main) :
 gel migration apply --dev-mode -I test
 ```
 
+To apply to dev:
+
+```sh
+gel migration apply --dev-mode -I backend
+```
+
+To apply to prod, just deploy the project.
+
 ### Gel ui
 
 To access the local GelDB UI, command is

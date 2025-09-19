@@ -71,8 +71,7 @@ object Main extends ZIOAppDefault:
                           swagger
                         ) ++ ZioHttpInterpreter(options).toHttp(
                           iaEndpoints
-                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpointsLive
-                        ) ++ ZioHttpInterpreter(options).toHttp(
+                        ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpointsLive) ++ ZioHttpInterpreter(options).toHttp(
                           MaintenanceEndpointsLive.endpoints
                         )
       // Fallback handler for unmatched routes to log unsupported endpoints

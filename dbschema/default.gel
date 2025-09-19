@@ -49,10 +49,10 @@ module default {
   type MaintenanceGel {
       required type: str; # Type d entretien (ex:  "Vidange", "Contrôle des freins", "Contrôle Technique")
       required isCompleted: bool; # Indique si l entretien a été effectué
-      dueMileage: int16; # Kilométrage auquel l entretien est dû (optionnel)
+      dueMileage: int64; # Kilométrage auquel l entretien est dû (optionnel)
       dueDate: cal::local_date; # Date à laquelle l entretien est dû (optionnel)
       completedDate: cal::local_date; # Date de réalisation de l entretien (optionnel)
-      completedMileage: int16; # Kilométrage au moment de la réalisation (optionnel)
+      completedMileage: int64; # Kilométrage au moment de la réalisation (optionnel)
       description: str; # Description de l entretien
       invoice: InvoiceGel; # Facture associée (optionnel)
   }
