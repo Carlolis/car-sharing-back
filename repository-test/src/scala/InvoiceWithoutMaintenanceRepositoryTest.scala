@@ -2,12 +2,13 @@ import adapters.GelDriver
 import domain.models.PersonCreate
 import domain.models.invoice.{DriverName, InvoiceCreate}
 import domain.services.invoice.repository.InvoiceRepository
-import domain.services.maintenance.MaintenanceService
 import domain.services.maintenance.repository.MaintenanceRepository
 import domain.services.person.PersonService
+import domain.services.trip.TripService
 import gel.invoice.InvoiceRepositoryGel
 import gel.maintenance.MaintenanceRepositoryGel
 import gel.person.PersonRepositoryGel
+import gel.trip.TripRepositoryGel
 import zio.*
 import zio.test.*
 
@@ -48,12 +49,14 @@ object InvoiceWithoutMaintenanceRepositoryTest extends ZIOSpecDefault {
     def setupPersons: ZIO[PersonService, Throwable, Unit] =
       ZIO.foreachPar(TestData.allPersons)(p => PersonService.createPerson(p)).unit
 
-    def cleanupAll: ZIO[PersonService & InvoiceRepository & MaintenanceRepository, Nothing, Unit] =
+    def cleanupAll: ZIO[PersonService & InvoiceRepository & MaintenanceRepository & TripService, Nothing, Unit] =
       (for {
         maintenances <- MaintenanceRepository.getAllMaintenances
         _            <- ZIO.foreachDiscard(maintenances)(m => MaintenanceRepository.deleteMaintenance(m.id))
         invoices     <- InvoiceRepository.getAllInvoices
         _            <- ZIO.foreachDiscard(invoices)(i => InvoiceRepository.deleteInvoice(i.id))
+        invoices     <- TripService.getAllTrips
+        _            <- ZIO.foreachDiscard(invoices)(i => TripService.deleteTrip(i.id))
         persons      <- PersonService.getAll
         _            <- ZIO.foreachDiscard(persons)(p => PersonService.deletePerson(p.id))
       } yield ()).orDie
@@ -93,6 +96,7 @@ object InvoiceWithoutMaintenanceRepositoryTest extends ZIOSpecDefault {
     InvoiceRepositoryGel.layer,
     MaintenanceRepositoryGel.layer,
     PersonRepositoryGel.layer,
+    TripRepositoryGel.layer,
     GelDriver.testLayer
   )
 }

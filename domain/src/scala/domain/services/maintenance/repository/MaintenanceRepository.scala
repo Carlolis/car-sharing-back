@@ -1,6 +1,6 @@
 package domain.services.maintenance.repository
 
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId}
+import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
 import domain.services.maintenance.repository.models.errors.SaveMaintenanceFailed
 import zio.*
 
@@ -10,7 +10,7 @@ trait MaintenanceRepository {
   def createMaintenance(maintenanceCreate: MaintenanceCreate): ZIO[Any, SaveMaintenanceFailed, UUID]
   def getAllMaintenances: Task[List[Maintenance]]
   def deleteMaintenance(id: MaintenanceId): Task[MaintenanceId]
-  def updateMaintenance(maintenance: Maintenance): Task[MaintenanceId]
+  def updateMaintenance(maintenance: MaintenanceUpdate): Task[MaintenanceId]
 }
 
 object MaintenanceRepository:
@@ -20,5 +20,5 @@ object MaintenanceRepository:
     ZIO.serviceWithZIO[MaintenanceRepository](_.getAllMaintenances)
   def deleteMaintenance(id: MaintenanceId): RIO[MaintenanceRepository, MaintenanceId]        =
     ZIO.serviceWithZIO[MaintenanceRepository](_.deleteMaintenance(id))
-  def updateMaintenance(maintenance: Maintenance): RIO[MaintenanceRepository, MaintenanceId]        =
+  def updateMaintenance(maintenance: MaintenanceUpdate): RIO[MaintenanceRepository, MaintenanceId]        =
     ZIO.serviceWithZIO[MaintenanceRepository](_.updateMaintenance(maintenance))

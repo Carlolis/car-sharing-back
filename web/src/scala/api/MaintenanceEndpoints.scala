@@ -1,7 +1,7 @@
 package api
 
 import api.models.ErrorResponse
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId}
+import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
 import sttp.model.StatusCode
 import sttp.tapir.*
 import sttp.tapir.generic.auto.*
@@ -29,11 +29,11 @@ object MaintenanceEndpoints {
     .errorOut(statusCode and jsonBody[ErrorResponse])
     .description("Get all maintenance records")
 
-  val updateMaintenance: Endpoint[Unit, (String, Maintenance), (StatusCode, ErrorResponse), MaintenanceId, Any] = endpoint
+  val updateMaintenance: Endpoint[Unit, (String, MaintenanceUpdate), (StatusCode, ErrorResponse), MaintenanceId, Any] = endpoint
     .put
     .in("api" / "maintenance")
     .in(auth.bearer[String]())
-    .in(jsonBody[Maintenance])
+    .in(jsonBody[MaintenanceUpdate])
     .out(jsonBody[MaintenanceId])
     .errorOut(statusCode and jsonBody[ErrorResponse])
     .description("Update an existing maintenance record")

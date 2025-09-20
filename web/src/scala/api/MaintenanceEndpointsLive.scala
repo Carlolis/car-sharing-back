@@ -26,10 +26,10 @@ object MaintenanceEndpointsLive {
     }
 
   private val updateMaintenanceImpl: ZServerEndpoint[MaintenanceService & AuthService, Any] =
-    MaintenanceEndpoints.updateMaintenance.zServerLogic { case (token, maintenance) =>
+    MaintenanceEndpoints.updateMaintenance.zServerLogic { case (token, maintenanceUpdate) =>
       (for {
         _  <- AuthService.authenticate(token)
-        id <- MaintenanceService.updateMaintenance(maintenance)
+        id <- MaintenanceService.updateMaintenance(maintenanceUpdate)
       } yield id).mapError(error => (StatusCode.BadRequest, ErrorResponse(error.getMessage)))
     }
 

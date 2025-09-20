@@ -1,6 +1,6 @@
 package domain.services.maintenance
 
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId}
+import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
 import domain.services.maintenance.repository.MaintenanceRepository
 import zio.*
 
@@ -25,7 +25,7 @@ case class MaintenanceServiceLive(maintenanceRepository: MaintenanceRepository) 
           maintenances => ZIO.logInfo(s"Successfully fetched ${maintenances.length} maintenances")
         )
 
-  override def updateMaintenance(maintenance: Maintenance): Task[MaintenanceId] =
+  override def updateMaintenance(maintenance: MaintenanceUpdate): Task[MaintenanceId] =
     ZIO.logInfo(s"Updating maintenance with id: ${maintenance.id}") *>
       maintenanceRepository
         .updateMaintenance(maintenance)

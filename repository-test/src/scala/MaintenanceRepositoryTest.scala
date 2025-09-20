@@ -1,7 +1,7 @@
 import adapters.GelDriver
 import domain.models.PersonCreate
 import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId}
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId}
+import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
 import domain.services.invoice.repository.InvoiceRepository
 import domain.services.maintenance.repository.MaintenanceRepository
 import domain.services.person.PersonService
@@ -148,13 +148,18 @@ object MaintenanceRepositoryTest extends ZIOSpecDefault {
           _                   <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance for update with id: $maintenanceId")
           maintenances        <- MaintenanceRepository.getAllMaintenances
           original             = maintenances.find(_.id.toString == maintenanceId.toString).get
-          updated              = original.copy(
+          updatedUpdate        = MaintenanceUpdate(
+                                   id = original.id,
+                                   `type` = original.`type`,
                                    isCompleted = true,
+                                   dueMileage = original.dueMileage,
+                                   dueDate = original.dueDate,
                                    completedDate = Some(LocalDate.now()),
                                    completedMileage = Some(12000),
-                                   description = Some("Vidange completed successfully")
+                                   description = Some("Vidange completed successfully"),
+                                   invoiceId = original.invoice.map(_.id)
                                  )
-          _                   <- MaintenanceRepository.updateMaintenance(updated)
+          _                   <- MaintenanceRepository.updateMaintenance(updatedUpdate)
           _                   <- ZIO.logInfo(s"[DEBUG_LOG] Updated maintenance")
           updatedMaintenances <- MaintenanceRepository.getAllMaintenances
           found                = updatedMaintenances.find(_.id.toString == maintenanceId.toString)

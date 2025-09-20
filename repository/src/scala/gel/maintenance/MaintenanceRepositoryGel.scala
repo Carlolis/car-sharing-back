@@ -1,7 +1,7 @@
 package gel.maintenance
 
 import adapters.GelDriverLive
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId}
+import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
 import domain.services.maintenance.repository.MaintenanceRepository
 import domain.services.maintenance.repository.models.errors.SaveMaintenanceFailed
 import gel.maintenance.models.MaintenanceGel
@@ -12,8 +12,7 @@ import java.util.UUID
 case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRepository {
   override def createMaintenance(
     maintenanceCreate: MaintenanceCreate
-  ): ZIO[Any, SaveMaintenanceFailed, UUID] = {
-    println(s"Creating maintenance with type: ${maintenanceCreate.`type`}")
+  ): ZIO[Any, SaveMaintenanceFailed, UUID] =
     gelDb
       .querySingle(
         classOf[UUID],
@@ -39,7 +38,6 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
         error => ZIO.logError(s"Failed to create maintenance: $error"),
         uuid => ZIO.logInfo(s"Created maintenance with id: $uuid")
       ).mapError(error => SaveMaintenanceFailed(error.getMessage))
-  }
 
   override def getAllMaintenances: Task[List[Maintenance]] =
     gelDb
@@ -67,7 +65,7 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
       .map(id => MaintenanceId(UUID.fromString(id)))
       .zipLeft(ZIO.logInfo(s"Deleted maintenance with id: $id"))
 
-  override def updateMaintenance(maintenance: Maintenance): Task[MaintenanceId] =
+  override def updateMaintenance(maintenance: MaintenanceUpdate): Task[MaintenanceId] =
     gelDb
       .querySingle(
         classOf[UUID],
@@ -90,8 +88,8 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
             .completedMileage.map(mileage => s"completedMileage := $mileage").getOrElse("completedMileage := <int16>{}")},
            |        ${maintenance.description.map(desc => s"description := '$desc'").getOrElse("description := <str>{}")},
            |        ${maintenance
-            .invoice.map(invoice =>
-              s"invoice := (select detached default::InvoiceGel filter .id = <uuid>'${invoice.id}' limit 1)").getOrElse(
+            .invoiceId.map(invoiceId =>
+              s"invoice := (select detached default::InvoiceGel filter .id = <uuid>'$invoiceId' limit 1)").getOrElse(
               "invoice := <default::InvoiceGel>{}")}
            |    }
            |)

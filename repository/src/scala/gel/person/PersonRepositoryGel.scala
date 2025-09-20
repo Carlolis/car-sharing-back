@@ -10,8 +10,7 @@ import zio.*
 import java.util.UUID
 
 case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
-  override def createPerson(personCreate: PersonCreate): Task[UUID] = {
-    println(s"Creating person with name: ${personCreate.name}")
+  override def createPerson(personCreate: PersonCreate): Task[UUID] =
     edgeDb
       .querySingle(
         classOf[UUID],
@@ -19,7 +18,6 @@ case class PersonRepositoryGel(edgeDb: GelDriverLive) extends PersonService {
           |  with new_person := (insert PersonGel { name := '${personCreate.name.replace("'", "\\'")}' }) select new_person.id;
           |"""
       ).tapBoth(error => ZIO.logError(s"Created person with id: $error"), UUID => ZIO.logInfo(s"Created person with id: $UUID"))
-  }
 
   override def deletePerson(id: UUID): Task[UUID] = edgeDb
     .querySingle(

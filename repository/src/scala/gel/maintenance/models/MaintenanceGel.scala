@@ -4,7 +4,6 @@ import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
 import domain.models.maintenance.{Maintenance, MaintenanceId}
 import gel.invoice.models.InvoiceGel
 
-import java.lang.Short
 import java.time.LocalDate
 import java.util.UUID
 
@@ -31,10 +30,7 @@ class MaintenanceGel @GelDeserializer() (
   def getCompletedDate: LocalDate        = completedDate
   def getCompletedMileage: String | Long = completedMileage
   def getDescription: String             = description
-  def getInvoice: InvoiceGel             = {
-    println(s"invoice value: ${Option(invoice).map(_.getPerson).getOrElse("null")}")
-    invoice
-  }
+  def getInvoice: InvoiceGel             = invoice
 }
 
 object MaintenanceGel {
