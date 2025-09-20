@@ -23,10 +23,10 @@ case class MaintenanceServiceLive(maintenanceRepository: MaintenanceRepository) 
         .tapBoth(
           error => ZIO.logError(s"Failed to fetch maintenances: $error"),
           maintenances => ZIO.logInfo(s"Successfully fetched ${maintenances.length} maintenances")
-        )
+        ).tap(maintenances => ZIO.logInfo(s"Maintenances: $maintenances"))
 
   override def updateMaintenance(maintenance: MaintenanceUpdate): Task[MaintenanceId] =
-    ZIO.logInfo(s"Updating maintenance with id: ${maintenance.id}") *>
+    ZIO.logInfo(s"Updating maintenance with maintenance id: ${maintenance.invoiceId}") *>
       maintenanceRepository
         .updateMaintenance(maintenance)
         .tapBoth(
