@@ -9,6 +9,7 @@ import java.util.UUID
 trait InvoiceRepository {
   def createInvoice(tripCreate: InvoiceCreate): ZIO[Any, SaveInvoiceFailed, UUID]
   def getAllInvoices: Task[List[Invoice]]
+  def getAllInvoicesWithoutMaintenance: Task[List[Invoice]]
   def deleteInvoice(id: InvoiceId): Task[InvoiceId]
   def updateInvoice(invoiceUpdate: Invoice): Task[InvoiceId]
 }
@@ -18,6 +19,8 @@ object InvoiceRepository:
     ZIO.serviceWithZIO[InvoiceRepository](_.createInvoice(tripCreate))
   def getAllInvoices: RIO[InvoiceRepository, List[Invoice]]                  =
     ZIO.serviceWithZIO[InvoiceRepository](_.getAllInvoices)
+  def getAllInvoicesWithoutMaintenance: RIO[InvoiceRepository, List[Invoice]]=
+    ZIO.serviceWithZIO[InvoiceRepository](_.getAllInvoicesWithoutMaintenance)
   def deleteInvoice(id: InvoiceId): RIO[InvoiceRepository, InvoiceId]        =
     ZIO.serviceWithZIO[InvoiceRepository](_.deleteInvoice(id))
   def updateInvoice(trip: Invoice): RIO[InvoiceRepository, InvoiceId]        =

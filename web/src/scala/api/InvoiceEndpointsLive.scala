@@ -34,6 +34,18 @@ object InvoiceEndpointsLive:
         .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
     }
 
+  private val getAllInvoicesWithoutMaintenance: ZServerEndpoint[Env, Any] =
+    InvoiceEndpoints.getAllInvoicesWithoutMaintenance.serverLogic { token =>
+      (for {
+        _      <- AuthService.authenticate(token)
+        _      <- ZIO.logInfo("Getting invoices without maintenance")
+        result <- InvoiceService.getAllInvoicesWithoutMaintenance
+        _      <- ZIO.logInfo("Invoices without maintenance found " + result.toString)
+      } yield result)
+        .map(Right(_))
+        .catchAll(err => ZIO.left(StatusCode.BadRequest, ErrorResponse(err.getMessage)))
+    }
+
   private val deleteInvoiceEndpoint: ZServerEndpoint[Env, Any] =
     InvoiceEndpoints.deleteInvoice.serverLogic {
       case (invoiceId, token) =>
@@ -88,4 +100,4 @@ object InvoiceEndpointsLive:
     }
 
   val invoiceEndpointsLive: List[ZServerEndpoint[Env, Any]] =
-    List(createInvoice, getAllInvoices, deleteInvoiceEndpoint, updateInvoice, downloadInvoiceFile, getReimbursementProposals)
+    List(createInvoice, getAllInvoices, getAllInvoicesWithoutMaintenance, deleteInvoiceEndpoint, updateInvoice, downloadInvoiceFile, getReimbursementProposals)

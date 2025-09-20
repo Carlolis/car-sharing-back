@@ -29,6 +29,7 @@ object AllRepositoryTestsRunner extends ZIOSpecDefault {
       // Include all test suites - each provides its own layers
       IAServiceTest.spec,
       InvoiceRepositoryTest.spec,
+      InvoiceWithoutMaintenanceRepositoryTest.spec,
       PersonServiceTest.spec,
       TripServiceTest.spec
     ) @@ TestAspect.sequential // Run sequentially to avoid conflicts

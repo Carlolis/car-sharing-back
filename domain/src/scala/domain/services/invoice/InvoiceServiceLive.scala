@@ -79,6 +79,9 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
 
   override def getAllInvoices: Task[List[Invoice]] = invoiceRepository.getAllInvoices
 
+  override def getAllInvoicesWithoutMaintenance: Task[List[Invoice]] =
+    invoiceRepository.getAllInvoicesWithoutMaintenance
+
   override def deleteInvoice(id: InvoiceId): Task[InvoiceId] = invoiceRepository.deleteInvoice(id)
 
   override def updateInvoice(invoiceUpdate: InvoiceUpdate): Task[InvoiceId] =

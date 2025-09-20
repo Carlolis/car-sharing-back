@@ -51,6 +51,18 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
       )
       .map(invoice => invoice.map(InvoiceGel.fromInvoiceGel))
 
+  override def getAllInvoicesWithoutMaintenance: Task[List[Invoice]] =
+    gelDb
+      .query(
+        classOf[InvoiceGel],
+        s"""
+           | with inv := (select InvoiceGel)
+           | select inv { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
+           | filter not exists (select MaintenanceGel filter .invoice = inv);
+           |"""
+      )
+      .map(_.map(InvoiceGel.fromInvoiceGel))
+
   override def deleteInvoice(id: InvoiceId): Task[InvoiceId] =
     gelDb
       .querySingle(

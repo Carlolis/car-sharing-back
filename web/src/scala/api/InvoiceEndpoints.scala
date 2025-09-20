@@ -26,6 +26,13 @@ object InvoiceEndpoints:
     .out(jsonBody[List[Invoice]])
     .errorOut(statusCode and jsonBody[ErrorResponse])
 
+  val getAllInvoicesWithoutMaintenance: Endpoint[Unit, String, (StatusCode, ErrorResponse), List[Invoice], Any] = endpoint
+    .get
+    .in("api" / "invoices-without-maintenance")
+    .in(auth.bearer[String]())
+    .out(jsonBody[List[Invoice]])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+
   val updateInvoice: Endpoint[Unit, (String, InvoiceUpdate), (StatusCode, ErrorResponse), InvoiceId, Any] = endpoint
     .put
     .in("api" / "invoices")
@@ -59,6 +66,7 @@ object InvoiceEndpoints:
   val invoiceEndPoints = List(
     createInvoice,
     getAllInvoices,
+    getAllInvoicesWithoutMaintenance,
     deleteInvoice,
     updateInvoice,
     downloadInvoiceFile,
