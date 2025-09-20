@@ -216,6 +216,18 @@ private val endpointImpl: ZServerEndpoint[Dependencies, Any] =
 - **Clean up temporary test files**: Remove any temporary test files created during development (e.g., `test_*.scala`,
   debug scripts) from the project root before submitting changes
 
+### In-Memory Implementations Rule
+
+- When you add, remove, or change a method in any Repository or Service trait in the domain module:
+  - Update all in-memory implementations under domain-test/src/scala/inMemoryService to match the new signatures. ✓
+  - If an in-memory implementation cannot faithfully implement a new method, either:
+    - Mark the class as abstract and avoid providing a construction layer for it, or
+    - Provide a dedicated test-only stub that implements the new method with a sensible fallback. ✓
+  - Always run: bleep test domain-test and bleep test repository-test to catch mismatches early. ✓
+  - Add to PR checklist: "In-memory implementations updated?" ✓
+
+Example: after adding InvoiceRepository.getAllInvoicesWithoutMaintenance, ensure InMemoryInvoiceRepository compiles by adding the corresponding method or marking the class abstract and adapting tests.
+
 ### Configuration Management
 
 - All external configuration via environment variables

@@ -37,6 +37,10 @@ class InMemoryInvoiceRepository extends InvoiceRepository {
   override def getAllInvoices: Task[List[Invoice]] =
     ZIO.succeed(invoices.values.toList)
 
+  // In-memory has no maintenance state; treat all invoices as without maintenance
+  override def getAllInvoicesWithoutMaintenance: Task[List[Invoice]] =
+    getAllInvoices
+
   override def deleteInvoice(id: InvoiceId): Task[InvoiceId] =
     ZIO.attempt {
       val uuid = UUID.fromString(id.toString)
