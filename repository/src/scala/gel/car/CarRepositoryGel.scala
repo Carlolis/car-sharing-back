@@ -34,7 +34,7 @@ case class CarRepositoryGel(gelDb: GelDriverLive) extends CarService {
            |    filter .id = <uuid>'${carUpdate.id}'
            |    set {
            |        name := '${carUpdate.name}',
-           |        distance := ${carUpdate.mileage}
+           |        mileage := ${carUpdate.mileage}
            |    }
            |)
            |select updated_car.id;
