@@ -5,7 +5,7 @@ import domain.models.PersonCreate
 import domain.models.invoice.{DriverName, Invoice, InvoiceId}
 import gel.person.models.PersonCreateGel
 
-import java.lang.Short
+import java.lang.Long
 import java.time.LocalDate
 import java.util
 import java.util.UUID
@@ -21,7 +21,7 @@ class InvoiceGel @GelDeserializer() (
   gelPerson: PersonCreateGel,
   kind: String,
   // Had to put String when mileage is null, otherwise it was not working
-  mileage: String | Short,
+  mileage: String | Long,
   fileName: String,
   @GelLinkType(classOf[PersonCreateGel])
   toDriver: PersonCreateGel
@@ -34,7 +34,7 @@ class InvoiceGel @GelDeserializer() (
   def getName: String              = name
   def getPerson: PersonCreateGel   = gelPerson
   def getKind: String              = kind
-  def getMileage: String | Short   = mileage
+  def getMileage: String | Long    = mileage
   def getFileName: String          = fileName
   def getToDriver: PersonCreateGel = toDriver
 }
@@ -62,7 +62,7 @@ object InvoiceGel {
       invoiceGel.getKind,
       Option(invoiceGel.getMileage).map {
         case s: String => s.toInt
-        case l: Short  => l.toInt
+        case l: Long   => l.toInt
       },
       Option(invoiceGel.getFileName).filter(_.nonEmpty),
       Option(invoiceGel.getToDriver).map(person => DriverName(person.name))

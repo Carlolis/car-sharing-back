@@ -14,7 +14,7 @@ import scala.jdk.CollectionConverters.*
 class TripGel @GelDeserializer() (
   id: UUID,
   // Had to put String when mileage is null, otherwise it was not working
-  distance: String | Short,
+  distance: String | Long,
   startDate: LocalDate,
   endDate: LocalDate,
   name: String,
@@ -23,7 +23,7 @@ class TripGel @GelDeserializer() (
   comments: String
 ) {
   def getId: UUID                                  = id
-  def getDistance: String | Short                  = distance
+  def getDistance: String | Long                   = distance
   def getStartDate: LocalDate                      = startDate
   def getEndDate: LocalDate                        = endDate
   def getName: String                              = name
@@ -42,13 +42,13 @@ object TripGel {
       Option(tripGel.getComments),
       Option(tripGel.getDistance).map {
         case s: String => s.toInt
-        case l: Short  => l.toInt
+        case l: Long   => l.toInt
       }
     )
 }
 
 case class TripGelCreate(
-  distance: Double,
+  distance: Long,
   startDate: LocalDate,
   endDate: LocalDate,
   name: String,
@@ -57,5 +57,5 @@ case class TripGelCreate(
 
 case class TripGelStats(
   trips: util.Collection[Trip],
-  totalKilometers: Double
+  totalKilometers: Long
 )

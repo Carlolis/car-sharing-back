@@ -1,4 +1,5 @@
 import adapters.{GelDriver, SardineScalaImpl}
+import api.CarEndpointsLive.carEndpointsLive
 import api.InvoiceEndpointsLive.invoiceEndpointsLive
 import api.MaintenanceEndpointsLive
 import api.TripEndpointsLive.tripEndpointsLive
@@ -7,6 +8,7 @@ import api.{TripEndpointsLive, swagger}
 import config.AppConfig
 import domain.services.invoice.InvoiceServiceLive
 import domain.services.maintenance.MaintenanceServiceLive
+import gel.car.CarRepositoryGel
 import gel.ia.IAServiceGel
 import gel.invoice.InvoiceRepositoryGel
 import gel.maintenance.MaintenanceRepositoryGel
@@ -73,12 +75,14 @@ object Main extends ZIOAppDefault:
                           iaEndpoints
                         ) ++ ZioHttpInterpreter(options).toHttp(invoiceEndpointsLive) ++ ZioHttpInterpreter(options).toHttp(
                           MaintenanceEndpointsLive.endpoints
-                        )
+
+                        ) ++ ZioHttpInterpreter(options).toHttp(carEndpointsLive) ++ ZioHttpInterpreter(options).toHttp(
+        MaintenanceEndpointsLive.endpoints
+      )
       // Fallback handler for unmatched routes to log unsupported endpoints
       fallbackHandler = Handler.fromFunctionZIO[Request] { request =>
-                          ZIO.log(
-                            s"Unsupported endpoint requested: ${request.method} ${request.path} from ${request.remoteAddress.getOrElse("unknown")}") *>
-                            ZIO.succeed(Response.json("""{"error":"Not found."}""").status(Status.NotFound))
+        ZIO.log(
+          s"Unsupported endpoint requested: ${request.method} ${request.path} from ${request.remoteAddress.getOrElse("unknown")}").as(Response.json("""{"error":"Not found."}""").status(Status.NotFound))
                         }
       httpApp         = tapirApp ++ Routes(RoutePattern.any -> fallbackHandler)
       _              <- httpApp.serve
@@ -89,6 +93,7 @@ object Main extends ZIOAppDefault:
       IAServiceGel.layer,
       TripRepositoryGel.layer,
       PersonRepositoryGel.layer,
+      CarRepositoryGel.layer,
       GelDriver.layer,
       AuthServiceLive.layer,
       InvoiceServiceLive.layer,

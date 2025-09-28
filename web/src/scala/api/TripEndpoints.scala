@@ -12,12 +12,7 @@ import zio.json.*
 import java.util.UUID
 
 object TripEndpoints:
-
-  // val registerEndpoint = endpoint.post
-  //   .in("api" / "register")
-  //   .in(jsonBody[UserCreate])
-  //   .out(jsonBody[Person])
-  //   .errorOut(statusCode and jsonBody[ErrorResponse])
+  
   val login: Endpoint[Unit, PersonCreate, (StatusCode, ErrorResponse), Token, Any] = endpoint
     .post
     .in("api" / "login")

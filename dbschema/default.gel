@@ -3,7 +3,7 @@ module default {
     required name: str;
     required startDate: cal::local_date;
     required endDate: cal::local_date;
-    distance: int16;
+    distance: int64;
     required multi gelDrivers: PersonGel;
     comments: str;
   }
@@ -38,7 +38,7 @@ module default {
   type InvoiceGel {
     required name: str;
     required kind: str;
-    mileage: int16;
+    mileage: int64;
     required date: cal::local_date;
     required amount: decimal;
     fileName: str;
@@ -55,6 +55,11 @@ module default {
       completedMileage: int64; # Kilométrage au moment de la réalisation (optionnel)
       description: str; # Description de l entretien
       invoice: InvoiceGel; # Facture associée (optionnel)
+  }
+
+  type CarGel {
+      required name: str;
+      required mileage: int64;
   }
 
 }

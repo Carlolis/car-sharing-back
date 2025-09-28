@@ -44,7 +44,9 @@ case class GelDriverLive(database: String = "main") {
       ).flatMap {
         case null   => ZIO.fail(new NoSuchElementException(s"Query returned null: $query"))
         case result => ZIO.succeed(result)
-      }.tapBoth(e => ZIO.logError(s"Query failed: $query" + e.getMessage), _ => ZIO.logInfo(s"Query succeeded: $query"))
+      }.tapBoth(
+        e => ZIO.logError(s"Query failed: $query" + ", cause : " + e.getCause + ", message : " + e.getMessage),
+        _ => ZIO.logInfo(s"Query succeeded: $query"))
 
   def query[A](
     cls: Class[A],

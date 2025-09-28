@@ -8,29 +8,7 @@ import sttp.tapir.ztapir.*
 import zio.*
 
 object TripEndpointsLive:
-  // val register: ZServerEndpoint[Any, Any] =
-  //   TripEndpoints.registerEndpoint.serverLogic { userCreate =>
-  //     authService
-  //       .register(userCreate)
-  //       .map(Right(_))
-  //       .catchAll(err =>
-  //         ZIO.succeed(
-  //           Left((StatusCode.BadRequest, ErrorResponse(err.getMessage)))
-  //         )
-  //       )
-  //   }
 
-  // val login: ZServerEndpoint[Any, Any] =
-  //   TripEndpoints.loginEndpoint.serverLogic { credentials =>
-  //     authService
-  //       .login(credentials)
-  //       .map(Right(_))
-  //       .catchAll(err =>
-  //         ZIO.succeed(
-  //           Left((StatusCode.Unauthorized, ErrorResponse(err.getMessage)))
-  //         )
-  //       )
-  //   }
   private val createTrip: ZServerEndpoint[PersonService & AuthService & TripService, Any] =
     TripEndpoints.createTrip.serverLogic {
       case (token, tripCreate) =>
