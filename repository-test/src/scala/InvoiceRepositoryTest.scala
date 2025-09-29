@@ -11,55 +11,8 @@ import zio.{Scope, ZIO, ZLayer}
 import java.time.LocalDate
 
 object InvoiceRepositoryTest extends ZIOSpecDefault {
-
-  // Configuration des données de test
-  object TestData {
-    val maePersonName      = "maé"
-    val charlesPersonName  = "charles"
-    val brigittePersonName = "brigitte"
-    var kind               = "péage"
-
-    val mae      = PersonCreate(maePersonName)
-    val charles  = PersonCreate(charlesPersonName)
-    val brigitte = PersonCreate(brigittePersonName)
-
-    val allPersons = Set(mae, charles, brigitte)
-
-    val sampleInvoiceCreate = InvoiceCreate(
-      99,
-      mileage = Some(99),
-      date = LocalDate.now(),
-      name = "Business",
-      driver = DriverName(maePersonName),
-      kind
-    )
-
-    val sampleInvoiceCreateWithFileName = InvoiceCreate(
-      150,
-      mileage = Some(120),
-      date = LocalDate.now(),
-      name = "Business with file",
-      driver = DriverName(charlesPersonName),
-      kind,
-      fileName = Some("test_invoice.pdf")
-    )
-
-    val expectedReimbursementAmount = 33
-  }
-
-  // Utilitaires de test
-  object TestUtils {
-    def cleanupData: ZIO[PersonService & InvoiceRepository, Throwable, Unit] =
-      for {
-        allInvoices <- InvoiceRepository.getAllInvoices
-        _           <- ZIO.foreachDiscard(allInvoices)(invoice => InvoiceRepository.deleteInvoice(invoice.id))
-        allPersons  <- PersonService.getAll
-        _           <- ZIO.foreachDiscard(allPersons)(person => PersonService.deletePerson(person.id))
-      } yield ()
-
-    def setupTestData: ZIO[PersonService, Throwable, Unit] =
-      ZIO.foreachPar(TestData.allPersons)(person => PersonService.createPerson(person)).unit
-  }
+  import common.TestData
+  import common.TestUtils
 
   def spec: Spec[TestEnvironment & Scope, Any] =
     (suite("InvoiceRepository - Tests Gel")(

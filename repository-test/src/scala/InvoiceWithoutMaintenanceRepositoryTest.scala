@@ -15,52 +15,8 @@ import zio.test.*
 import java.time.LocalDate
 
 object InvoiceWithoutMaintenanceRepositoryTest extends ZIOSpecDefault {
-  object TestData {
-    val maePersonName      = "maé"
-    val charlesPersonName  = "charles"
-    val brigittePersonName = "brigitte"
-
-    val mae      = PersonCreate(maePersonName)
-    val charles  = PersonCreate(charlesPersonName)
-    val brigitte = PersonCreate(brigittePersonName)
-
-    val allPersons = Set(mae, charles, brigitte)
-
-    val invoice1 = InvoiceCreate(
-      amount = 50,
-      mileage = Some(100),
-      date = LocalDate.now(),
-      name = "I1",
-      driver = DriverName(maePersonName),
-      kind = "essence"
-    )
-
-    val invoice2 = InvoiceCreate(
-      amount = 75,
-      mileage = Some(200),
-      date = LocalDate.now(),
-      name = "I2",
-      driver = DriverName(charlesPersonName),
-      kind = "maintenance"
-    )
-  }
-
-  object TestUtils {
-    def setupPersons: ZIO[PersonService, Throwable, Unit] =
-      ZIO.foreachPar(TestData.allPersons)(p => PersonService.createPerson(p)).unit
-
-    def cleanupAll: ZIO[PersonService & InvoiceRepository & MaintenanceRepository & TripService, Nothing, Unit] =
-      (for {
-        maintenances <- MaintenanceRepository.getAllMaintenances
-        _            <- ZIO.foreachDiscard(maintenances)(m => MaintenanceRepository.deleteMaintenance(m.id))
-        invoices     <- InvoiceRepository.getAllInvoices
-        _            <- ZIO.foreachDiscard(invoices)(i => InvoiceRepository.deleteInvoice(i.id))
-        invoices     <- TripService.getAllTrips
-        _            <- ZIO.foreachDiscard(invoices)(i => TripService.deleteTrip(i.id))
-        persons      <- PersonService.getAll
-        _            <- ZIO.foreachDiscard(persons)(p => PersonService.deletePerson(p.id))
-      } yield ()).orDie
-  }
+  import common.TestData
+  import common.TestUtils
 
   def spec: Spec[TestEnvironment & Scope, Any] = (
     suite("Invoice without maintenance - Gel")(

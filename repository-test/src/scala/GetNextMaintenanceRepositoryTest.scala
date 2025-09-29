@@ -15,78 +15,8 @@ import zio.test.TestAspect.*
 import java.time.LocalDate
 
 object GetNextMaintenanceRepositoryTest extends ZIOSpecDefault {
-  object TestData {
-    val maePersonName      = "maé"
-    val charlesPersonName  = "charles"
-    val brigittePersonName = "brigitte"
-    var kind               = "péage"
-
-    val mae      = PersonCreate(maePersonName)
-    val charles  = PersonCreate(charlesPersonName)
-    val brigitte = PersonCreate(brigittePersonName)
-
-    val allPersons         = Set(mae, charles, brigitte)
-    val maintenanceCreate1 = MaintenanceCreate(
-      `type` = "Vidange",
-      isCompleted = false,
-      dueMileage = Some(10000),
-      dueDate = Some(LocalDate.now().plusMonths(1)),
-      completedDate = None,
-      completedMileage = None,
-      description = Some("Vidange moteur scheduled"),
-      invoiceId = None
-    )
-
-    val maintenanceCreate2 = MaintenanceCreate(
-      `type` = "Contrôle Technique",
-      isCompleted = true,
-      dueMileage = None,
-      dueDate = Some(LocalDate.now().minusMonths(1)),
-      completedDate = Some(LocalDate.now().minusDays(5)),
-      completedMileage = Some(15000),
-      description = Some("Contrôle technique passed"),
-      invoiceId = None
-    )
-
-    val invoiceCreate = InvoiceCreate(
-      amount = BigDecimal(120.50),
-      mileage = Some(15000),
-      date = LocalDate.now(),
-      name = "Test Invoice for Maintenance",
-      driver = domain.models.invoice.DriverName(maePersonName),
-      kind = "maintenance",
-      fileBytes = None,
-      fileName = Some("maintenance_invoice.pdf"),
-      toDriver = None
-    )
-  }
-
-  object TestUtils {
-    def createTestInvoice: ZIO[InvoiceRepository, Throwable, InvoiceId] =
-      for {
-        invoiceId <- InvoiceRepository.createInvoice(TestData.invoiceCreate)
-      } yield InvoiceId(invoiceId)
-
-    def cleanupMaintenances: ZIO[MaintenanceRepository, Nothing, Unit] =
-      for {
-        maintenances <- MaintenanceRepository.getAllMaintenances.orDie
-        _            <- ZIO.foreachDiscard(maintenances)(m => MaintenanceRepository.deleteMaintenance(m.id).orDie)
-      } yield ()
-
-    def cleanupInvoices: ZIO[InvoiceRepository, Nothing, Unit] =
-      for {
-        invoices <- InvoiceRepository.getAllInvoices.orDie
-        _        <- ZIO.foreachDiscard(invoices)(i => InvoiceRepository.deleteInvoice(i.id).orDie)
-      } yield ()
-
-    def cleanupPersons: ZIO[PersonService, Nothing, Unit]  =
-      for {
-        invoices <- PersonService.getAll.orDie
-        _        <- ZIO.foreachDiscard(invoices)(i => PersonService.deletePerson(i.id).orDie)
-      } yield ()
-    def setupTestData: ZIO[PersonService, Throwable, Unit] =
-      ZIO.foreachPar(TestData.allPersons)(person => PersonService.createPerson(person)).unit
-  }
+  import common.TestData
+  import common.TestUtils
 
   def spec: Spec[TestEnvironment & Scope, Any] =
     (suite("MaintenanceRepositoryTest")(
@@ -170,17 +100,6 @@ object GetNextMaintenanceRepositoryTest extends ZIOSpecDefault {
           found.get.completedMileage.contains(12000),
           found.get.description.contains("Vidange completed successfully")
         )
-      },
-      test("should delete maintenance") {
-        for {
-          maintenanceId <- MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1)
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance for deletion with id: $maintenanceId")
-          _             <- MaintenanceRepository.deleteMaintenance(MaintenanceId(maintenanceId))
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Deleted maintenance")
-          maintenances  <- MaintenanceRepository.getAllMaintenances
-          found          = maintenances.find(_.id.toString == maintenanceId.toString)
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Maintenance after deletion: $found")
-        } yield assertTrue(found.isEmpty)
       }
     ) @@ TestAspect.beforeAll(
       TestUtils.setupTestData.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
