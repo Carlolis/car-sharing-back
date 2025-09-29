@@ -1,6 +1,6 @@
 package domain.services.maintenance
 
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
+import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate, NextMaintenance}
 import zio.*
 
 import java.util.UUID
@@ -10,9 +10,11 @@ trait MaintenanceService {
   def getAllMaintenances: Task[List[Maintenance]]
   def updateMaintenance(maintenance: MaintenanceUpdate): Task[MaintenanceId]
   def deleteMaintenance(id: MaintenanceId): Task[MaintenanceId]
+
+  def getNextMaintenances: Task[(NextMaintenance,Option[NextMaintenance])]
 }
 
-object MaintenanceService {
+object MaintenanceService :
   def createMaintenance(maintenanceCreate: MaintenanceCreate): ZIO[MaintenanceService, Throwable, UUID] =
     ZIO.serviceWithZIO[MaintenanceService](_.createMaintenance(maintenanceCreate))
 
@@ -24,4 +26,7 @@ object MaintenanceService {
 
   def deleteMaintenance(id: MaintenanceId): ZIO[MaintenanceService, Throwable, MaintenanceId] =
     ZIO.serviceWithZIO[MaintenanceService](_.deleteMaintenance(id))
-}
+
+  def getNextMaintenances: ZIO[MaintenanceService, Throwable, (NextMaintenance,Option[NextMaintenance])] =
+    ZIO.serviceWithZIO[MaintenanceService](_.getNextMaintenances)  
+

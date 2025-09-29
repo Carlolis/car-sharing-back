@@ -1,12 +1,11 @@
 package api
 
 import api.models.ErrorResponse
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
+import domain.models.maintenance.*
 import sttp.model.StatusCode
 import sttp.tapir.*
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
-import sttp.tapir.server.ServerEndpoint
 import zio.*
 
 import java.util.UUID
@@ -46,10 +45,19 @@ object MaintenanceEndpoints {
     .errorOut(statusCode and jsonBody[ErrorResponse])
     .description("Delete a maintenance record")
 
+  val getNextMaintenances: Endpoint[Unit, String, (StatusCode, ErrorResponse), (NextMaintenance, Option[NextMaintenance]), Any] = endpoint
+    .get
+    .in("api" / "next" / "maintenance")
+    .in(auth.bearer[String]())
+    .out(jsonBody[(NextMaintenance, Option[NextMaintenance])])
+    .errorOut(statusCode and jsonBody[ErrorResponse])
+    .description("Get next maintenance records")
+
   val endpoints: List[AnyEndpoint] = List(
     createMaintenance,
     getAllMaintenances,
     updateMaintenance,
-    deleteMaintenance
+    deleteMaintenance,
+    getNextMaintenances
   )
 }

@@ -44,10 +44,19 @@ object MaintenanceEndpointsLive {
         } yield id).mapError(error => (StatusCode.BadRequest, ErrorResponse(error.getMessage)))
     }
 
+  private val getNextMaintenancesImpl: ZServerEndpoint[MaintenanceService & AuthService, Any] =
+    MaintenanceEndpoints.getNextMaintenances.zServerLogic { token =>
+      (for {
+        _            <- AuthService.authenticate(token)
+        maintenances <- MaintenanceService.getNextMaintenances
+      } yield maintenances).mapError(error => (StatusCode.BadRequest, ErrorResponse(error.getMessage)))
+    }
+
   val endpoints: List[ZServerEndpoint[MaintenanceService & AuthService, Any]] = List(
     createMaintenanceImpl,
     getAllMaintenancesImpl,
     updateMaintenanceImpl,
-    deleteMaintenanceImpl
+    deleteMaintenanceImpl,
+    getNextMaintenancesImpl
   )
 }
