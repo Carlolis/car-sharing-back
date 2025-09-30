@@ -102,47 +102,49 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
       )
 
   override def getNextMaintenances: Task[Option[(NextMaintenance, Option[NextMaintenance])]] =
-    gelDb
-      .query(
-        classOf[MaintenanceGel],
-        s"""
-           | select MaintenanceGel {
-           |   id, type, isCompleted, dueMileage, dueDate, completedDate,
-           |   completedMileage, description,
-           |   invoice: { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
-           | } filter .isCompleted = false order by .dueDate asc ;
-           |"""
-      )
-      .map { maintenances =>
-        val nextByMileageGelOpt: Option[MaintenanceGel] =
-          maintenances
-            .flatMap { m =>
-              Option(m.getDueMileage).map {
-                case s: String => (m, s.toInt)
-                case l: Long   => (m, l.toInt)
-              }
-            }
-            .headOption
-            .map(_._1)
+    (for {
+      byMileage <- gelDb
+        .query(
+          classOf[MaintenanceGel],
+          s"""
+             | select MaintenanceGel {
+             |   id, type, isCompleted, dueMileage, dueDate, completedDate,
+             |   completedMileage, description,
+             |   invoice: { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
+             | } filter .isCompleted = false and exists .dueMileage
+             | order by .dueMileage asc
+             | limit 1;
+             |"""
+        )
+      byDate <- gelDb
+        .query(
+          classOf[MaintenanceGel],
+          s"""
+             | select MaintenanceGel {
+             |   id, type, isCompleted, dueMileage, dueDate, completedDate,
+             |   completedMileage, description,
+             |   invoice: { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
+             | } filter .isCompleted = false and exists .dueDate
+             | order by .dueDate asc
+             | limit 1;
+             |"""
+        )
+    } yield {
+      val nextByMileageGelOpt: Option[MaintenanceGel] = byMileage.headOption
+      val nextByDateGelOpt: Option[MaintenanceGel] = byDate.headOption
 
-        val nextByDateGelOpt: Option[MaintenanceGel] =
-          maintenances
-            .flatMap(m => Option(m.getDueDate).map(date => (m, date)))
-            .headOption
-            .map(_._1)
-
-        (nextByMileageGelOpt, nextByDateGelOpt) match {
-          case (None, None)                                 => None
-          case (Some(m1), Some(m2)) if m1.getId == m2.getId =>
-            Some((toNextMaintenance(m1), None))
-          case (Some(m1), Some(m2))                         =>
-            Some((toNextMaintenance(m1), Some(toNextMaintenance(m2))))
-          case (Some(m1), None)                             =>
-            Some((toNextMaintenance(m1), None))
-          case (None, Some(m2))                             =>
-            Some((toNextMaintenance(m2), None))
-        }
+      (nextByMileageGelOpt, nextByDateGelOpt) match {
+        case (None, None)                                 => None
+        case (Some(m1), Some(m2)) if m1.getId == m2.getId =>
+          Some((toNextMaintenance(m1), None))
+        case (Some(m1), Some(m2))                         =>
+          Some((toNextMaintenance(m1), Some(toNextMaintenance(m2))))
+        case (Some(m1), None)                             =>
+          Some((toNextMaintenance(m1), None))
+        case (None, Some(m2))                             =>
+          Some((toNextMaintenance(m2), None))
       }
+    })
       .tapError(error => ZIO.logError(s"Failed to get next maintenances: ${error.getMessage}, cause: ${error.getCause}"))
       .catchAll(_ => ZIO.none)
 }
