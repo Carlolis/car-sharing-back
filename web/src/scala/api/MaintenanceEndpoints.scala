@@ -48,7 +48,7 @@ object MaintenanceEndpoints {
   val getNextMaintenances: Endpoint[Unit, String, (StatusCode, ErrorResponse), Option[(NextMaintenance, Option[NextMaintenance])], Any] =
     endpoint
       .get
-      .in("api" / "next" / "maintenance")
+      .in("api" / "next" / "maintenances")
       .in(auth.bearer[String]())
       .out(jsonBody[Option[(NextMaintenance, Option[NextMaintenance])]])
       .errorOut(statusCode and jsonBody[ErrorResponse])
