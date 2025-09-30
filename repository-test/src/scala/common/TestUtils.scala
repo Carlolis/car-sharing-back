@@ -12,7 +12,6 @@ object TestUtils {
     ZIO.foreachPar(TestData.allPersons)(p => PersonService.createPerson(p)).unit
 
   def setupTestDataPersons: ZIO[PersonService, Throwable, Unit] = setupPersons
-  def setupTestData: ZIO[PersonService, Throwable, Unit]        = setupPersons
 
   def cleanupMaintenances: ZIO[MaintenanceRepository, Nothing, Unit] =
     (for {

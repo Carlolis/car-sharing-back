@@ -113,7 +113,7 @@ object MaintenanceRepositoryTest extends ZIOSpecDefault {
         } yield assertTrue(found.isEmpty)
       }
     ) @@ TestAspect.beforeAll(
-      TestUtils.setupTestData.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
+      TestUtils.setupTestDataPersons.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
     )
       @@ afterAll(
         for {

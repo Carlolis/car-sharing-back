@@ -94,7 +94,7 @@ object InvoiceRepositoryTest extends ZIOSpecDefault {
     )
       @@ TestAspect
         .before(
-          TestUtils.setupTestData.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
+          TestUtils.setupTestDataPersons.catchAll(e => ZIO.logError(s"Erreur lors de la configuration: ${e.getMessage}"))
         ) @@ TestAspect.sequential).provideShared(
       InvoiceRepositoryGel.layer,
       PersonRepositoryGel.layer,

@@ -5,6 +5,7 @@ import domain.models.maintenance.*
 import domain.services.maintenance.repository.MaintenanceRepository
 import domain.services.maintenance.repository.models.errors.SaveMaintenanceFailed
 import gel.maintenance.models.MaintenanceGel
+import gel.maintenance.models.MaintenanceGel.toNextMaintenance
 import zio.*
 
 import java.util.UUID
@@ -100,19 +101,50 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
         uuid => ZIO.logInfo(s"Updated maintenance with id: $uuid")
       )
 
-  override def getNextMaintenances: Task[Option[(NextMaintenance, Option[NextMaintenance])]] = gelDb
-    .querySingle(
-      classOf[MaintenanceGel],
-      s"""
-         | select MaintenanceGel {
-         |   id, type, isCompleted, dueMileage, dueDate, completedDate,
-         |   completedMileage, description,
-         |   invoice: { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
-         |   filter .isCompleted = false
-         | };
-         |"""
-    )
-    .map(maintenance => Some((MaintenanceGel.toNextMaintenance(maintenance), None))).catchAll(_ => ZIO.none)
+  override def getNextMaintenances: Task[Option[(NextMaintenance, Option[NextMaintenance])]] =
+    gelDb
+      .query(
+        classOf[MaintenanceGel],
+        s"""
+           | select MaintenanceGel {
+           |   id, type, isCompleted, dueMileage, dueDate, completedDate,
+           |   completedMileage, description,
+           |   invoice: { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
+           | } filter .isCompleted = false order by .dueDate asc ;
+           |"""
+      )
+      .map { maintenances =>
+        val nextByMileageGelOpt: Option[MaintenanceGel] =
+          maintenances
+            .flatMap { m =>
+              Option(m.getDueMileage).map {
+                case s: String => (m, s.toInt)
+                case l: Long   => (m, l.toInt)
+              }
+            }
+            .headOption
+            .map(_._1)
+
+        val nextByDateGelOpt: Option[MaintenanceGel] =
+          maintenances
+            .flatMap(m => Option(m.getDueDate).map(date => (m, date)))
+            .headOption
+            .map(_._1)
+
+        (nextByMileageGelOpt, nextByDateGelOpt) match {
+          case (None, None)                                 => None
+          case (Some(m1), Some(m2)) if m1.getId == m2.getId =>
+            Some((toNextMaintenance(m1), None))
+          case (Some(m1), Some(m2))                         =>
+            Some((toNextMaintenance(m1), Some(toNextMaintenance(m2))))
+          case (Some(m1), None)                             =>
+            Some((toNextMaintenance(m1), None))
+          case (None, Some(m2))                             =>
+            Some((toNextMaintenance(m2), None))
+        }
+      }
+      .tapError(error => ZIO.logError(s"Failed to get next maintenances: ${error.getMessage}, cause: ${error.getCause}"))
+      .catchAll(_ => ZIO.none)
 }
 
 object MaintenanceRepositoryGel:
