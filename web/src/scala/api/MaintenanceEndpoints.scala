@@ -45,13 +45,14 @@ object MaintenanceEndpoints {
     .errorOut(statusCode and jsonBody[ErrorResponse])
     .description("Delete a maintenance record")
 
-  val getNextMaintenances: Endpoint[Unit, String, (StatusCode, ErrorResponse), (NextMaintenance, Option[NextMaintenance]), Any] = endpoint
-    .get
-    .in("api" / "next" / "maintenance")
-    .in(auth.bearer[String]())
-    .out(jsonBody[(NextMaintenance, Option[NextMaintenance])])
-    .errorOut(statusCode and jsonBody[ErrorResponse])
-    .description("Get next maintenance records")
+  val getNextMaintenances: Endpoint[Unit, String, (StatusCode, ErrorResponse), Option[(NextMaintenance, Option[NextMaintenance])], Any] =
+    endpoint
+      .get
+      .in("api" / "next" / "maintenance")
+      .in(auth.bearer[String]())
+      .out(jsonBody[Option[(NextMaintenance, Option[NextMaintenance])]])
+      .errorOut(statusCode and jsonBody[ErrorResponse])
+      .description("Get next maintenance records")
 
   val endpoints: List[AnyEndpoint] = List(
     createMaintenance,

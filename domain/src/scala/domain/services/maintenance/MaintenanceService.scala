@@ -11,7 +11,7 @@ trait MaintenanceService {
   def updateMaintenance(maintenance: MaintenanceUpdate): Task[MaintenanceId]
   def deleteMaintenance(id: MaintenanceId): Task[MaintenanceId]
 
-  def getNextMaintenances: Task[(NextMaintenance,Option[NextMaintenance])]
+  def getNextMaintenances: Task[Option[(NextMaintenance,Option[NextMaintenance])]]
 }
 
 object MaintenanceService :
@@ -27,6 +27,6 @@ object MaintenanceService :
   def deleteMaintenance(id: MaintenanceId): ZIO[MaintenanceService, Throwable, MaintenanceId] =
     ZIO.serviceWithZIO[MaintenanceService](_.deleteMaintenance(id))
 
-  def getNextMaintenances: ZIO[MaintenanceService, Throwable, (NextMaintenance,Option[NextMaintenance])] =
+  def getNextMaintenances: ZIO[MaintenanceService, Throwable, Option[(NextMaintenance,Option[NextMaintenance])]] =
     ZIO.serviceWithZIO[MaintenanceService](_.getNextMaintenances)  
 

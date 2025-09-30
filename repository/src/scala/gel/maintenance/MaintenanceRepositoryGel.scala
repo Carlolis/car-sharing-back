@@ -1,7 +1,7 @@
 package gel.maintenance
 
 import adapters.GelDriverLive
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
+import domain.models.maintenance.*
 import domain.services.maintenance.repository.MaintenanceRepository
 import domain.services.maintenance.repository.models.errors.SaveMaintenanceFailed
 import gel.maintenance.models.MaintenanceGel
@@ -51,7 +51,7 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
            | };
            |"""
       )
-      .map(maintenance => maintenance.map(MaintenanceGel.fromMaintenanceGel))
+      .map(maintenances => maintenances.map(MaintenanceGel.toMaintenance))
 
   override def deleteMaintenance(id: MaintenanceId): Task[MaintenanceId] =
     gelDb
@@ -99,6 +99,20 @@ case class MaintenanceRepositoryGel(gelDb: GelDriverLive) extends MaintenanceRep
         error => ZIO.logError(s"Failed to update maintenance with id: ${maintenance.id}, error: $error"),
         uuid => ZIO.logInfo(s"Updated maintenance with id: $uuid")
       )
+
+  override def getNextMaintenances: Task[Option[(NextMaintenance, Option[NextMaintenance])]] = gelDb
+    .querySingle(
+      classOf[MaintenanceGel],
+      s"""
+         | select MaintenanceGel {
+         |   id, type, isCompleted, dueMileage, dueDate, completedDate,
+         |   completedMileage, description,
+         |   invoice: { id, amount, date, name, gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
+         |   filter .isCompleted = false
+         | };
+         |"""
+    )
+    .map(maintenance => Some((MaintenanceGel.toNextMaintenance(maintenance), None))).catchAll(_ => ZIO.none)
 }
 
 object MaintenanceRepositoryGel:

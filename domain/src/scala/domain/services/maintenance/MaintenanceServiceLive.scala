@@ -1,6 +1,6 @@
 package domain.services.maintenance
 
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate, NextMaintenance}
+import domain.models.maintenance.*
 import domain.services.maintenance.repository.MaintenanceRepository
 import zio.*
 
@@ -43,7 +43,7 @@ case class MaintenanceServiceLive(maintenanceRepository: MaintenanceRepository) 
           deletedId => ZIO.logInfo(s"Successfully deleted maintenance with id: $deletedId")
         )
 
-  override def getNextMaintenances: Task[(NextMaintenance, Option[NextMaintenance])] = ???
+  override def getNextMaintenances: Task[Option[(NextMaintenance, Option[NextMaintenance])]] = maintenanceRepository.getNextMaintenances
 }
 
 object MaintenanceServiceLive {

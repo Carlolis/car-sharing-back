@@ -1,7 +1,7 @@
 package gel.maintenance.models
 
 import com.geldata.driver.annotations.{GelDeserializer, GelLinkType, GelType}
-import domain.models.maintenance.{Maintenance, MaintenanceId}
+import domain.models.maintenance.{Maintenance, MaintenanceId, NextMaintenance}
 import gel.invoice.models.InvoiceGel
 
 import java.time.LocalDate
@@ -34,7 +34,7 @@ class MaintenanceGel @GelDeserializer() (
 }
 
 object MaintenanceGel {
-  def fromMaintenanceGel(maintenanceGel: MaintenanceGel): Maintenance =
+  def toMaintenance(maintenanceGel: MaintenanceGel): Maintenance =
     Maintenance(
       MaintenanceId(maintenanceGel.getId),
       maintenanceGel.getType,
@@ -51,5 +51,16 @@ object MaintenanceGel {
       },
       Option(maintenanceGel.getDescription).filter(_.nonEmpty),
       Option(maintenanceGel.getInvoice).map(invoiceGel => gel.invoice.models.InvoiceGel.fromInvoiceGel(invoiceGel))
+    )
+
+  def toNextMaintenance(maintenanceGel: MaintenanceGel): NextMaintenance =
+    NextMaintenance(
+      maintenanceGel.getType,
+      Option(maintenanceGel.getDueMileage).map {
+        case s: String => s.toInt
+        case l: Long   => l.toInt
+      },
+      Option(maintenanceGel.getDueDate),
+      Option(maintenanceGel.getDescription).filter(_.nonEmpty)
     )
 }

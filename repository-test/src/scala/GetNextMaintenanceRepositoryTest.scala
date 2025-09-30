@@ -1,10 +1,5 @@
 import adapters.GelDriver
-import domain.models.PersonCreate
-import domain.models.invoice.{Invoice, InvoiceCreate, InvoiceId}
-import domain.models.maintenance.{Maintenance, MaintenanceCreate, MaintenanceId, MaintenanceUpdate}
-import domain.services.invoice.repository.InvoiceRepository
 import domain.services.maintenance.repository.MaintenanceRepository
-import domain.services.person.PersonService
 import gel.invoice.InvoiceRepositoryGel
 import gel.maintenance.MaintenanceRepositoryGel
 import gel.person.PersonRepositoryGel
@@ -12,93 +7,30 @@ import zio.*
 import zio.test.*
 import zio.test.TestAspect.*
 
-import java.time.LocalDate
-
 object GetNextMaintenanceRepositoryTest extends ZIOSpecDefault {
-  import common.TestData
-  import common.TestUtils
+  import common.{TestData, TestUtils}
 
   def spec: Spec[TestEnvironment & Scope, Any] =
-    (suite("MaintenanceRepositoryTest")(
-      test("should create maintenance without invoice") {
+    (suite("Get New Maintenances Repository Test")(
+      test("should create one none completed maintenance, should get it") {
         for {
-          maintenanceId <- MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1)
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance with id: $maintenanceId")
-          maintenances  <- MaintenanceRepository.getAllMaintenances
-          found          = maintenances.find(_.id.toString == maintenanceId.toString)
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Found maintenance: $found")
+          maintenanceId                   <- MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1)
+          maintenancesOption              <- MaintenanceRepository.getNextMaintenances
+          (maintenanceOne, maintenanceTwo) = maintenancesOption.get
+          _                               <- ZIO.logInfo(s"[DEBUG_LOG] Found maintenance: $maintenanceOne and $maintenanceTwo")
         } yield assertTrue(
-          found.isDefined,
-          found.get.`type` == "Vidange",
-          !found.get.isCompleted,
-          found.get.dueMileage.contains(10000),
-          found.get.description.contains("Vidange moteur scheduled"),
-          found.get.invoice.isEmpty
+          maintenanceTwo.isEmpty,
+          maintenanceOne.`type` == TestData.maintenanceCreate1.`type`,
+          maintenanceOne.dueMileage == TestData.maintenanceCreate1.dueMileage,
+          maintenanceOne.description == TestData.maintenanceCreate1.description
         )
       },
-      test("should create maintenance with char ' ") {
+      test("should create one completed maintenance, do not get it") {
         for {
-          maintenanceId <-
-            MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1.copy(description = Some("Changement filtre à d'air")))
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance with id: $maintenanceId")
-          maintenances  <- MaintenanceRepository.getAllMaintenances
-          found          = maintenances.find(_.id.toString == maintenanceId.toString)
-          _             <- ZIO.logInfo(s"[DEBUG_LOG] Found maintenance: $found")
+          maintenanceId      <- MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1.copy(isCompleted = true))
+          maintenancesOption <- MaintenanceRepository.getNextMaintenances
         } yield assertTrue(
-          found.isDefined,
-          found.get.`type` == "Vidange",
-          !found.get.isCompleted,
-          found.get.dueMileage.contains(10000),
-          found.get.description.contains("Changement filtre à d'air"),
-          found.get.invoice.isEmpty
-        )
-      },
-      test("should create maintenance with invoice") {
-        for {
-          invoiceId                   <- TestUtils.createTestInvoice
-          _                           <- ZIO.logInfo(s"[DEBUG_LOG] Created test invoice with id: $invoiceId")
-          maintenanceCreateWithInvoice = TestData.maintenanceCreate2.copy(invoiceId = Some(invoiceId))
-          maintenanceId               <- MaintenanceRepository.createMaintenance(maintenanceCreateWithInvoice)
-          _                           <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance with id: $maintenanceId")
-          maintenances                <- MaintenanceRepository.getAllMaintenances
-          found                        = maintenances.find(_.id.toString == maintenanceId.toString)
-          _                           <- ZIO.logInfo(s"[DEBUG_LOG] Found maintenance with invoice: $found")
-        } yield assertTrue(
-          found.isDefined,
-          found.get.`type` == "Contrôle Technique",
-          found.get.isCompleted,
-          found.get.completedMileage.contains(15000),
-          found.get.invoice.isDefined,
-          found.get.invoice.get.name == "Test Invoice for Maintenance"
-        )
-      },
-      test("should update maintenance") {
-        for {
-          maintenanceId       <- MaintenanceRepository.createMaintenance(TestData.maintenanceCreate1)
-          _                   <- ZIO.logInfo(s"[DEBUG_LOG] Created maintenance for update with id: $maintenanceId")
-          maintenances        <- MaintenanceRepository.getAllMaintenances
-          original             = maintenances.find(_.id.toString == maintenanceId.toString).get
-          updatedUpdate        = MaintenanceUpdate(
-                                   id = original.id,
-                                   `type` = original.`type`,
-                                   isCompleted = true,
-                                   dueMileage = original.dueMileage,
-                                   dueDate = original.dueDate,
-                                   completedDate = Some(LocalDate.now()),
-                                   completedMileage = Some(12000),
-                                   description = Some("Vidange completed successfully"),
-                                   invoiceId = original.invoice.map(_.id)
-                                 )
-          _                   <- MaintenanceRepository.updateMaintenance(updatedUpdate)
-          _                   <- ZIO.logInfo(s"[DEBUG_LOG] Updated maintenance")
-          updatedMaintenances <- MaintenanceRepository.getAllMaintenances
-          found                = updatedMaintenances.find(_.id.toString == maintenanceId.toString)
-          _                   <- ZIO.logInfo(s"[DEBUG_LOG] Found updated maintenance: $found")
-        } yield assertTrue(
-          found.isDefined,
-          found.get.isCompleted,
-          found.get.completedMileage.contains(12000),
-          found.get.description.contains("Vidange completed successfully")
+          maintenancesOption.isEmpty
         )
       }
     ) @@ TestAspect.beforeAll(
