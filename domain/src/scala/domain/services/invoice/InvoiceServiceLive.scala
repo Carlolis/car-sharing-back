@@ -188,7 +188,8 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       drivers     <- personService.getAll
       _           <- ZIO.logInfo(s"Got ${drivers.size} drivers")
       totalAmount  =
-        allInvoices.foldLeft(BigDecimal(0.0))((total, invoice) => if (invoice.kind == "Remboursement") total else invoice.amount + total)
+        allInvoices.foldLeft(BigDecimal(0.0))((total, invoice) =>
+          if (invoice.kind == "Remboursement" || invoice.kind == "Carburant") total else invoice.amount + total)
 
       eachPart                       = (totalAmount / BigDecimal(drivers.size))
                                          .setScale(2, RoundingMode.HALF_UP).doubleValue()
@@ -200,7 +201,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
               if (invoice.toDriver.contains(d.name))
                 total - invoice.amount
               else if (invoice.driver.toString == d.name)
-                if (invoice.kind == "Remboursement") total + invoice.amount
+                if (invoice.kind == "Remboursement" || invoice.kind == "Carburant") total + invoice.amount
                 else
                   invoice.amount + total
               else total
