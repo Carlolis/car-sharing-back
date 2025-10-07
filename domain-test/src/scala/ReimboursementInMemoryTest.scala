@@ -489,6 +489,51 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           charlesDistributionAssertion &&
           brigitteDistributionAssertion
         }
+      },
+      test("La dépense Carburant est associée au driver qui la paie pour un autre") {
+        for {
+          _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
+          _              <- InvoiceService.createInvoice(
+                              TestData.sampleCharlesInvoiceCreate.copy(kind = "Carburant", amount = 33, toDriver = Some(DriverName("maé"))))
+          reimbursements <- InvoiceService.getReimbursementProposal
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == -33,
+            charlesReimbursement.totalAmount == 0,
+            brigitteReimbursement.totalAmount == 33
+          )
+
+          val maeDistributionAssertion = assertTrue(
+            maeReimbursement.to == Map(
+              DriverName(TestData.brigittePersonName) -> 0,
+              DriverName(TestData.charlesPersonName)  -> 0
+            )
+          )
+
+          val charlesDistributionAssertion = assertTrue(
+            charlesReimbursement.to == Map(
+              DriverName(TestData.brigittePersonName) -> 0,
+              DriverName(TestData.maePersonName)      -> 0
+            )
+          )
+
+          val brigitteDistributionAssertion = assertTrue(
+            brigitteReimbursement.to == Map(
+              DriverName(TestData.maePersonName)     -> 33,
+              DriverName(TestData.charlesPersonName) -> 0
+            )
+          )
+
+          baseAssertions &&
+          maeDistributionAssertion &&
+          charlesDistributionAssertion &&
+          brigitteDistributionAssertion
+        }
       }
     ) @@ TestAspect.after(
       TestUtils.cleanup.catchAll(e => ZIO.logError(s"[DEBUG_LOG] Cleanup error: ${e.getMessage}"))
