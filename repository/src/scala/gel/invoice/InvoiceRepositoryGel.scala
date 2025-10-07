@@ -46,7 +46,8 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
       .query(
         classOf[InvoiceGel],
         s"""
-           | select InvoiceGel { id, amount, date, name,  gelPerson: { name }, kind, mileage, fileName, toDriver: { name } };
+           | select InvoiceGel { id, amount, date, name,  gelPerson: { name }, kind, mileage, fileName, toDriver: { name } }
+           | order by .date desc;
            |"""
       )
       .map(invoice => invoice.map(InvoiceGel.fromInvoiceGel))
@@ -87,7 +88,8 @@ case class InvoiceRepositoryGel(gelDb: GelDriverLive) extends InvoiceRepository 
            |        amount := ${invoiceUpdate.amount}n,
            |        kind := '${invoiceUpdate.kind}',
            |        ${invoiceUpdate.mileage.map(mileage => s"mileage := $mileage").getOrElse("mileage := <int16>{}")},
-           |        ${invoiceUpdate.fileName.map(fileName => s"fileName := '${fileName.replace("'", "\\'")}'").getOrElse("fileName := <str>{}")},
+           |        ${invoiceUpdate
+            .fileName.map(fileName => s"fileName := '${fileName.replace("'", "\\'")}'").getOrElse("fileName := <str>{}")},
            |        date := cal::to_local_date(${invoiceUpdate
             .date.getYear}, ${invoiceUpdate
             .date.getMonthValue}, ${invoiceUpdate.date.getDayOfMonth}),
