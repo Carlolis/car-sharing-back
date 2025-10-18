@@ -141,7 +141,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                              driver = invoiceUpdate.driver,
                              kind = invoiceUpdate.kind,
                              mileage = invoiceUpdate.mileage,
-                             fileName = sanitizedName.orElse(existingInvoice.fileName),
+                             fileName = sanitizedName,
                              toDriver = invoiceUpdate.toDriver
                            )
 
