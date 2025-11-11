@@ -211,7 +211,6 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                 invoice.amount + total
               else total
             }))
-      _<- ZIO.logInfo(driverNetExpenses.toString())
       // Count how many drivers have a net expense greater than their individual share.
       // This helps in determining the reimbursement logic, especially for edge cases.
       driversOwingCount = driverNetExpenses.foldLeft(0) { (acc, driverAmount) =>
@@ -231,9 +230,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                                  // If the current driver is owed money (currentDriverNetExpense < 0.0),
                                                  // or if the current driver has already paid more than their share,
                                                  // other drivers don't directly contribute to this driver's reimbursement in this specific calculation.
-                                                 println()
-                                                 if (currentDriverNetExpense < 0.0) acc + (DriverName(otherDriverName) -> BigDecimal(0.0))
-                                                 else if ((currentDriverNetExpense >= individualShareAmount) || (currentDriverNetExpense >= otherDriverNetExpense)) acc + (DriverName(otherDriverName) -> BigDecimal(0.0))
+                                                 if ((currentDriverNetExpense >= individualShareAmount) || (currentDriverNetExpense >= otherDriverNetExpense)) acc + (DriverName(otherDriverName) -> BigDecimal(0.0))
                                                  else if (driversOwingCount == 1)
                                                    // Special case: if only one driver has a net expense above the individual share,
                                                    // that driver is the primary payer.
