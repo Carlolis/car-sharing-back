@@ -91,7 +91,7 @@ object InvoiceEndpointsLive:
       (for {
         _                      <- AuthService.authenticate(token)
         _                      <- ZIO.logInfo("Getting reimbursement proposal")
-        reimbursementProposals <- InvoiceService.getReimbursementProposal
+        reimbursementProposals <- InvoiceService.getReimbursementProposals
         _                      <- ZIO.logInfo("Successfully generated reimbursement proposal")
       } yield reimbursementProposals)
         .map(Right(_))

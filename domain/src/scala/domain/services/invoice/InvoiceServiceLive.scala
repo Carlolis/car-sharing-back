@@ -187,13 +187,20 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
       allInvoices <- getAllInvoices
       drivers     <- personService.getAll
       _           <- ZIO.logInfo(s"Got ${drivers.size} drivers")
-      totalAmount  =
+      // Calculate the total amount from all invoices, excluding specific kinds (Remboursement, Carburant, Péage)
+      // This represents the total pool of money to be shared among drivers.
+      totalReimbursableAmount  =
         allInvoices.foldLeft(BigDecimal(0.0))((total, invoice) =>
-          if (invoice.kind == "Remboursement" || invoice.kind == "Carburant") total else invoice.amount + total)
+          if (invoice.kind == "Remboursement" || invoice.kind == "Carburant" || invoice.kind == "Péage") total else invoice.amount + total)
 
-      eachPart                       = (totalAmount / BigDecimal(drivers.size))
+      // Calculate the amount each driver should ideally contribute or receive,
+      // based on the total reimbursable amount divided equally among all drivers.
+      individualShareAmount  = (totalReimbursableAmount / BigDecimal(drivers.size))
                                          .setScale(2, RoundingMode.HALF_UP).doubleValue()
-      driversAmount                  =
+      // Calculate the net expenses for each driver.
+      // This involves summing up invoices where the driver is the payer and subtracting invoices
+      // where the driver is designated to be reimbursed.
+      driverNetExpenses                  =
         drivers.map(d =>
           (
             d.name,
@@ -201,33 +208,49 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
               if (invoice.toDriver.contains(d.name))
                 total - invoice.amount
               else if (invoice.driver.toString == d.name)
-                if (invoice.kind == "Remboursement" || invoice.kind == "Carburant") total + invoice.amount
-                else
-                  invoice.amount + total
+                invoice.amount + total
               else total
             }))
-      amountAboveEachPartDriverCount = driversAmount.foldLeft(0) { (acc, driverAmount) =>
-                                         if (driverAmount._2 > eachPart) acc + 1
+      _<- ZIO.logInfo(driverNetExpenses.toString())
+      // Count how many drivers have a net expense greater than their individual share.
+      // This helps in determining the reimbursement logic, especially for edge cases.
+      driversOwingCount = driverNetExpenses.foldLeft(0) { (acc, driverAmount) =>
+                                         if (driverAmount._2 > individualShareAmount) acc + 1
                                          else acc
                                        }
-      reimbursements                 = driversAmount.map { (driverName, total) =>
-                                         val totalToReimburse = eachPart - total
+      reimbursements                 = driverNetExpenses.map { (driverName, currentDriverNetExpense) =>
+                                         val totalToReimburse = individualShareAmount - currentDriverNetExpense
 
-                                         val othersDriverMapReimbursement: Map[DriverName, BigDecimal] =
-                                           driversAmount
-                                             .filter(_._1 != driverName)
+                                         // Calculate how much each other driver contributes to or receives from the current driver's reimbursement.
+                                         // This map represents the individual transactions needed to balance the accounts.
+                                         val contributionsFromOtherDrivers: Map[DriverName, BigDecimal] =
+                                           driverNetExpenses
+                                             .filter(_._1 != driverName) // Consider only other drivers
                                              .foldLeft(Map.empty[DriverName, BigDecimal]) {
-                                               case (acc, (name, amount)) =>
-                                                 val otherDriverAmount = driversAmount.filter(tt => tt._1 != name && driverName != tt._1).head._2
-                                                 if (total < 0.0) acc + (DriverName(name) -> BigDecimal(0.0))
-                                                 else if ((total >= eachPart) || (total >= amount)) acc + (DriverName(name) -> BigDecimal(0.0))
-                                                 else if (amountAboveEachPartDriverCount == 1)
-                                                   if amount > otherDriverAmount then acc + (DriverName(name) -> (eachPart - total))
-                                                   else acc + (DriverName(name)                               -> BigDecimal(0.0))
-                                                 else acc + (DriverName(name) -> (amount - eachPart))
+                                               case (acc, (otherDriverName, otherDriverNetExpense)) =>
+                                                 // If the current driver is owed money (currentDriverNetExpense < 0.0),
+                                                 // or if the current driver has already paid more than their share,
+                                                 // other drivers don't directly contribute to this driver's reimbursement in this specific calculation.
+                                                 println()
+                                                 if (currentDriverNetExpense < 0.0) acc + (DriverName(otherDriverName) -> BigDecimal(0.0))
+                                                 else if ((currentDriverNetExpense >= individualShareAmount) || (currentDriverNetExpense >= otherDriverNetExpense)) acc + (DriverName(otherDriverName) -> BigDecimal(0.0))
+                                                 else if (driversOwingCount == 1)
+                                                   // Special case: if only one driver has a net expense above the individual share,
+                                                   // that driver is the primary payer.
+                                                   if (otherDriverNetExpense > individualShareAmount)
+                                                     // If this 'other' driver also has a net expense above the individual share,
+                                                     // they contribute the difference to balance the current driver.
+                                                     acc + (DriverName(otherDriverName) -> (individualShareAmount - currentDriverNetExpense))
+                                                   else
+                                                     // Otherwise, this 'other' driver doesn't contribute to the current driver's reimbursement.
+                                                     acc + (DriverName(otherDriverName) -> BigDecimal(0.0))
+                                                 else
+                                                   // General case: calculate the difference between the other driver's net expense
+                                                   // and the individual share. This represents their contribution or deficit.
+                                                   acc + (DriverName(otherDriverName) -> (otherDriverNetExpense - individualShareAmount))
                                              }
 
-                                         Reimbursement(DriverName(driverName), totalToReimburse, othersDriverMapReimbursement)
+                                         Reimbursement(DriverName(driverName), totalToReimburse, contributionsFromOtherDrivers)
                                        }
       _                             <- ZIO.logInfo(s"Got $reimbursements ")
     } yield reimbursements

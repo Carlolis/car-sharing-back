@@ -26,5 +26,5 @@ object InvoiceService:
     ZIO.serviceWithZIO[InvoiceService](_.updateInvoice(invoiceUpdate))
   def download(fileName: String, id: InvoiceId): RIO[InvoiceService, Array[Byte]] =
     ZIO.serviceWithZIO[InvoiceService](_.download(fileName, id))
-  def getReimbursementProposal: RIO[InvoiceService, Set[Reimbursement]]           =
+  def getReimbursementProposals: RIO[InvoiceService, Set[Reimbursement]]           =
     ZIO.serviceWithZIO[InvoiceService](_.getReimbursementProposals)

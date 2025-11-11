@@ -6,6 +6,7 @@ import domain.services.invoice.{InvoiceService, InvoiceServiceLive}
 import domain.services.person.PersonService
 import inMemoryService.{InMemoryInvoiceRepository, InMemoryInvoiceStorage, InMemoryPersonRepository}
 import sttp.tapir.FileRange
+import zio.parser.Parser.Ignore
 import zio.test.*
 import zio.test.Assertion.*
 import zio.{IO, Scope, ZIO, ZLayer}
@@ -124,7 +125,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
       test("Un seul conducteur a une facture, deux conducteurs doivent rembourser le premier") {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -168,7 +169,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
       test("Un seul conducteur avec un montant non entier a une facture, deux conducteurs doivent rembourser le premier") {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate.copy(amount = 24.12))
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -213,7 +214,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate)
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -258,7 +259,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
         for {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 3))
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -304,7 +305,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 3))
           _              <- InvoiceService.createInvoice(TestData.sampleBrigitteInvoiceCreate.copy(amount = 6))
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -350,7 +351,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(TestData.sampleCharlesInvoiceCreate.copy(amount = 66))
           _              <- InvoiceService.createInvoice(TestData.sampleBrigitteInvoiceCreate.copy(amount = 6))
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -399,7 +400,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
                               TestData.sampleCharlesInvoiceCreate.copy(amount = 3, kind = "Remboursement", toDriver = Some(DriverName("maé"))))
           _              <- InvoiceService.createInvoice(
                               TestData.sampleBrigitteInvoiceCreate.copy(amount = 6, kind = "Remboursement", toDriver = Some(DriverName("maé"))))
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -449,7 +450,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
               TestData.sampleCharlesInvoiceCreate.copy(kind = "Remboursement", amount = 33, toDriver = Some(DriverName("maé"))))
           allInvoices    <- InvoiceService.getAllInvoices
           _              <- ZIO.log(s"[DEBUG_LOG] Created reimbursement invoice with id: $invoiceId")
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -495,7 +496,7 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           _              <- InvoiceService.createInvoice(TestData.sampleMaéInvoiceCreate)
           _              <- InvoiceService.createInvoice(
                               TestData.sampleCharlesInvoiceCreate.copy(kind = "Carburant", amount = 33, toDriver = Some(DriverName("maé"))))
-          reimbursements <- InvoiceService.getReimbursementProposal
+          reimbursements <- InvoiceService.getReimbursementProposals
 
           maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
           charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
@@ -534,7 +535,51 @@ object ReimboursementInMemoryTest extends ZIOSpecDefault {
           charlesDistributionAssertion &&
           brigitteDistributionAssertion
         }
-      }
+      },
+        test("Un driver n'a pas de dépense, un autre driver a fait une dépense pour lui et doit être remboursé (péage) ") {
+        for {
+          _              <- InvoiceService.createInvoice(
+            TestData.sampleCharlesInvoiceCreate.copy(kind = "Carburant", amount = 50, toDriver = Some(DriverName("maé"))))
+          reimbursements <- InvoiceService.getReimbursementProposals
+
+          maeReimbursement      <- TestUtils.findReimbursementByDriver(reimbursements, TestData.maePersonName)
+          charlesReimbursement  <- TestUtils.findReimbursementByDriver(reimbursements, TestData.charlesPersonName)
+          brigitteReimbursement <- TestUtils.findReimbursementByDriver(reimbursements, TestData.brigittePersonName)
+        } yield {
+          val baseAssertions = assertTrue(
+            reimbursements.size == 3,
+            maeReimbursement.totalAmount == 50,
+            charlesReimbursement.totalAmount == -50,
+            brigitteReimbursement.totalAmount == 0
+          )
+
+          val maeDistributionAssertion = assertTrue(
+            maeReimbursement.to == Map(
+              DriverName(TestData.brigittePersonName) -> 0,
+              DriverName(TestData.charlesPersonName)  -> 50
+            )
+          )
+
+          val charlesDistributionAssertion = assertTrue(
+            charlesReimbursement.to == Map(
+              DriverName(TestData.brigittePersonName) -> 0,
+              DriverName(TestData.maePersonName)      -> 0
+            )
+          )
+
+          val brigitteDistributionAssertion = assertTrue(
+            brigitteReimbursement.to == Map(
+              DriverName(TestData.maePersonName)     -> 0,
+              DriverName(TestData.charlesPersonName) -> 0
+            )
+          )
+
+          baseAssertions &&
+            maeDistributionAssertion &&
+            charlesDistributionAssertion &&
+            brigitteDistributionAssertion
+        }
+      } 
     ) @@ TestAspect.after(
       TestUtils.cleanup.catchAll(e => ZIO.logError(s"[DEBUG_LOG] Cleanup error: ${e.getMessage}"))
     ) @@ TestAspect.sequential).provideShared(testLayers)
