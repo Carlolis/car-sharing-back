@@ -102,18 +102,7 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                ZIO.log(s"New file provided (${bytes.range} bytes)") *>
                                  (for {
                                    // Delete old file if it exists and is different from the new one
-                                   _ <- existingInvoice.fileName match {
-                                          case Some(oldFileName) =>
-                                            ZIO.log(s"Deleting old file: ${existingInvoice.id}_$oldFileName") *>
-                                              invoiceExternalStorage
-                                                .delete(existingInvoice.id.toString + "_" + oldFileName)
-                                                .tapBoth(
-                                                  err => ZIO.logWarning(s"Failed to delete old file '$oldFileName': ${err.getMessage}"),
-                                                  _ => ZIO.log(s"Successfully deleted old file '$oldFileName'")
-                                                )
-                                                .ignore // Don't fail the whole operation if old file deletion fails
-                                          case _                 => ZIO.unit
-                                        }
+                                   _ <- deleteFileIfExists(existingInvoice)
 
                                    // Upload new file
                                    _ <- {
@@ -129,7 +118,12 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
                                    }
                                  } yield ())
                              case None        =>
-                               ZIO.log("No new file provided; keeping existing file").unit
+                               invoiceUpdate.fileName match
+                                 case None =>
+                                   // Delete old file if it exists and is different from the new one
+                                   deleteFileIfExists(existingInvoice)
+                                 case _   =>
+                                   ZIO.log("No new file provided; keeping existing file").unit
                            }
 
         // Update invoice metadata in repository
@@ -175,6 +169,19 @@ class InvoiceServiceLive(invoiceExternalStorage: InvoiceStorage, invoiceReposito
             }
           case _                                       => ZIO.unit
         }
+
+  private def deleteFileIfExists(invoice: Invoice): Task[Unit] =
+    invoice.fileName match {
+      case Some(oldFileName) =>
+        ZIO.log(s"Deleting old file: ${invoice.id}_$oldFileName") *>
+          invoiceExternalStorage
+            .delete(invoice.id.toString + "_" + oldFileName)
+            .tapBoth(
+              err => ZIO.logWarning(s"Failed to delete old file '$oldFileName': ${err.getMessage}"),
+              _ => ZIO.log(s"Successfully deleted old file '$oldFileName'")
+            )
+            .ignore // Don't fail the whole operation if old file deletion fails
+      case _                 => ZIO.unit}
 
   override def download(fileName: String, id: InvoiceId): ZIO[Any, Throwable, Array[Byte]] = {
     val sanitizeFileName = sanitizeName(fileName)
